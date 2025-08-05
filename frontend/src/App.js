@@ -99,6 +99,7 @@ const LoginPage = () => {
     studio_name: ''
   });
   const { login, register } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -107,7 +108,8 @@ const LoginPage = () => {
       await register(formData);
     
     if (success && isLogin) {
-      // Login success handled by context
+      // Redirect to dashboard on successful login
+      navigate('/', { replace: true });
     } else if (success && !isLogin) {
       setIsLogin(true);
       setFormData({ ...formData, password: '' });
