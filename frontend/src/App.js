@@ -684,8 +684,14 @@ const Dashboard = () => {
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { token } = useAuth();
-  return token ? children : <Navigate to="/login" replace />;
+  const { token, user } = useAuth();
+  const location = useLocation();
+  
+  if (!token || !user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  return children;
 };
 
 function App() {
