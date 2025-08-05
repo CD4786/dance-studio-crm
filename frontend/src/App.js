@@ -98,8 +98,15 @@ const LoginPage = () => {
     role: 'owner',
     studio_name: ''
   });
-  const { login, register } = useAuth();
+  const { login, register, token } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (token) {
+      navigate('/', { replace: true });
+    }
+  }, [token, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
