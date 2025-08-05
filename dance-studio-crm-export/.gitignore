@@ -1,0 +1,36 @@
+# Dependencies
+frontend/node_modules/
+backend/__pycache__/
+backend/.venv/
+*.pyc
+
+# Environment variables (keep these secret!)
+.env
+.env.local
+.env.production
+
+# Build outputs
+frontend/build/
+frontend/dist/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+
+# Temporary files
+*.tmp
+*.temp
