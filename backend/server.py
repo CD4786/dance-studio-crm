@@ -865,7 +865,7 @@ async def get_private_lesson(lesson_id: str):
     )
 
 @api_router.put("/lessons/{lesson_id}", response_model=PrivateLessonResponse)
-async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate, current_user: dict = Depends(get_current_user)):
+async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate, current_user: User = Depends(get_current_user)):
     # Verify lesson exists
     existing_lesson = await db.lessons.find_one({"id": lesson_id})
     if not existing_lesson:
