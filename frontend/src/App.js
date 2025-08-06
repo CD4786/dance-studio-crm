@@ -626,8 +626,10 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
                   key={`${teacher.id}-${hour}`}
                   className="calendar-slot"
                   onClick={() => !lesson && handleTimeSlotClick(hour, teacher.id)}
+                  onContextMenu={(e) => !lesson && handleTimeSlotRightClick(e, hour, teacher.id)}
                   onDragOver={handleDragOver}
                   onDrop={(e) => handleDrop(hour, teacher.id, e)}
+                  title={!lesson ? "Left click: Add single lesson | Right click: Add recurring lessons" : ""}
                 >
                   {lesson ? (
                     <LessonBlock 
