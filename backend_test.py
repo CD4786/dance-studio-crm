@@ -606,6 +606,8 @@ class DanceStudioAPITester:
         
         success, response = self.make_request('POST', 'notifications/preferences', pref_data, 200)
         
+        email_enabled = False
+        sms_enabled = False
         if success:
             student_id = response.get('student_id')
             email_enabled = response.get('email_enabled')
@@ -633,6 +635,8 @@ class DanceStudioAPITester:
         
         success, response = self.make_request('POST', 'notifications/preferences', updated_pref_data, 200)
         
+        email_enabled = True
+        reminder_hours = 24
         if success:
             email_enabled = response.get('email_enabled')
             reminder_hours = response.get('reminder_hours')
@@ -649,6 +653,9 @@ class DanceStudioAPITester:
             
         success, response = self.make_request('GET', f'notifications/preferences/{self.notification_test_student_id}', expected_status=200)
         
+        email_enabled = False
+        sms_enabled = False
+        reminder_hours = 24
         if success:
             email_enabled = response.get('email_enabled')
             sms_enabled = response.get('sms_enabled')
@@ -676,6 +683,9 @@ class DanceStudioAPITester:
         
         success, response = self.make_request('GET', f'notifications/preferences/{new_student_id}', expected_status=200)
         
+        email_enabled = False
+        sms_enabled = False
+        reminder_hours = 24
         if success:
             email_enabled = response.get('email_enabled')
             sms_enabled = response.get('sms_enabled')
