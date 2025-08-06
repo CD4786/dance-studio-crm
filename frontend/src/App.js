@@ -437,6 +437,19 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     }
   };
 
+  const handleSendReminder = async (lessonId, type) => {
+    try {
+      const response = await axios.post(`${API}/notifications/send-reminder`, {
+        lesson_id: lessonId,
+        notification_type: type
+      });
+      alert(`${type.toUpperCase()} reminder sent successfully!`);
+    } catch (error) {
+      console.error('Failed to send reminder:', error);
+      alert(`Failed to send ${type} reminder: ${error.response?.data?.detail || 'Unknown error'}`);
+    }
+  };
+
   const handleDragStart = (lesson, e) => {
     setDraggedLesson(lesson);
     e.dataTransfer.effectAllowed = 'move';
