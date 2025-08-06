@@ -1012,7 +1012,7 @@ async def get_recurring_lesson_series():
     return enriched_series
 
 @api_router.delete("/recurring-lessons/{series_id}")
-async def cancel_recurring_lesson_series(series_id: str, current_user: dict = Depends(get_current_user)):
+async def cancel_recurring_lesson_series(series_id: str, current_user: User = Depends(get_current_user)):
     """Cancel an entire recurring lesson series and all future lessons"""
     
     # Mark series as inactive
@@ -1042,8 +1042,8 @@ async def cancel_recurring_lesson_series(series_id: str, current_user: dict = De
             "series_id": series_id,
             "cancelled_lessons_count": cancel_result.modified_count
         },
-        current_user.get("id", "unknown"),
-        current_user.get("name", "Unknown User")
+        current_user.id,
+        current_user.name
     )
     
     return {
