@@ -25,10 +25,10 @@ node_modules/
 next-env.d.ts
 *.tsbuildinfo
 
-# Production builds
-/build
-dist/
-dist
+# Production builds - COMMENTED OUT to include build for deployment
+# /build
+# dist/
+# dist
 
 # Environment files (comprehensive coverage)
 
