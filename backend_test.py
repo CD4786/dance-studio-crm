@@ -1143,6 +1143,15 @@ class DanceStudioAPITester:
         self.test_send_reminder_disabled_notifications()
         self.test_get_upcoming_lessons()
         
+        # RAILWAY DEPLOYMENT STATIC FILE SERVING TESTS
+        print("\n🚀 Railway Deployment Static File Serving Tests:")
+        self.test_root_path_serves_react_app()
+        self.test_static_js_files_served()
+        self.test_static_css_files_served()
+        self.test_api_endpoints_not_interfered()
+        self.test_catch_all_routing_serves_react()
+        self.test_static_file_mounting_configuration()
+        
         # Cleanup tests
         print("\n🧹 Cleanup Tests:")
         self.test_delete_private_lesson()
