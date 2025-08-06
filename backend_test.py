@@ -274,6 +274,248 @@ class DanceStudioAPITester:
         self.log_test("Delete Class", success, f"- Message: {response.get('message', 'No message')}")
         return success
 
+    # Student Management Tests
+    def test_create_student(self):
+        """Test creating a student"""
+        student_data = {
+            "name": "Emma Rodriguez",
+            "email": "emma.rodriguez@example.com",
+            "phone": "+1555123456",
+            "parent_name": "Maria Rodriguez",
+            "parent_phone": "+1555123457",
+            "parent_email": "maria.rodriguez@example.com",
+            "notes": "Interested in ballet and contemporary dance"
+        }
+        
+        success, response = self.make_request('POST', 'students', student_data, 200)
+        
+        if success:
+            self.created_student_id = response.get('id')
+            
+        self.log_test("Create Student", success, f"- Student ID: {self.created_student_id}")
+        return success
+
+    def test_get_students(self):
+        """Test getting all students"""
+        success, response = self.make_request('GET', 'students', expected_status=200)
+        
+        if success:
+            students_count = len(response) if isinstance(response, list) else 0
+            
+        self.log_test("Get Students", success, f"- Found {students_count} students")
+        return success
+
+    def test_get_student_by_id(self):
+        """Test getting a specific student"""
+        if not self.created_student_id:
+            self.log_test("Get Student by ID", False, "- No student ID available")
+            return False
+            
+        success, response = self.make_request('GET', f'students/{self.created_student_id}', expected_status=200)
+        
+        if success:
+            student_name = response.get('name', 'Unknown')
+            
+        self.log_test("Get Student by ID", success, f"- Student: {student_name}")
+        return success
+
+    def test_update_student(self):
+        """Test updating a student"""
+        if not self.created_student_id:
+            self.log_test("Update Student", False, "- No student ID available")
+            return False
+            
+        update_data = {
+            "name": "Emma Rodriguez-Smith",
+            "email": "emma.rodriguez@example.com",
+            "phone": "+1555123456",
+            "parent_name": "Maria Rodriguez",
+            "parent_phone": "+1555123457",
+            "parent_email": "maria.rodriguez@example.com",
+            "notes": "Updated: Interested in ballet, contemporary, and jazz dance"
+        }
+        
+        success, response = self.make_request('PUT', f'students/{self.created_student_id}', update_data, 200)
+        
+        if success:
+            updated_name = response.get('name', 'Unknown')
+            
+        self.log_test("Update Student", success, f"- Updated name: {updated_name}")
+        return success
+
+    # Package Management Tests
+    def test_get_packages(self):
+        """Test getting lesson packages"""
+        success, response = self.make_request('GET', 'packages', expected_status=200)
+        
+        if success:
+            packages_count = len(response) if isinstance(response, list) else 0
+            self.available_packages = response
+            
+        self.log_test("Get Packages", success, f"- Found {packages_count} packages")
+        return success
+
+    # Enrollment Tests
+    def test_create_enrollment(self):
+        """Test creating a student enrollment"""
+        if not self.created_student_id or not self.available_packages:
+            self.log_test("Create Enrollment", False, "- No student ID or packages available")
+            return False
+            
+        # Use the first available package
+        package = self.available_packages[0]
+        enrollment_data = {
+            "student_id": self.created_student_id,
+            "package_id": package['id'],
+            "total_paid": package['price']
+        }
+        
+        success, response = self.make_request('POST', 'enrollments', enrollment_data, 200)
+        
+        if success:
+            self.created_enrollment_id = response.get('id')
+            
+        self.log_test("Create Enrollment", success, f"- Enrollment ID: {self.created_enrollment_id}")
+        return success
+
+    def test_get_enrollments(self):
+        """Test getting all enrollments"""
+        success, response = self.make_request('GET', 'enrollments', expected_status=200)
+        
+        if success:
+            enrollments_count = len(response) if isinstance(response, list) else 0
+            
+        self.log_test("Get Enrollments", success, f"- Found {enrollments_count} enrollments")
+        return success
+
+    def test_get_student_enrollments(self):
+        """Test getting student's enrollments"""
+        if not self.created_student_id:
+            self.log_test("Get Student Enrollments", False, "- No student ID available")
+            return False
+            
+        success, response = self.make_request('GET', f'students/{self.created_student_id}/enrollments', expected_status=200)
+        
+        if success:
+            enrollments_count = len(response) if isinstance(response, list) else 0
+            
+        self.log_test("Get Student Enrollments", success, f"- Found {enrollments_count} enrollments for student")
+        return success
+
+    # Private Lesson Tests
+    def test_create_private_lesson(self):
+        """Test creating a private lesson"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Create Private Lesson", False, "- No student or teacher ID available")
+            return False
+            
+        # Create lesson for tomorrow
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0)
+        
+        lesson_data = {
+            "student_id": self.created_student_id,
+            "teacher_id": self.created_teacher_id,
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 60,
+            "notes": "Private ballet lesson focusing on technique",
+            "enrollment_id": self.created_enrollment_id
+        }
+        
+        success, response = self.make_request('POST', 'lessons', lesson_data, 200)
+        
+        if success:
+            self.created_lesson_id = response.get('id')
+            
+        self.log_test("Create Private Lesson", success, f"- Lesson ID: {self.created_lesson_id}")
+        return success
+
+    def test_get_private_lessons(self):
+        """Test getting all private lessons"""
+        success, response = self.make_request('GET', 'lessons', expected_status=200)
+        
+        if success:
+            lessons_count = len(response) if isinstance(response, list) else 0
+            
+        self.log_test("Get Private Lessons", success, f"- Found {lessons_count} private lessons")
+        return success
+
+    def test_get_private_lesson_by_id(self):
+        """Test getting a specific private lesson"""
+        if not self.created_lesson_id:
+            self.log_test("Get Private Lesson by ID", False, "- No lesson ID available")
+            return False
+            
+        success, response = self.make_request('GET', f'lessons/{self.created_lesson_id}', expected_status=200)
+        
+        if success:
+            student_name = response.get('student_name', 'Unknown')
+            teacher_name = response.get('teacher_name', 'Unknown')
+            
+        self.log_test("Get Private Lesson by ID", success, f"- Lesson: {student_name} with {teacher_name}")
+        return success
+
+    def test_update_private_lesson(self):
+        """Test updating a private lesson"""
+        if not self.created_lesson_id:
+            self.log_test("Update Private Lesson", False, "- No lesson ID available")
+            return False
+            
+        # Update lesson time and notes
+        tomorrow = datetime.now() + timedelta(days=1)
+        new_start_time = tomorrow.replace(hour=15, minute=30, second=0, microsecond=0)
+        
+        update_data = {
+            "start_datetime": new_start_time.isoformat(),
+            "duration_minutes": 90,
+            "notes": "Updated: Extended private ballet lesson focusing on advanced technique"
+        }
+        
+        success, response = self.make_request('PUT', f'lessons/{self.created_lesson_id}', update_data, 200)
+        
+        if success:
+            updated_notes = response.get('notes', 'No notes')
+            
+        self.log_test("Update Private Lesson", success, f"- Updated notes: {updated_notes[:50]}...")
+        return success
+
+    def test_mark_lesson_attended(self):
+        """Test marking a lesson as attended"""
+        if not self.created_lesson_id:
+            self.log_test("Mark Lesson Attended", False, "- No lesson ID available")
+            return False
+            
+        success, response = self.make_request('POST', f'lessons/{self.created_lesson_id}/attend', expected_status=200)
+        
+        self.log_test("Mark Lesson Attended", success, f"- Message: {response.get('message', 'No message')}")
+        return success
+
+    def test_daily_calendar(self):
+        """Test daily calendar endpoint"""
+        # Get calendar for tomorrow (when we scheduled lessons)
+        tomorrow = datetime.now() + timedelta(days=1)
+        date_str = tomorrow.strftime('%Y-%m-%d')
+        
+        success, response = self.make_request('GET', f'calendar/daily/{date_str}', expected_status=200)
+        
+        if success:
+            lessons_count = len(response.get('lessons', [])) if isinstance(response, dict) else 0
+            teachers_count = len(response.get('teachers', [])) if isinstance(response, dict) else 0
+            
+        self.log_test("Daily Calendar", success, f"- Found {lessons_count} lessons, {teachers_count} teachers")
+        return success
+
+    def test_delete_private_lesson(self):
+        """Test deleting a private lesson"""
+        if not self.created_lesson_id:
+            self.log_test("Delete Private Lesson", False, "- No lesson ID available")
+            return False
+            
+        success, response = self.make_request('DELETE', f'lessons/{self.created_lesson_id}', expected_status=200)
+        
+        self.log_test("Delete Private Lesson", success, f"- Message: {response.get('message', 'No message')}")
+        return success
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Dance Studio API Tests")
