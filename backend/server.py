@@ -660,7 +660,7 @@ async def get_student(student_id: str):
     return Student(**student)
 
 @api_router.put("/students/{student_id}", response_model=Student)
-async def update_student(student_id: str, student_data: StudentCreate, current_user: dict = Depends(get_current_user)):
+async def update_student(student_id: str, student_data: StudentCreate, current_user: User = Depends(get_current_user)):
     existing_student = await db.students.find_one({"id": student_id})
     if not existing_student:
         raise HTTPException(status_code=404, detail="Student not found")
