@@ -791,6 +791,135 @@ async def create_default_packages():
         for package in default_packages:
             await db.packages.insert_one(package.dict())
 
+# Notification Preferences Routes
+@api_router.post("/notifications/preferences", response_model=NotificationPreference)
+async def create_notification_preference(pref_data: NotificationPreferenceCreate):
+    # Check if student exists
+    student = await db.students.find_one({"id": pref_data.student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Check if preferences already exist for this student
+    existing_pref = await db.notification_preferences.find_one({"student_id": pref_data.student_id})
+    if existing_pref:
+        # Update existing preferences
+        update_data = pref_data.dict()
+        await db.notification_preferences.update_one(
+            {"student_id": pref_data.student_id}, 
+            {"$set": update_data}
+        )
+        updated_pref = await db.notification_preferences.find_one({"student_id": pref_data.student_id})
+        return NotificationPreference(**updated_pref)
+    else:
+        # Create new preferences
+        pref = NotificationPreference(**pref_data.dict())
+        await db.notification_preferences.insert_one(pref.dict())
+        return pref
+
+@api_router.get("/notifications/preferences/{student_id}", response_model=NotificationPreference)
+async def get_notification_preferences(student_id: str):
+    pref = await db.notification_preferences.find_one({"student_id": student_id})
+    if not pref:
+        # Return default preferences if none exist
+        return NotificationPreference(
+            student_id=student_id,
+            email_enabled=True,
+            sms_enabled=False,
+            reminder_hours=24
+        )
+    return NotificationPreference(**pref)
+
+@api_router.post("/notifications/send-reminder")
+async def send_lesson_reminder(reminder_request: ReminderRequest):
+    # Get lesson details
+    lesson = await db.lessons.find_one({"id": reminder_request.lesson_id})
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    # Get student details
+    student = await db.students.find_one({"id": lesson["student_id"]})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get teacher details
+    teacher = await db.teachers.find_one({"id": lesson["teacher_id"]})
+    teacher_name = teacher["name"] if teacher else "Unknown"
+    
+    # Get notification preferences
+    pref = await db.notification_preferences.find_one({"student_id": lesson["student_id"]})
+    
+    lesson_datetime = lesson["start_datetime"]
+    formatted_datetime = lesson_datetime.strftime("%B %d, %Y at %I:%M %p")
+    
+    default_message = f"Hi {student['name']}, this is a reminder that you have a dance lesson scheduled for {formatted_datetime} with {teacher_name}. See you there!"
+    message = reminder_request.message or default_message
+    
+    if reminder_request.notification_type == "email":
+        if not pref or not pref.get("email_enabled", True):
+            raise HTTPException(status_code=400, detail="Email notifications not enabled for this student")
+        
+        email_address = (pref.get("email_address") if pref else None) or student["email"]
+        
+        # Here you would integrate with your email service (SendGrid, Gmail, etc.)
+        # For now, we'll log the message
+        print(f"📧 EMAIL REMINDER: To {email_address}: {message}")
+        
+        return {
+            "message": "Email reminder sent successfully",
+            "recipient": email_address,
+            "content": message,
+            "lesson_datetime": formatted_datetime
+        }
+    
+    elif reminder_request.notification_type == "sms":
+        if not pref or not pref.get("sms_enabled", False):
+            raise HTTPException(status_code=400, detail="SMS notifications not enabled for this student")
+        
+        phone_number = (pref.get("phone_number") if pref else None) or student.get("phone")
+        if not phone_number:
+            raise HTTPException(status_code=400, detail="No phone number available for SMS")
+        
+        # Here you would integrate with your SMS service (Twilio, etc.)
+        # For now, we'll log the message
+        print(f"📱 SMS REMINDER: To {phone_number}: {message}")
+        
+        return {
+            "message": "SMS reminder sent successfully",
+            "recipient": phone_number,
+            "content": message,
+            "lesson_datetime": formatted_datetime
+        }
+    
+    else:
+        raise HTTPException(status_code=400, detail="Invalid notification type")
+
+@api_router.get("/notifications/upcoming-lessons")
+async def get_upcoming_lessons_for_reminders():
+    # Get lessons in the next 48 hours that haven't been attended yet
+    now = datetime.utcnow()
+    end_time = now + timedelta(hours=48)
+    
+    lessons = await db.lessons.find({
+        "start_datetime": {"$gte": now, "$lte": end_time},
+        "is_attended": False
+    }).to_list(1000)
+    
+    # Enrich with student and teacher data
+    enriched_lessons = []
+    for lesson_doc in lessons:
+        student = await db.students.find_one({"id": lesson_doc["student_id"]})
+        teacher = await db.teachers.find_one({"id": lesson_doc["teacher_id"]})
+        
+        enriched_lessons.append({
+            **lesson_doc,
+            "student_name": student["name"] if student else "Unknown",
+            "student_email": student["email"] if student else None,
+            "student_phone": student.get("phone") if student else None,
+            "teacher_name": teacher["name"] if teacher else "Unknown"
+        })
+    
+    return enriched_lessons
+
 # Include the router in the main app
 app.include_router(api_router)
 
