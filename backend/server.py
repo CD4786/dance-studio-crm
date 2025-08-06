@@ -38,8 +38,14 @@ db_name = os.environ.get('DB_NAME', 'dance_studio_crm')
 print(f"🔗 Connecting to MongoDB: {mongo_url}")
 print(f"📊 Database name: {db_name}")
 
-client = AsyncIOMotorClient(mongo_url)
-db = client[db_name]
+try:
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[db_name]
+except Exception as e:
+    print(f"❌ MongoDB connection error: {e}")
+    # Use a fallback for Railway
+    client = None
+    db = None
 
 # SMS Configuration
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
