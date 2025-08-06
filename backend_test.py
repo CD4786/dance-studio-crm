@@ -829,6 +829,7 @@ class DanceStudioAPITester:
         """Test getting upcoming lessons for reminders"""
         success, response = self.make_request('GET', 'notifications/upcoming-lessons', expected_status=200)
         
+        lessons_count = 0
         if success:
             lessons_count = len(response) if isinstance(response, list) else 0
             
