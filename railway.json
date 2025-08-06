@@ -1,5 +1,6 @@
 {
   "deploy": {
+    "buildCommand": "cd frontend && yarn install && yarn build",
     "startCommand": "python start.py"
   }
 }
