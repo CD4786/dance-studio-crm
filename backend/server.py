@@ -1052,7 +1052,7 @@ async def cancel_recurring_lesson_series(series_id: str, current_user: User = De
     }
 
 @api_router.post("/lessons/{lesson_id}/attend")
-async def mark_lesson_attended(lesson_id: str, current_user: dict = Depends(get_current_user)):
+async def mark_lesson_attended(lesson_id: str, current_user: User = Depends(get_current_user)):
     # Get lesson
     lesson = await db.lessons.find_one({"id": lesson_id})
     if not lesson:
