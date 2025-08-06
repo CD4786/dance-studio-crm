@@ -821,6 +821,13 @@ const StudentsManager = ({ onRefresh }) => {
               </Button>
               <Button 
                 variant="outline" 
+                onClick={() => handleNotificationPrefs(student)}
+                className="notification-btn"
+              >
+                📱 Notifications
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={() => handleDeleteStudent(student.id, student.name)}
                 className="delete-btn"
               >
