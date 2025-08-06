@@ -699,6 +699,20 @@ const StudentsManager = ({ onRefresh }) => {
     setShowEnrollModal(true);
   };
 
+  const handleDeleteStudent = async (studentId, studentName) => {
+    if (window.confirm(`Are you sure you want to delete ${studentName}? This action cannot be undone.`)) {
+      try {
+        const response = await axios.delete(`${API}/students/${studentId}`);
+        alert(response.data.message);
+        fetchStudents();
+        onRefresh();
+      } catch (error) {
+        console.error('Failed to delete student:', error);
+        alert('Failed to delete student');
+      }
+    }
+  };
+
   const handleCreateEnrollment = async (e) => {
     e.preventDefault();
     try {
