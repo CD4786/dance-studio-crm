@@ -931,6 +931,88 @@ const StudentsManager = ({ onRefresh }) => {
           <Button type="submit">Create Enrollment</Button>
         </form>
       </Modal>
+
+      <Modal 
+        isOpen={showNotificationModal} 
+        onClose={() => setShowNotificationModal(false)}
+        title={`Notification Preferences - ${selectedStudent?.name}`}
+      >
+        <form onSubmit={handleSaveNotificationPrefs}>
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={notificationPrefs.email_enabled}
+                onChange={(e) => setNotificationPrefs({
+                  ...notificationPrefs, 
+                  email_enabled: e.target.checked
+                })}
+              />
+              <span>📧 Enable Email Reminders</span>
+            </label>
+          </div>
+          
+          <div className="form-group">
+            <label>Email Address</label>
+            <Input
+              type="email"
+              value={notificationPrefs.email_address}
+              onChange={(e) => setNotificationPrefs({
+                ...notificationPrefs, 
+                email_address: e.target.value
+              })}
+              placeholder="Email for reminders"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={notificationPrefs.sms_enabled}
+                onChange={(e) => setNotificationPrefs({
+                  ...notificationPrefs, 
+                  sms_enabled: e.target.checked
+                })}
+              />
+              <span>📱 Enable SMS Reminders</span>
+            </label>
+          </div>
+          
+          <div className="form-group">
+            <label>Phone Number</label>
+            <Input
+              type="tel"
+              value={notificationPrefs.phone_number}
+              onChange={(e) => setNotificationPrefs({
+                ...notificationPrefs, 
+                phone_number: e.target.value
+              })}
+              placeholder="+1234567890"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Reminder Time</label>
+            <select
+              value={notificationPrefs.reminder_hours}
+              onChange={(e) => setNotificationPrefs({
+                ...notificationPrefs, 
+                reminder_hours: parseInt(e.target.value)
+              })}
+              className="input"
+            >
+              <option value={1}>1 hour before</option>
+              <option value={2}>2 hours before</option>
+              <option value={4}>4 hours before</option>
+              <option value={24}>24 hours before</option>
+              <option value={48}>48 hours before</option>
+            </select>
+          </div>
+
+          <Button type="submit">Save Preferences</Button>
+        </form>
+      </Modal>
     </div>
   );
 };
