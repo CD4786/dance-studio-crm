@@ -515,14 +515,15 @@ body {
   background: rgba(0, 0, 0, 0.8);
   border: none;
   border-radius: 0.25rem;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.6rem;
   transition: all 0.2s ease;
+  margin: 1px;
 }
 
 .lesson-action-btn:hover {
