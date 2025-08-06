@@ -1095,6 +1095,7 @@ class DanceStudioAPITester:
         
         success, response = self.make_request('POST', 'recurring-lessons', recurring_data, 200)
         
+        lessons_created = 0
         if success:
             self.created_recurring_series_id = response.get('series_id')
             lessons_created = response.get('lessons_created', 0)
