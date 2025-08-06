@@ -438,6 +438,48 @@ async def update_student(student_id: str, student_data: StudentCreate):
     updated_student = await db.students.find_one({"id": student_id})
     return Student(**updated_student)
 
+@api_router.delete("/students/{student_id}")
+async def delete_student(student_id: str):
+    # Check if student exists
+    existing_student = await db.students.find_one({"id": student_id})
+    if not existing_student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Check for associated lessons
+    associated_lessons = await db.lessons.count_documents({"student_id": student_id})
+    associated_enrollments = await db.enrollments.count_documents({"student_id": student_id})
+    
+    # Delete the student
+    result = await db.students.delete_one({"id": student_id})
+    
+    return {
+        "message": "Student deleted successfully",
+        "associated_lessons": associated_lessons,
+        "associated_enrollments": associated_enrollments,
+        "note": "Associated lessons and enrollments remain in system for record keeping"
+    }
+
+@api_router.delete("/teachers/{teacher_id}")
+async def delete_teacher(teacher_id: str):
+    # Check if teacher exists
+    existing_teacher = await db.teachers.find_one({"id": teacher_id})
+    if not existing_teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    # Check for associated lessons and classes
+    associated_lessons = await db.lessons.count_documents({"teacher_id": teacher_id})
+    associated_classes = await db.classes.count_documents({"teacher_id": teacher_id})
+    
+    # Delete the teacher
+    result = await db.teachers.delete_one({"id": teacher_id})
+    
+    return {
+        "message": "Teacher deleted successfully", 
+        "associated_lessons": associated_lessons,
+        "associated_classes": associated_classes,
+        "note": "Associated lessons and classes remain in system for record keeping"
+    }
+
 # Enrollment Routes
 @api_router.post("/enrollments", response_model=Enrollment)
 async def create_enrollment(enrollment_data: EnrollmentCreate):
