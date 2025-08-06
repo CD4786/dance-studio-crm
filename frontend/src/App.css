@@ -698,6 +698,31 @@ body {
   transform: translateY(-1px);
 }
 
+.notification-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  color: white !important;
+  border-color: #3b82f6 !important;
+}
+
+.notification-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important;
+  border-color: #1d4ed8 !important;
+  transform: translateY(-1px);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin: 0;
+}
+
 .specialties {
   display: flex;
   flex-wrap: wrap;
