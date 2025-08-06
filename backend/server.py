@@ -1055,16 +1055,21 @@ static_dir = Path(__file__).parent / "static"
 build_dir = Path(__file__).parent.parent / "frontend" / "build"
 
 # Check multiple possible locations for static files
-if static_dir.exists():
+static_root = None
+if build_dir.exists():
+    # Mount the React build's static directory
+    static_files_dir = build_dir / "static"
+    if static_files_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(static_files_dir)), name="static")
+        static_root = build_dir
+        print(f"✅ Serving static files from React build: {static_files_dir}")
+    else:
+        print(f"⚠️ Static files directory not found in build: {static_files_dir}")
+elif static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
     static_root = static_dir
     print(f"✅ Serving static files from: {static_dir}")
-elif build_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(build_dir / "static")), name="static")
-    static_root = build_dir
-    print(f"✅ Serving static files from: {build_dir}")
 else:
-    static_root = None
     print("⚠️ No static files found")
 
 # Serve React app for all non-API routes
