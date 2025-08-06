@@ -924,7 +924,7 @@ async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate
     )
 
 @api_router.delete("/lessons/{lesson_id}")
-async def delete_private_lesson(lesson_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_private_lesson(lesson_id: str, current_user: User = Depends(get_current_user)):
     # Check if this is part of a recurring series
     lesson = await db.lessons.find_one({"id": lesson_id})
     if not lesson:
