@@ -889,6 +889,27 @@ class DanceStudioAPITester:
         self.test_get_class_by_id()
         self.test_update_class()
         
+        # NEW DELETE FUNCTIONALITY TESTS
+        print("\n🗑️ Delete Functionality Tests:")
+        self.test_delete_nonexistent_student()
+        self.test_delete_nonexistent_teacher()
+        self.test_delete_student_with_associations()
+        self.test_delete_teacher_with_associations()
+        
+        # NEW NOTIFICATION SYSTEM TESTS
+        print("\n🔔 Notification System Tests:")
+        self.test_create_notification_preferences()
+        self.test_update_notification_preferences()
+        self.test_get_notification_preferences()
+        self.test_get_default_notification_preferences()
+        self.test_notification_preferences_invalid_student()
+        self.test_create_lesson_for_reminder_testing()
+        self.test_send_email_reminder()
+        self.test_send_sms_reminder()
+        self.test_send_reminder_invalid_lesson()
+        self.test_send_reminder_disabled_notifications()
+        self.test_get_upcoming_lessons()
+        
         # Cleanup tests
         print("\n🧹 Cleanup Tests:")
         self.test_delete_private_lesson()
