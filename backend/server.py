@@ -910,13 +910,23 @@ async def get_upcoming_lessons_for_reminders():
         student = await db.students.find_one({"id": lesson_doc["student_id"]})
         teacher = await db.teachers.find_one({"id": lesson_doc["teacher_id"]})
         
-        enriched_lessons.append({
-            **lesson_doc,
+        # Create a clean lesson dict without MongoDB ObjectId
+        clean_lesson = {
+            "id": lesson_doc["id"],
+            "student_id": lesson_doc["student_id"],
+            "teacher_id": lesson_doc["teacher_id"],
+            "start_datetime": lesson_doc["start_datetime"],
+            "end_datetime": lesson_doc["end_datetime"],
+            "notes": lesson_doc.get("notes"),
+            "is_attended": lesson_doc.get("is_attended", False),
+            "enrollment_id": lesson_doc.get("enrollment_id"),
             "student_name": student["name"] if student else "Unknown",
             "student_email": student["email"] if student else None,
             "student_phone": student.get("phone") if student else None,
             "teacher_name": teacher["name"] if teacher else "Unknown"
-        })
+        }
+        
+        enriched_lessons.append(clean_lesson)
     
     return enriched_lessons
 
