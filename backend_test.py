@@ -518,7 +518,7 @@ class DanceStudioAPITester:
 
     def run_all_tests(self):
         """Run all API tests"""
-        print("🚀 Starting Dance Studio API Tests")
+        print("🚀 Starting Comprehensive Dance Studio CRM API Tests")
         print(f"🌐 Testing against: {self.base_url}")
         print("=" * 60)
         
@@ -537,6 +537,36 @@ class DanceStudioAPITester:
         self.test_get_teachers()
         self.test_get_teacher_by_id()
         
+        # Student management tests
+        print("\n👨‍🎓 Student Management Tests:")
+        self.test_create_student()
+        self.test_get_students()
+        self.test_get_student_by_id()
+        self.test_update_student()
+        
+        # Package management tests
+        print("\n📦 Package Management Tests:")
+        self.test_get_packages()
+        
+        # Enrollment tests
+        print("\n📋 Enrollment Tests:")
+        self.test_create_enrollment()
+        self.test_get_enrollments()
+        self.test_get_student_enrollments()
+        
+        # Private lesson tests
+        print("\n🎯 Private Lesson Tests:")
+        self.test_create_private_lesson()
+        self.test_get_private_lessons()
+        self.test_get_private_lesson_by_id()
+        self.test_update_private_lesson()
+        self.test_mark_lesson_attended()
+        
+        # Calendar tests
+        print("\n📅 Calendar Tests:")
+        self.test_daily_calendar()
+        self.test_weekly_calendar()
+        
         # Class management tests
         print("\n💃 Class Management Tests:")
         self.test_create_class()
@@ -544,12 +574,9 @@ class DanceStudioAPITester:
         self.test_get_class_by_id()
         self.test_update_class()
         
-        # Calendar tests
-        print("\n📅 Calendar Tests:")
-        self.test_weekly_calendar()
-        
         # Cleanup tests
         print("\n🧹 Cleanup Tests:")
+        self.test_delete_private_lesson()
         self.test_delete_class()
         
         # Final results
