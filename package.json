@@ -5,9 +5,11 @@
   "main": "start.py",
   "scripts": {
     "start": "python start.py",
-    "build": "echo 'Frontend already built'"
+    "build": "./railway-build.sh"
   },
   "engines": {
-    "python": "3.11.x"
+    "python": "3.11.x",
+    "node": "18.x",
+    "yarn": "1.x"
   }
 }
