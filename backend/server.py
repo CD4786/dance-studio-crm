@@ -706,8 +706,8 @@ async def delete_student(student_id: str, current_user: dict = Depends(get_curre
             "associated_lessons": associated_lessons,
             "associated_enrollments": associated_enrollments
         },
-        current_user.get("id", "unknown"),
-        current_user.get("name", "Unknown User")
+        current_user.id,
+        current_user.name
     )
     
     return {
