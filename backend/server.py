@@ -147,6 +147,47 @@ class EnrollmentCreate(BaseModel):
     total_paid: float
     expiry_date: Optional[datetime] = None
 
+# Recurring lesson patterns
+class RecurrencePattern(str, Enum):
+    WEEKLY = "weekly"
+    BI_WEEKLY = "bi_weekly"
+    MONTHLY = "monthly"
+
+class RecurringLessonSeries(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    student_id: str
+    teacher_id: str
+    start_datetime: datetime
+    duration_minutes: int = 60
+    recurrence_pattern: RecurrencePattern
+    end_date: Optional[datetime] = None
+    max_occurrences: Optional[int] = None
+    notes: Optional[str] = None
+    enrollment_id: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: str
+    is_active: bool = True
+
+class RecurringLessonCreate(BaseModel):
+    student_id: str
+    teacher_id: str
+    start_datetime: datetime
+    duration_minutes: int = 60
+    recurrence_pattern: RecurrencePattern
+    end_date: Optional[datetime] = None
+    max_occurrences: Optional[int] = None
+    notes: Optional[str] = None
+    enrollment_id: Optional[str] = None
+
+class LessonUpdate(BaseModel):
+    student_id: Optional[str] = None
+    teacher_id: Optional[str] = None
+    start_datetime: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    notes: Optional[str] = None
+    is_cancelled: Optional[bool] = None
+    cancellation_reason: Optional[str] = None
+
 class PrivateLesson(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     student_id: str
