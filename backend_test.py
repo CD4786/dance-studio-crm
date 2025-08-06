@@ -21,6 +21,9 @@ class DanceStudioAPITester:
         self.created_lesson_id = None
         self.created_enrollment_id = None
         self.available_packages = []
+        self.created_recurring_series_id = None
+        self.websocket_messages = []
+        self.websocket_connected = False
 
     def log_test(self, name: str, success: bool, details: str = ""):
         """Log test results"""
