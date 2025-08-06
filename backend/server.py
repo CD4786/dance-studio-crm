@@ -1075,26 +1075,38 @@ else:
 # Serve React app for all non-API routes
 @app.get("/{full_path:path}")
 async def serve_react_app(full_path: str):
+    # API routes should return 404 if not found
     if full_path.startswith("api/"):
         raise HTTPException(status_code=404, detail="API endpoint not found")
     
-    # Try to serve static files first
+    # Handle root path - serve index.html
+    if not full_path or full_path == "/":
+        index_locations = [
+            build_dir / "index.html",
+            static_dir / "index.html"
+        ]
+        
+        for index_file in index_locations:
+            if index_file and index_file.exists():
+                print(f"📄 Serving index.html from: {index_file}")
+                return FileResponse(str(index_file), media_type="text/html")
+    
+    # Try to serve static files directly (for non-/static prefixed paths)
     if static_root and full_path:
         static_file_path = static_root / full_path
         if static_file_path.is_file():
             return FileResponse(str(static_file_path))
     
-    # For all other paths, serve the React app
+    # For all other paths, serve the React app index.html
     index_locations = [
-        static_root / "index.html" if static_root else None,
-        Path(__file__).parent / "static" / "index.html",
-        Path(__file__).parent.parent / "frontend" / "build" / "index.html"
+        build_dir / "index.html",
+        static_dir / "index.html"
     ]
     
     for index_file in index_locations:
         if index_file and index_file.exists():
-            print(f"📄 Serving index.html from: {index_file}")
-            return FileResponse(str(index_file))
+            print(f"📄 Serving React app index.html from: {index_file}")
+            return FileResponse(str(index_file), media_type="text/html")
     
     # Fallback: return simple HTML with error info
     return HTMLResponse("""
