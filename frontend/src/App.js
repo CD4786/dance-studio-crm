@@ -935,7 +935,7 @@ const StudentsManager = ({ onRefresh }) => {
       <Modal 
         isOpen={showNotificationModal} 
         onClose={() => setShowNotificationModal(false)}
-        title={`Notification Preferences - ${selectedStudent?.name}`}
+        title={`Notification Preferences${selectedStudent ? ` - ${selectedStudent.name}` : ''}`}
       >
         <form onSubmit={handleSaveNotificationPrefs}>
           <div className="form-group">
