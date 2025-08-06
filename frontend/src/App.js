@@ -420,6 +420,42 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     }
   };
 
+  const handleCreateRecurringLesson = async (recurringData) => {
+    try {
+      console.log('Creating recurring lessons:', recurringData);
+      
+      const response = await axios.post(`${API}/recurring-lessons`, recurringData);
+      console.log('Recurring lessons created:', response.data);
+      
+      setShowRecurringModal(false);
+      fetchDailyData();
+      onRefresh();
+      
+      alert(`Successfully created ${response.data.lessons_created} recurring lessons!`);
+    } catch (error) {
+      console.error('Failed to create recurring lessons:', error);
+      alert('Failed to create recurring lessons: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleTimeSlotRightClick = (e, hour, teacherId) => {
+    e.preventDefault(); // Prevent context menu
+    
+    // Prepare recurring lesson modal with pre-filled data
+    const startDateTime = new Date(selectedDate);
+    startDateTime.setHours(hour, 0, 0, 0);
+    
+    const localISOString = startDateTime.toISOString().slice(0, 16); // Format for datetime-local input
+    
+    setSelectedTimeSlot({ 
+      hour, 
+      teacherId, 
+      datetime: localISOString 
+    });
+    setShowRecurringModal(true);
+  };
+  };
+
   const handleEditLesson = (lesson) => {
     setEditingLesson(lesson);
     setNewLessonData({
