@@ -919,6 +919,20 @@ const TeachersManager = ({ onRefresh }) => {
     setFormData({...formData, specialties: newSpecialties});
   };
 
+  const handleDeleteTeacher = async (teacherId, teacherName) => {
+    if (window.confirm(`Are you sure you want to delete ${teacherName}? This action cannot be undone.`)) {
+      try {
+        const response = await axios.delete(`${API}/teachers/${teacherId}`);
+        alert(response.data.message);
+        fetchTeachers();
+        onRefresh();
+      } catch (error) {
+        console.error('Failed to delete teacher:', error);
+        alert('Failed to delete teacher');
+      }
+    }
+  };
+
   return (
     <div className="teachers-manager">
       <div className="manager-header">
