@@ -684,7 +684,7 @@ async def update_student(student_id: str, student_data: StudentCreate, current_u
     return Student(**updated_student)
 
 @api_router.delete("/students/{student_id}")
-async def delete_student(student_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_student(student_id: str, current_user: User = Depends(get_current_user)):
     # Check if student exists
     existing_student = await db.students.find_one({"id": student_id})
     if not existing_student:
