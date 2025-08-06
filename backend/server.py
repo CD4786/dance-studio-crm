@@ -718,7 +718,7 @@ async def delete_student(student_id: str, current_user: dict = Depends(get_curre
     }
 
 @api_router.delete("/teachers/{teacher_id}")
-async def delete_teacher(teacher_id: str):
+async def delete_teacher(teacher_id: str, current_user: dict = Depends(get_current_user)):
     # Check if teacher exists
     existing_teacher = await db.teachers.find_one({"id": teacher_id})
     if not existing_teacher:
@@ -730,6 +730,19 @@ async def delete_teacher(teacher_id: str):
     
     # Delete the teacher
     result = await db.teachers.delete_one({"id": teacher_id})
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "teacher_deleted",
+        {
+            "teacher_id": teacher_id,
+            "teacher_name": existing_teacher.get("name", "Unknown"),
+            "associated_lessons": associated_lessons,
+            "associated_classes": associated_classes
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
     
     return {
         "message": "Teacher deleted successfully", 
