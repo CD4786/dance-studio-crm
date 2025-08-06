@@ -198,6 +198,12 @@ class PrivateLesson(BaseModel):
     is_attended: bool = False
     enrollment_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    # Recurring lesson support
+    recurring_series_id: Optional[str] = None
+    is_cancelled: bool = False
+    cancellation_reason: Optional[str] = None
+    modified_at: datetime = Field(default_factory=datetime.utcnow)
+    modified_by: Optional[str] = None
 
 class PrivateLessonCreate(BaseModel):
     student_id: str
