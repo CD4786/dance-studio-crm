@@ -737,6 +737,45 @@ const StudentsManager = ({ onRefresh }) => {
     }
   };
 
+  const handleNotificationPrefs = async (student) => {
+    setSelectedStudent(student);
+    try {
+      const response = await axios.get(`${API}/notifications/preferences/${student.id}`);
+      setNotificationPrefs({
+        email_enabled: response.data.email_enabled,
+        sms_enabled: response.data.sms_enabled,
+        reminder_hours: response.data.reminder_hours,
+        email_address: response.data.email_address || student.email,
+        phone_number: response.data.phone_number || student.phone
+      });
+    } catch (error) {
+      // Use defaults if no preferences exist
+      setNotificationPrefs({
+        email_enabled: true,
+        sms_enabled: false,
+        reminder_hours: 24,
+        email_address: student.email,
+        phone_number: student.phone || ''
+      });
+    }
+    setShowNotificationModal(true);
+  };
+
+  const handleSaveNotificationPrefs = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post(`${API}/notifications/preferences`, {
+        student_id: selectedStudent.id,
+        ...notificationPrefs
+      });
+      setShowNotificationModal(false);
+      alert('Notification preferences updated successfully!');
+    } catch (error) {
+      console.error('Failed to update notification preferences:', error);
+      alert('Failed to update notification preferences');
+    }
+  };
+
   const handleCreateEnrollment = async (e) => {
     e.preventDefault();
     try {
