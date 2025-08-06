@@ -1,0 +1,18 @@
+# Railway Nixpacks Build Configuration
+
+[phases.setup]
+nixPkgs = ['python39', 'nodejs-18_x', 'yarn']
+
+[phases.install]
+cmds = [
+    'pip install -r backend/requirements.txt',
+    'cd frontend && yarn install --frozen-lockfile'
+]
+
+[phases.build]
+cmds = [
+    'cd frontend && REACT_APP_BACKEND_URL=https://dependable-imagination-production.up.railway.app yarn build'
+]
+
+[start]
+cmd = 'python start.py'
