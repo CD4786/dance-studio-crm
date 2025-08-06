@@ -1305,6 +1305,116 @@ const MainApp = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [refreshKey, setRefreshKey] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+
+  // WebSocket connection and real-time updates
+  useEffect(() => {
+    if (user && user.id) {
+      // Connect to WebSocket
+      wsManager.connect(user.id);
+
+      // Add global listener for all real-time updates
+      wsManager.on('*', handleRealTimeUpdate);
+
+      // Cleanup on component unmount
+      return () => {
+        wsManager.disconnect();
+      };
+    }
+  }, [user]);
+
+  const handleRealTimeUpdate = (message) => {
+    console.log('Real-time update received:', message);
+    
+    // Add notification
+    const notification = {
+      id: Date.now(),
+      type: message.type,
+      message: formatNotificationMessage(message),
+      timestamp: new Date(message.timestamp),
+      user_name: message.user_name
+    };
+    
+    setNotifications(prev => [notification, ...prev.slice(0, 9)]); // Keep last 10 notifications
+    
+    // Auto refresh data on relevant updates
+    if (['lesson_updated', 'lesson_deleted', 'lesson_attended', 'student_created', 'student_updated', 'student_deleted', 'teacher_created', 'teacher_deleted', 'recurring_series_created'].includes(message.type)) {
+      setRefreshKey(prev => prev + 1);
+    }
+
+    // Show temporary toast notification
+    showToast(notification.message, message.type);
+  };
+
+  const formatNotificationMessage = (message) => {
+    switch (message.type) {
+      case 'lesson_updated':
+        return `${message.user_name} updated a lesson for ${message.data.student_name}`;
+      case 'lesson_deleted':
+        return `${message.user_name} deleted a lesson`;
+      case 'lesson_attended':
+        return `${message.user_name} marked attendance for ${message.data.student_name}`;
+      case 'student_created':
+        return `${message.user_name} added new student: ${message.data.student.name}`;
+      case 'student_updated':
+        return `${message.user_name} updated student: ${message.data.student.name}`;
+      case 'student_deleted':
+        return `${message.user_name} deleted student: ${message.data.student_name}`;
+      case 'teacher_created':
+        return `${message.user_name} added new teacher: ${message.data.teacher.name}`;
+      case 'teacher_deleted':
+        return `${message.user_name} deleted teacher: ${message.data.teacher_name}`;
+      case 'recurring_series_created':
+        return `${message.user_name} created ${message.data.lessons_count} recurring lessons for ${message.data.student_name}`;
+      case 'recurring_series_cancelled':
+        return `${message.user_name} cancelled recurring series (${message.data.cancelled_lessons_count} lessons)`;
+      default:
+        return `${message.user_name} made changes to the system`;
+    }
+  };
+
+  const showToast = (message, type) => {
+    // Create temporary toast element
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(45deg, #6366f1, #8b5cf6);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 10000;
+      font-size: 14px;
+      max-width: 300px;
+      word-wrap: break-word;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 4 seconds
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(100%)';
+      setTimeout(() => {
+        if (document.body.contains(toast)) {
+          document.body.removeChild(toast);
+        }
+      }, 300);
+    }, 4000);
+  };
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
