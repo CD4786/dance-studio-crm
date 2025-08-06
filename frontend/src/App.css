@@ -500,9 +500,11 @@ body {
   top: 0.25rem;
   right: 0.25rem;
   display: flex;
-  gap: 0.25rem;
+  gap: 0.125rem;
   opacity: 0;
   transition: opacity 0.3s ease;
+  flex-wrap: wrap;
+  max-width: 120px;
 }
 
 .lesson-block:hover .lesson-actions {
