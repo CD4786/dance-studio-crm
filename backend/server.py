@@ -635,6 +635,95 @@ async def get_daily_calendar(date: str):
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format")
 
+# Package Routes (for pre-defined lesson packages)
+@api_router.get("/packages", response_model=List[LessonPackage])
+async def get_packages():
+    packages = await db.packages.find().to_list(1000)
+    return [LessonPackage(**package) for package in packages]
+
+@api_router.post("/packages", response_model=LessonPackage)
+async def create_package(package_data: LessonPackage):
+    await db.packages.insert_one(package_data.dict())
+    return package_data
+
+# Dashboard stats
+@api_router.get("/dashboard/stats")
+async def get_dashboard_stats():
+    total_classes = await db.classes.count_documents({})
+    total_teachers = await db.teachers.count_documents({})
+    total_students = await db.students.count_documents({})
+    active_enrollments = await db.enrollments.count_documents({"is_active": True})
+    
+    # Classes today
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    tomorrow = today + timedelta(days=1)
+    classes_today = await db.classes.count_documents({
+        "start_datetime": {"$gte": today, "$lt": tomorrow}
+    })
+    
+    # Private lessons today
+    lessons_today = await db.lessons.count_documents({
+        "start_datetime": {"$gte": today, "$lt": tomorrow}
+    })
+    
+    # Lessons attended today
+    lessons_attended_today = await db.lessons.count_documents({
+        "start_datetime": {"$gte": today, "$lt": tomorrow},
+        "is_attended": True
+    })
+    
+    # Calculate estimated monthly revenue from active enrollments
+    pipeline = [
+        {"$match": {"is_active": True}},
+        {"$group": {"_id": None, "total_revenue": {"$sum": "$total_paid"}}}
+    ]
+    revenue_result = await db.enrollments.aggregate(pipeline).to_list(1)
+    estimated_monthly_revenue = revenue_result[0]["total_revenue"] if revenue_result else 0
+    
+    return {
+        "total_classes": total_classes,
+        "total_teachers": total_teachers,
+        "total_students": total_students,
+        "active_enrollments": active_enrollments,
+        "classes_today": classes_today,
+        "lessons_today": lessons_today,
+        "lessons_attended_today": lessons_attended_today,
+        "estimated_monthly_revenue": estimated_monthly_revenue
+    }
+
+# Initialize default packages on startup
+@app.on_event("startup")
+async def create_default_packages():
+    # Check if packages already exist
+    existing_packages = await db.packages.count_documents({})
+    if existing_packages == 0:
+        default_packages = [
+            LessonPackage(
+                name="4-Lesson Package",
+                total_lessons=4,
+                price=200.0,
+                expiry_days=60,
+                description="Perfect for beginners - 4 private lessons"
+            ),
+            LessonPackage(
+                name="8-Lesson Package",
+                total_lessons=8,
+                price=380.0,
+                expiry_days=90,
+                description="Most popular - 8 private lessons with discount"
+            ),
+            LessonPackage(
+                name="Monthly Unlimited",
+                total_lessons=999,
+                price=500.0,
+                expiry_days=30,
+                description="Unlimited private lessons for one month"
+            ),
+        ]
+        
+        for package in default_packages:
+            await db.packages.insert_one(package.dict())
+
 # Include the router in the main app
 app.include_router(api_router)
 
