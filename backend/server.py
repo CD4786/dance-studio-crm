@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, status, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, status, WebSocket, WebSocketDisconnect, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
