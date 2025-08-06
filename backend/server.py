@@ -1050,30 +1050,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files (React build)
-frontend_build_path = Path(__file__).parent.parent / "frontend" / "build"
-if frontend_build_path.exists():
-    app.mount("/static", StaticFiles(directory=str(frontend_build_path / "static")), name="static")
+# Mount static files for production deployment
+static_dir = Path(__file__).parent / "static"
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
     
-    # Catch-all route for React Router (must be last)
+    # Serve React app for all non-API routes
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
-        # If the path starts with /api, let FastAPI handle it (this shouldn't happen due to router precedence)
         if full_path.startswith("api/"):
             raise HTTPException(status_code=404, detail="API endpoint not found")
         
+        # Serve static files
+        static_file_path = static_dir / full_path
+        if static_file_path.is_file():
+            return FileResponse(str(static_file_path))
+        
         # For all other paths, serve the React app
-        index_file = frontend_build_path / "index.html"
+        index_file = static_dir / "index.html"
         if index_file.exists():
             return FileResponse(str(index_file))
         else:
-            raise HTTPException(status_code=404, detail="Frontend not built")
+            return {"message": "Dance Studio CRM API", "status": "Frontend not built"}
 else:
-    print("⚠️  Frontend build not found. Run 'yarn build' in the frontend directory first.")
-    
     @app.get("/")
     async def root():
-        return {"message": "Dance Studio CRM API", "note": "Frontend build not found. Please run 'yarn build' in frontend directory."}
+        return {"message": "Dance Studio CRM API", "status": "Ready for deployment"}
 
 # Configure logging
 logging.basicConfig(
