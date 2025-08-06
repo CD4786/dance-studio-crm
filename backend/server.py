@@ -932,26 +932,52 @@ async def send_lesson_reminder(reminder_request: ReminderRequest):
                 }
             except Exception as e:
                 print(f"❌ Twilio SMS failed: {str(e)}")
-                # Fall back to simulation
-                print(f"📱 SMS REMINDER (SIMULATED): To {clean_phone}: {message}")
-                
-                return {
-                    "message": "SMS reminder simulated (Twilio error)",
-                    "recipient": clean_phone,
-                    "content": message,
-                    "lesson_datetime": formatted_datetime,
-                    "error": str(e)
-                }
+                # Fall back to free TextBelt API
+                return await send_textbelt_sms(clean_phone, message, formatted_datetime)
         else:
-            # Simulate SMS sending
-            print(f"📱 SMS REMINDER (SIMULATED): To {clean_phone}: {message}")
-            
+            # Try free TextBelt API
+            return await send_textbelt_sms(clean_phone, message, formatted_datetime)
+
+# Free SMS function using TextBelt
+async def send_textbelt_sms(phone_number, message, formatted_datetime):
+    try:
+        response = requests.post('https://textbelt.com/text', {
+            'phone': phone_number,
+            'message': message,
+            'key': 'textbelt',  # Free tier key
+        })
+        result = response.json()
+        
+        if result.get('success'):
+            print(f"✅ SMS sent via TextBelt! Text ID: {result.get('textId', 'unknown')}")
             return {
-                "message": "SMS reminder simulated (no Twilio configured)",
-                "recipient": clean_phone,
+                "message": "SMS reminder sent successfully via TextBelt (Free)",
+                "recipient": phone_number,
                 "content": message,
-                "lesson_datetime": formatted_datetime
+                "lesson_datetime": formatted_datetime,
+                "textbelt_id": result.get('textId')
             }
+        else:
+            print(f"❌ TextBelt SMS failed: {result.get('error', 'Unknown error')}")
+            # Final fallback to simulation
+            print(f"📱 SMS REMINDER (SIMULATED): To {phone_number}: {message}")
+            return {
+                "message": "SMS reminder simulated (all services failed)",
+                "recipient": phone_number,
+                "content": message,
+                "lesson_datetime": formatted_datetime,
+                "error": result.get('error')
+            }
+    except Exception as e:
+        print(f"❌ TextBelt API error: {str(e)}")
+        print(f"📱 SMS REMINDER (SIMULATED): To {phone_number}: {message}")
+        return {
+            "message": "SMS reminder simulated (API error)",
+            "recipient": phone_number,
+            "content": message,
+            "lesson_datetime": formatted_datetime,
+            "error": str(e)
+        }
     
     else:
         raise HTTPException(status_code=400, detail="Invalid notification type")
