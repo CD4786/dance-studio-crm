@@ -879,7 +879,7 @@ async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate
     
     # Add modification tracking
     update_data["modified_at"] = datetime.utcnow()
-    update_data["modified_by"] = current_user.get("id", "unknown")
+    update_data["modified_by"] = current_user.id
     
     # If updating datetime and duration, recalculate end_datetime
     if "start_datetime" in update_data:
