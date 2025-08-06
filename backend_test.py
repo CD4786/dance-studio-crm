@@ -111,7 +111,8 @@ class DanceStudioAPITester:
         success, response = self.make_request('GET', 'dashboard/stats', expected_status=200)
         
         if success:
-            required_fields = ['total_classes', 'total_teachers', 'classes_today']
+            required_fields = ['total_classes', 'total_teachers', 'total_students', 'active_enrollments', 
+                             'classes_today', 'lessons_today', 'lessons_attended_today', 'estimated_monthly_revenue']
             has_all_fields = all(field in response for field in required_fields)
             success = has_all_fields
             
