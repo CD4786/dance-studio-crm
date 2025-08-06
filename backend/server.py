@@ -990,14 +990,23 @@ async def cancel_recurring_lesson_series(series_id: str, current_user: dict = De
     }
 
 @api_router.post("/lessons/{lesson_id}/attend")
-async def mark_lesson_attended(lesson_id: str):
+async def mark_lesson_attended(lesson_id: str, current_user: dict = Depends(get_current_user)):
     # Get lesson
     lesson = await db.lessons.find_one({"id": lesson_id})
     if not lesson:
         raise HTTPException(status_code=404, detail="Lesson not found")
     
     # Mark as attended
-    await db.lessons.update_one({"id": lesson_id}, {"$set": {"is_attended": True}})
+    await db.lessons.update_one(
+        {"id": lesson_id}, 
+        {
+            "$set": {
+                "is_attended": True,
+                "modified_at": datetime.utcnow(),
+                "modified_by": current_user.get("id", "unknown")
+            }
+        }
+    )
     
     # If lesson has enrollment, deduct from remaining lessons
     if lesson.get("enrollment_id"):
@@ -1007,6 +1016,23 @@ async def mark_lesson_attended(lesson_id: str):
                 {"id": lesson["enrollment_id"]}, 
                 {"$inc": {"remaining_lessons": -1}}
             )
+    
+    # Get enriched lesson data for broadcast
+    student = await db.students.find_one({"id": lesson["student_id"]})
+    teacher = await db.teachers.find_one({"id": lesson["teacher_id"]})
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "lesson_attended",
+        {
+            "lesson_id": lesson_id,
+            "student_name": student["name"] if student else "Unknown",
+            "teacher_name": teacher["name"] if teacher else "Unknown",
+            "start_datetime": lesson["start_datetime"]
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
     
     return {"message": "Attendance marked successfully"}
 
