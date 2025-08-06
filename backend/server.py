@@ -949,13 +949,13 @@ async def delete_private_lesson(lesson_id: str, current_user: dict = Depends(get
 
 # Recurring Lesson Endpoints
 @api_router.post("/recurring-lessons", response_model=dict)
-async def create_recurring_lesson_series(series_data: RecurringLessonCreate, current_user: dict = Depends(get_current_user)):
+async def create_recurring_lesson_series(series_data: RecurringLessonCreate, current_user: User = Depends(get_current_user)):
     """Create a new recurring lesson series and generate individual lesson instances"""
     
     # Create the recurring series record
     series = RecurringLessonSeries(
         **series_data.dict(),
-        created_by=current_user.get("id", "unknown")
+        created_by=current_user.id
     )
     
     # Generate individual lesson instances
@@ -983,8 +983,8 @@ async def create_recurring_lesson_series(series_data: RecurringLessonCreate, cur
             "student_name": student["name"] if student else "Unknown",
             "teacher_name": teacher["name"] if teacher else "Unknown"
         },
-        current_user.get("id", "unknown"),
-        current_user.get("name", "Unknown User")
+        current_user.id,
+        current_user.name
     )
     
     return {
