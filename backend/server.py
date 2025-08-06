@@ -60,6 +60,92 @@ class User(BaseModel):
     studio_name: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+class Student(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: str
+    phone: Optional[str] = None
+    parent_name: Optional[str] = None
+    parent_phone: Optional[str] = None
+    parent_email: Optional[str] = None
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class StudentCreate(BaseModel):
+    name: str
+    email: str
+    phone: Optional[str] = None
+    parent_name: Optional[str] = None
+    parent_phone: Optional[str] = None
+    parent_email: Optional[str] = None
+    notes: Optional[str] = None
+
+class LessonPackage(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    total_lessons: int
+    price: float
+    expiry_days: Optional[int] = None
+    description: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Enrollment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    student_id: str
+    package_id: str
+    remaining_lessons: int
+    total_paid: float
+    purchase_date: datetime = Field(default_factory=datetime.utcnow)
+    expiry_date: Optional[datetime] = None
+    is_active: bool = True
+
+class EnrollmentCreate(BaseModel):
+    student_id: str
+    package_id: str
+    total_paid: float
+    expiry_date: Optional[datetime] = None
+
+class PrivateLesson(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    student_id: str
+    teacher_id: str
+    start_datetime: datetime
+    end_datetime: datetime
+    notes: Optional[str] = None
+    is_attended: bool = False
+    enrollment_id: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class PrivateLessonCreate(BaseModel):
+    student_id: str
+    teacher_id: str
+    start_datetime: datetime
+    duration_minutes: int = 60
+    notes: Optional[str] = None
+    enrollment_id: Optional[str] = None
+
+class PrivateLessonUpdate(BaseModel):
+    student_id: Optional[str] = None
+    teacher_id: Optional[str] = None
+    start_datetime: Optional[datetime] = None
+    duration_minutes: Optional[int] = None
+    notes: Optional[str] = None
+
+class PrivateLessonResponse(BaseModel):
+    id: str
+    student_id: str
+    student_name: str
+    teacher_id: str
+    teacher_name: str
+    start_datetime: datetime
+    end_datetime: datetime
+    notes: Optional[str] = None
+    is_attended: bool = False
+    enrollment_id: Optional[str] = None
+
+class AttendanceCreate(BaseModel):
+    lesson_id: str
+
 class UserCreate(BaseModel):
     email: str
     name: str
