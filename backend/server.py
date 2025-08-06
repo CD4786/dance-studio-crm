@@ -1056,11 +1056,11 @@ app.add_middleware(
 )
 
 # Mount static files for production deployment
-static_dir = Path(__file__).parent / "static"
 build_dir = Path(__file__).parent.parent / "frontend" / "build"
 
-# Check multiple possible locations for static files
-static_root = None
+print(f"🔍 Looking for React build at: {build_dir}")
+print(f"📁 Build directory exists: {build_dir.exists()}")
+
 if build_dir.exists():
     # Mount the React build's static directory
     static_files_dir = build_dir / "static"
@@ -1068,14 +1068,13 @@ if build_dir.exists():
         app.mount("/static", StaticFiles(directory=str(static_files_dir)), name="static")
         static_root = build_dir
         print(f"✅ Serving static files from React build: {static_files_dir}")
+        print(f"📄 Index.html exists: {(build_dir / 'index.html').exists()}")
     else:
-        print(f"⚠️ Static files directory not found in build: {static_files_dir}")
-elif static_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-    static_root = static_dir
-    print(f"✅ Serving static files from: {static_dir}")
+        print(f"⚠️ Static files directory not found: {static_files_dir}")
+        static_root = None
 else:
-    print("⚠️ No static files found")
+    print(f"❌ React build directory not found: {build_dir}")
+    static_root = None
 
 # Serve React app for all non-API routes
 @app.get("/{full_path:path}")
@@ -1086,15 +1085,10 @@ async def serve_react_app(full_path: str):
     
     # Handle root path - serve index.html
     if not full_path or full_path == "/":
-        index_locations = [
-            build_dir / "index.html",
-            static_dir / "index.html"
-        ]
-        
-        for index_file in index_locations:
-            if index_file and index_file.exists():
-                print(f"📄 Serving index.html from: {index_file}")
-                return FileResponse(str(index_file), media_type="text/html")
+        index_file = build_dir / "index.html"
+        if index_file.exists():
+            print(f"📄 Serving index.html from: {index_file}")
+            return FileResponse(str(index_file), media_type="text/html")
     
     # Try to serve static files directly (for non-/static prefixed paths)
     if static_root and full_path:
@@ -1103,15 +1097,10 @@ async def serve_react_app(full_path: str):
             return FileResponse(str(static_file_path))
     
     # For all other paths, serve the React app index.html
-    index_locations = [
-        build_dir / "index.html",
-        static_dir / "index.html"
-    ]
-    
-    for index_file in index_locations:
-        if index_file and index_file.exists():
-            print(f"📄 Serving React app index.html from: {index_file}")
-            return FileResponse(str(index_file), media_type="text/html")
+    index_file = build_dir / "index.html"
+    if index_file.exists():
+        print(f"📄 Serving React app index.html from: {index_file}")
+        return FileResponse(str(index_file), media_type="text/html")
     
     # Fallback: return simple HTML with error info
     return HTMLResponse("""
