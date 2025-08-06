@@ -803,7 +803,7 @@ async def get_private_lesson(lesson_id: str):
     )
 
 @api_router.put("/lessons/{lesson_id}", response_model=PrivateLessonResponse)
-async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate):
+async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate, current_user: dict = Depends(get_current_user)):
     # Verify lesson exists
     existing_lesson = await db.lessons.find_one({"id": lesson_id})
     if not existing_lesson:
@@ -814,6 +814,10 @@ async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate
     for field, value in lesson_data.dict().items():
         if value is not None:
             update_data[field] = value
+    
+    # Add modification tracking
+    update_data["modified_at"] = datetime.utcnow()
+    update_data["modified_by"] = current_user.get("id", "unknown")
     
     # If updating datetime and duration, recalculate end_datetime
     if "start_datetime" in update_data:
@@ -837,6 +841,19 @@ async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate
     updated_lesson = await db.lessons.find_one({"id": lesson_id})
     student = await db.students.find_one({"id": updated_lesson["student_id"]})
     teacher = await db.teachers.find_one({"id": updated_lesson["teacher_id"]})
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "lesson_updated",
+        {
+            "lesson_id": lesson_id,
+            "lesson": updated_lesson,
+            "student_name": student["name"] if student else "Unknown",
+            "teacher_name": teacher["name"] if teacher else "Unknown"
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
     
     return PrivateLessonResponse(
         **updated_lesson,
