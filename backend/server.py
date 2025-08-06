@@ -49,6 +49,57 @@ except Exception as e:
     client = None
     db = None
 
+# WebSocket Connection Manager for Real-time Updates
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+        self.user_connections: Dict[str, WebSocket] = {}
+
+    async def connect(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        self.user_connections[user_id] = websocket
+
+    def disconnect(self, websocket: WebSocket, user_id: str):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+        if user_id in self.user_connections:
+            del self.user_connections[user_id]
+
+    async def send_personal_message(self, message: str, user_id: str):
+        if user_id in self.user_connections:
+            websocket = self.user_connections[user_id]
+            try:
+                await websocket.send_text(message)
+            except:
+                await self.disconnect(websocket, user_id)
+
+    async def broadcast(self, message: str):
+        disconnected = []
+        for connection in self.active_connections:
+            try:
+                await connection.send_text(message)
+            except:
+                disconnected.append(connection)
+        
+        # Remove disconnected connections
+        for connection in disconnected:
+            if connection in self.active_connections:
+                self.active_connections.remove(connection)
+
+    async def broadcast_update(self, update_type: str, data: Dict[str, Any], user_id: str, user_name: str):
+        """Broadcast real-time updates to all connected users"""
+        message = {
+            "type": update_type,
+            "data": data,
+            "user_id": user_id,
+            "user_name": user_name,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        await self.broadcast(json.dumps(message))
+
+manager = ConnectionManager()
+
 # SMS Configuration
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN") 
