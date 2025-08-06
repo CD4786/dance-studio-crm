@@ -740,6 +740,7 @@ class DanceStudioAPITester:
         
         success, response = self.make_request('POST', 'notifications/send-reminder', reminder_data, 200)
         
+        recipient = ""
         if success:
             message = response.get('message', '')
             recipient = response.get('recipient', '')
@@ -761,6 +762,7 @@ class DanceStudioAPITester:
         
         success, response = self.make_request('POST', 'notifications/send-reminder', reminder_data, 200)
         
+        recipient = ""
         if success:
             message = response.get('message', '')
             recipient = response.get('recipient', '')
