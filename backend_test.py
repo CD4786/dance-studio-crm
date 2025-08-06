@@ -525,6 +525,8 @@ class DanceStudioAPITester:
             
         success, response = self.make_request('DELETE', f'students/{self.created_student_id}', expected_status=200)
         
+        associated_lessons = 0
+        associated_enrollments = 0
         if success:
             message = response.get('message', '')
             associated_lessons = response.get('associated_lessons', 0)
@@ -551,6 +553,8 @@ class DanceStudioAPITester:
             
         success, response = self.make_request('DELETE', f'teachers/{self.created_teacher_id}', expected_status=200)
         
+        associated_lessons = 0
+        associated_classes = 0
         if success:
             message = response.get('message', '')
             associated_lessons = response.get('associated_lessons', 0)
