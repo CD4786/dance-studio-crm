@@ -748,6 +748,18 @@ class DanceStudioAPITester:
             self.log_test("Send Email Reminder", False, "- No test lesson available")
             return False
             
+        # First enable email notifications for the student
+        pref_data = {
+            "student_id": self.notification_test_student_id,
+            "email_enabled": True,
+            "sms_enabled": True,
+            "reminder_hours": 24,
+            "email_address": "sarah.johnson@example.com",
+            "phone_number": "+1555987654"
+        }
+        
+        self.make_request('POST', 'notifications/preferences', pref_data, 200)
+            
         reminder_data = {
             "lesson_id": self.reminder_test_lesson_id,
             "notification_type": "email",
