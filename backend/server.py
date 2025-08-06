@@ -25,6 +25,9 @@ except ImportError:
     TWILIO_AVAILABLE = False
     print("⚠️  Twilio not installed. SMS functionality will be limited.")
 
+# Alternative free SMS service
+import requests
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
