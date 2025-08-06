@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple startup script for Railway deployment
+Railway deployment startup script
 """
 import os
 import sys
@@ -13,4 +13,9 @@ if __name__ == "__main__":
     from server import app
     
     port = int(os.environ.get("PORT", 8000))
+    
+    print("🚀 Starting Railway deployment...")
+    print(f"📡 Port: {port}")
+    print(f"🌐 Environment: {os.environ.get('RAILWAY_ENVIRONMENT', 'development')}")
+    
     uvicorn.run(app, host="0.0.0.0", port=port)
