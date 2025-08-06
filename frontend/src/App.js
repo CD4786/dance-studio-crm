@@ -956,6 +956,15 @@ const TeachersManager = ({ onRefresh }) => {
               </div>
               {teacher.bio && <p className="teacher-bio">{teacher.bio}</p>}
             </div>
+            <div className="teacher-actions">
+              <Button 
+                variant="outline" 
+                onClick={() => handleDeleteTeacher(teacher.id, teacher.name)}
+                className="delete-btn"
+              >
+                Delete
+              </Button>
+            </div>
           </Card>
         ))}
       </div>
