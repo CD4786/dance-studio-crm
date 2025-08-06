@@ -903,16 +903,52 @@ async def send_lesson_reminder(reminder_request: ReminderRequest):
         if not phone_number:
             raise HTTPException(status_code=400, detail="No phone number available for SMS")
         
-        # Here you would integrate with your SMS service (Twilio, etc.)
-        # For now, we'll log the message
-        print(f"📱 SMS REMINDER: To {phone_number}: {message}")
+        # Clean phone number (remove spaces, dashes, etc.)
+        clean_phone = ''.join(filter(str.isdigit, phone_number))
+        if not clean_phone.startswith('1') and len(clean_phone) == 10:
+            clean_phone = '1' + clean_phone
+        if len(clean_phone) == 11:
+            clean_phone = '+' + clean_phone
         
-        return {
-            "message": "SMS reminder sent successfully",
-            "recipient": phone_number,
-            "content": message,
-            "lesson_datetime": formatted_datetime
-        }
+        if twilio_client and TWILIO_PHONE_NUMBER:
+            try:
+                # Send real SMS via Twilio
+                message = twilio_client.messages.create(
+                    body=message,
+                    from_=TWILIO_PHONE_NUMBER,
+                    to=clean_phone
+                )
+                print(f"✅ SMS sent successfully! Message SID: {message.sid}")
+                
+                return {
+                    "message": "SMS reminder sent successfully via Twilio",
+                    "recipient": clean_phone,
+                    "content": message,
+                    "lesson_datetime": formatted_datetime,
+                    "sms_sid": message.sid
+                }
+            except Exception as e:
+                print(f"❌ Twilio SMS failed: {str(e)}")
+                # Fall back to simulation
+                print(f"📱 SMS REMINDER (SIMULATED): To {clean_phone}: {message}")
+                
+                return {
+                    "message": "SMS reminder simulated (Twilio error)",
+                    "recipient": clean_phone,
+                    "content": message,
+                    "lesson_datetime": formatted_datetime,
+                    "error": str(e)
+                }
+        else:
+            # Simulate SMS sending
+            print(f"📱 SMS REMINDER (SIMULATED): To {clean_phone}: {message}")
+            
+            return {
+                "message": "SMS reminder simulated (no Twilio configured)",
+                "recipient": clean_phone,
+                "content": message,
+                "lesson_datetime": formatted_datetime
+            }
     
     else:
         raise HTTPException(status_code=400, detail="Invalid notification type")
