@@ -740,8 +740,8 @@ async def delete_teacher(teacher_id: str, current_user: dict = Depends(get_curre
             "associated_lessons": associated_lessons,
             "associated_classes": associated_classes
         },
-        current_user.get("id", "unknown"),
-        current_user.get("name", "Unknown User")
+        current_user.id,
+        current_user.name
     )
     
     return {
