@@ -201,6 +201,30 @@ backend:
           agent: "testing"
           comment: "✅ TESTED: Class management system working correctly. Create, read, update, delete operations all functional with teacher name enrichment."
 
+  - task: "Delete Functionality for Students and Teachers"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Delete functionality working perfectly. DELETE /api/students/{student_id} and DELETE /api/teachers/{teacher_id} endpoints properly delete records while reporting associated lessons/enrollments/classes that remain for record keeping. Error handling for non-existent records returns proper 404 responses."
+
+  - task: "Notification System"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Complete notification system working. POST /api/notifications/preferences creates/updates student notification preferences, GET /api/notifications/preferences/{student_id} returns preferences (defaults if none exist), POST /api/notifications/send-reminder sends email/SMS reminders with proper validation, GET /api/notifications/upcoming-lessons returns lessons in next 48 hours. All error handling working correctly for disabled notifications and invalid data."
+
 frontend:
   - task: "Daily Calendar with Drag-Drop"
     implemented: true
@@ -337,7 +361,7 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: false
 
 test_plan:
@@ -357,3 +381,5 @@ agent_communication:
       message: "✅ COMPREHENSIVE BACKEND TESTING COMPLETED: All 27 tests passed successfully! The dance studio CRM backend is fully functional with complete student management, private lessons system, enrollment/package management, daily calendar, and enhanced dashboard. All CRUD operations working perfectly with proper data validation and enrichment. System ready for production use."
     - agent: "testing"
       message: "✅ COMPREHENSIVE FRONTEND TESTING COMPLETED: All frontend features tested and working perfectly! Authentication system (register/login/logout), Dashboard with all 6 stat cards, Daily Calendar with lesson CRUD operations, Student Management with enrollment, Teacher Management with specialties, Weekly Calendar view, Navigation, and UI/UX all functional. Modern 2025 SaaS design with glassmorphism effects implemented. Responsive design working. Data persistence confirmed. Form validation working. No console errors detected. System ready for production use."
+    - agent: "testing"
+      message: "✅ NEW DELETE & NOTIFICATION FEATURES TESTED: All 42/42 comprehensive tests passed! Successfully tested new delete functionality for students/teachers with proper association reporting and error handling. Complete notification system tested including preferences management, email/SMS reminders, upcoming lessons retrieval, and comprehensive error handling. Fixed ObjectId serialization issue in upcoming lessons endpoint. All features working perfectly and ready for production use."
