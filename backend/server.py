@@ -1209,6 +1209,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# WebSocket endpoint for real-time updates
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(websocket, user_id)
+    try:
+        while True:
+            # Keep connection alive and listen for client messages
+            data = await websocket.receive_text()
+            # Handle client messages if needed (like ping/pong)
+            if data == "ping":
+                await websocket.send_text("pong")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, user_id)
+
 # Mount static files for production deployment
 build_dir = Path(__file__).parent.parent / "frontend" / "build"
 
