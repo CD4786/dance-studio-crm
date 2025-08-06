@@ -378,12 +378,22 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   const handleCreateLesson = async (e) => {
     e.preventDefault();
     try {
+      // Create date in local timezone, not UTC
       const startDateTime = new Date(selectedDate);
       startDateTime.setHours(selectedTimeSlot.hour, 0, 0, 0);
       
+      // Convert to local ISO string (without timezone conversion)
+      const year = startDateTime.getFullYear();
+      const month = String(startDateTime.getMonth() + 1).padStart(2, '0');
+      const day = String(startDateTime.getDate()).padStart(2, '0');
+      const hour = String(selectedTimeSlot.hour).padStart(2, '0');
+      const localISOString = `${year}-${month}-${day}T${hour}:00:00`;
+      
+      console.log('Creating lesson for:', localISOString);
+      
       await axios.post(`${API}/lessons`, {
         ...newLessonData,
-        start_datetime: startDateTime.toISOString(),
+        start_datetime: localISOString,
         duration_minutes: 60
       });
 
