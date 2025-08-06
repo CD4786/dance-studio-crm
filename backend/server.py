@@ -505,9 +505,21 @@ async def login(login_data: UserLogin):
 
 # Teacher Routes
 @api_router.post("/teachers", response_model=Teacher)
-async def create_teacher(teacher_data: TeacherCreate):
+async def create_teacher(teacher_data: TeacherCreate, current_user: dict = Depends(get_current_user)):
     teacher = Teacher(**teacher_data.dict())
     await db.teachers.insert_one(teacher.dict())
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "teacher_created",
+        {
+            "teacher_id": teacher.id,
+            "teacher": teacher.dict()
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
+    
     return teacher
 
 @api_router.get("/teachers", response_model=List[Teacher])
