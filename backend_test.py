@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 class DanceStudioAPITester:
-    def __init__(self, base_url="https://dbdacf7a-2d27-4728-b1dc-08a2bd1d7500.preview.emergentagent.com"):
+    def __init__(self, base_url="https://b2502ddb-b963-47af-bb92-eb4f1e53e4fb.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None
