@@ -516,6 +516,321 @@ class DanceStudioAPITester:
         self.log_test("Delete Private Lesson", success, f"- Message: {response.get('message', 'No message')}")
         return success
 
+    # NEW DELETE FUNCTIONALITY TESTS
+    def test_delete_student_with_associations(self):
+        """Test deleting a student and checking associated records"""
+        if not self.created_student_id:
+            self.log_test("Delete Student with Associations", False, "- No student ID available")
+            return False
+            
+        success, response = self.make_request('DELETE', f'students/{self.created_student_id}', expected_status=200)
+        
+        if success:
+            message = response.get('message', '')
+            associated_lessons = response.get('associated_lessons', 0)
+            associated_enrollments = response.get('associated_enrollments', 0)
+            note = response.get('note', '')
+            
+        self.log_test("Delete Student with Associations", success, 
+                     f"- Lessons: {associated_lessons}, Enrollments: {associated_enrollments}")
+        return success
+
+    def test_delete_nonexistent_student(self):
+        """Test deleting a non-existent student"""
+        fake_student_id = "nonexistent-student-id"
+        success, response = self.make_request('DELETE', f'students/{fake_student_id}', expected_status=404)
+        
+        self.log_test("Delete Non-existent Student", success, f"- Expected 404 error")
+        return success
+
+    def test_delete_teacher_with_associations(self):
+        """Test deleting a teacher and checking associated records"""
+        if not self.created_teacher_id:
+            self.log_test("Delete Teacher with Associations", False, "- No teacher ID available")
+            return False
+            
+        success, response = self.make_request('DELETE', f'teachers/{self.created_teacher_id}', expected_status=200)
+        
+        if success:
+            message = response.get('message', '')
+            associated_lessons = response.get('associated_lessons', 0)
+            associated_classes = response.get('associated_classes', 0)
+            note = response.get('note', '')
+            
+        self.log_test("Delete Teacher with Associations", success, 
+                     f"- Lessons: {associated_lessons}, Classes: {associated_classes}")
+        return success
+
+    def test_delete_nonexistent_teacher(self):
+        """Test deleting a non-existent teacher"""
+        fake_teacher_id = "nonexistent-teacher-id"
+        success, response = self.make_request('DELETE', f'teachers/{fake_teacher_id}', expected_status=404)
+        
+        self.log_test("Delete Non-existent Teacher", success, f"- Expected 404 error")
+        return success
+
+    # NOTIFICATION SYSTEM TESTS
+    def test_create_notification_preferences(self):
+        """Test creating notification preferences for a student"""
+        # First create a new student for notification testing
+        student_data = {
+            "name": "Sarah Johnson",
+            "email": "sarah.johnson@example.com",
+            "phone": "+1555987654",
+            "parent_name": "Jennifer Johnson",
+            "parent_phone": "+1555987655",
+            "parent_email": "jennifer.johnson@example.com",
+            "notes": "Student for notification testing"
+        }
+        
+        success, student_response = self.make_request('POST', 'students', student_data, 200)
+        if not success:
+            self.log_test("Create Notification Preferences", False, "- Failed to create test student")
+            return False
+            
+        self.notification_test_student_id = student_response.get('id')
+        
+        # Create notification preferences
+        pref_data = {
+            "student_id": self.notification_test_student_id,
+            "email_enabled": True,
+            "sms_enabled": True,
+            "reminder_hours": 24,
+            "email_address": "sarah.johnson@example.com",
+            "phone_number": "+1555987654"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/preferences', pref_data, 200)
+        
+        if success:
+            student_id = response.get('student_id')
+            email_enabled = response.get('email_enabled')
+            sms_enabled = response.get('sms_enabled')
+            
+        self.log_test("Create Notification Preferences", success, 
+                     f"- Email: {email_enabled}, SMS: {sms_enabled}")
+        return success
+
+    def test_update_notification_preferences(self):
+        """Test updating existing notification preferences"""
+        if not hasattr(self, 'notification_test_student_id'):
+            self.log_test("Update Notification Preferences", False, "- No test student available")
+            return False
+            
+        # Update preferences
+        updated_pref_data = {
+            "student_id": self.notification_test_student_id,
+            "email_enabled": False,
+            "sms_enabled": True,
+            "reminder_hours": 48,
+            "email_address": "sarah.updated@example.com",
+            "phone_number": "+1555987654"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/preferences', updated_pref_data, 200)
+        
+        if success:
+            email_enabled = response.get('email_enabled')
+            reminder_hours = response.get('reminder_hours')
+            
+        self.log_test("Update Notification Preferences", success, 
+                     f"- Email disabled, Reminder: {reminder_hours}h")
+        return success
+
+    def test_get_notification_preferences(self):
+        """Test getting notification preferences for a student"""
+        if not hasattr(self, 'notification_test_student_id'):
+            self.log_test("Get Notification Preferences", False, "- No test student available")
+            return False
+            
+        success, response = self.make_request('GET', f'notifications/preferences/{self.notification_test_student_id}', expected_status=200)
+        
+        if success:
+            email_enabled = response.get('email_enabled')
+            sms_enabled = response.get('sms_enabled')
+            reminder_hours = response.get('reminder_hours')
+            
+        self.log_test("Get Notification Preferences", success, 
+                     f"- Email: {email_enabled}, SMS: {sms_enabled}, Hours: {reminder_hours}")
+        return success
+
+    def test_get_default_notification_preferences(self):
+        """Test getting default notification preferences for student without preferences"""
+        # Create another student without preferences
+        student_data = {
+            "name": "Michael Chen",
+            "email": "michael.chen@example.com",
+            "phone": "+1555111222"
+        }
+        
+        success, student_response = self.make_request('POST', 'students', student_data, 200)
+        if not success:
+            self.log_test("Get Default Notification Preferences", False, "- Failed to create test student")
+            return False
+            
+        new_student_id = student_response.get('id')
+        
+        success, response = self.make_request('GET', f'notifications/preferences/{new_student_id}', expected_status=200)
+        
+        if success:
+            email_enabled = response.get('email_enabled')
+            sms_enabled = response.get('sms_enabled')
+            reminder_hours = response.get('reminder_hours')
+            
+        self.log_test("Get Default Notification Preferences", success, 
+                     f"- Default Email: {email_enabled}, SMS: {sms_enabled}, Hours: {reminder_hours}")
+        
+        # Clean up
+        self.make_request('DELETE', f'students/{new_student_id}', expected_status=200)
+        return success
+
+    def test_create_lesson_for_reminder_testing(self):
+        """Create a lesson for reminder testing"""
+        if not hasattr(self, 'notification_test_student_id'):
+            self.log_test("Create Lesson for Reminder Testing", False, "- No test student available")
+            return False
+            
+        # Create a teacher for the lesson
+        teacher_data = {
+            "name": "Alex Martinez",
+            "email": "alex.martinez@example.com",
+            "phone": "+1555333444",
+            "specialties": ["jazz", "hip_hop"],
+            "bio": "Hip hop and jazz instructor"
+        }
+        
+        success, teacher_response = self.make_request('POST', 'teachers', teacher_data, 200)
+        if not success:
+            self.log_test("Create Lesson for Reminder Testing", False, "- Failed to create test teacher")
+            return False
+            
+        self.reminder_test_teacher_id = teacher_response.get('id')
+        
+        # Create lesson for tomorrow
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=16, minute=0, second=0, microsecond=0)
+        
+        lesson_data = {
+            "student_id": self.notification_test_student_id,
+            "teacher_id": self.reminder_test_teacher_id,
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 60,
+            "notes": "Jazz lesson for reminder testing"
+        }
+        
+        success, response = self.make_request('POST', 'lessons', lesson_data, 200)
+        
+        if success:
+            self.reminder_test_lesson_id = response.get('id')
+            
+        self.log_test("Create Lesson for Reminder Testing", success, f"- Lesson ID: {self.reminder_test_lesson_id}")
+        return success
+
+    def test_send_email_reminder(self):
+        """Test sending email reminder for a lesson"""
+        if not hasattr(self, 'reminder_test_lesson_id'):
+            self.log_test("Send Email Reminder", False, "- No test lesson available")
+            return False
+            
+        reminder_data = {
+            "lesson_id": self.reminder_test_lesson_id,
+            "notification_type": "email",
+            "message": "Custom reminder: Don't forget your jazz lesson tomorrow!"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/send-reminder', reminder_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            recipient = response.get('recipient', '')
+            lesson_datetime = response.get('lesson_datetime', '')
+            
+        self.log_test("Send Email Reminder", success, f"- Sent to: {recipient}")
+        return success
+
+    def test_send_sms_reminder(self):
+        """Test sending SMS reminder for a lesson"""
+        if not hasattr(self, 'reminder_test_lesson_id'):
+            self.log_test("Send SMS Reminder", False, "- No test lesson available")
+            return False
+            
+        reminder_data = {
+            "lesson_id": self.reminder_test_lesson_id,
+            "notification_type": "sms"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/send-reminder', reminder_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            recipient = response.get('recipient', '')
+            
+        self.log_test("Send SMS Reminder", success, f"- Sent to: {recipient}")
+        return success
+
+    def test_send_reminder_invalid_lesson(self):
+        """Test sending reminder for non-existent lesson"""
+        reminder_data = {
+            "lesson_id": "nonexistent-lesson-id",
+            "notification_type": "email"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/send-reminder', reminder_data, 404)
+        
+        self.log_test("Send Reminder Invalid Lesson", success, "- Expected 404 error")
+        return success
+
+    def test_send_reminder_disabled_notifications(self):
+        """Test sending reminder when notifications are disabled"""
+        if not hasattr(self, 'reminder_test_lesson_id'):
+            self.log_test("Send Reminder Disabled Notifications", False, "- No test lesson available")
+            return False
+            
+        # First disable email notifications for the student
+        pref_data = {
+            "student_id": self.notification_test_student_id,
+            "email_enabled": False,
+            "sms_enabled": False,
+            "reminder_hours": 24
+        }
+        
+        self.make_request('POST', 'notifications/preferences', pref_data, 200)
+        
+        # Try to send email reminder
+        reminder_data = {
+            "lesson_id": self.reminder_test_lesson_id,
+            "notification_type": "email"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/send-reminder', reminder_data, 400)
+        
+        self.log_test("Send Reminder Disabled Notifications", success, "- Expected 400 error for disabled email")
+        return success
+
+    def test_get_upcoming_lessons(self):
+        """Test getting upcoming lessons for reminders"""
+        success, response = self.make_request('GET', 'notifications/upcoming-lessons', expected_status=200)
+        
+        if success:
+            lessons_count = len(response) if isinstance(response, list) else 0
+            
+        self.log_test("Get Upcoming Lessons", success, f"- Found {lessons_count} upcoming lessons")
+        return success
+
+    def test_notification_preferences_invalid_student(self):
+        """Test creating notification preferences for non-existent student"""
+        pref_data = {
+            "student_id": "nonexistent-student-id",
+            "email_enabled": True,
+            "sms_enabled": False,
+            "reminder_hours": 24
+        }
+        
+        success, response = self.make_request('POST', 'notifications/preferences', pref_data, 404)
+        
+        self.log_test("Notification Preferences Invalid Student", success, "- Expected 404 error")
+        return success
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Comprehensive Dance Studio CRM API Tests")
