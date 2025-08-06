@@ -1052,30 +1052,58 @@ app.add_middleware(
 
 # Mount static files for production deployment
 static_dir = Path(__file__).parent / "static"
+build_dir = Path(__file__).parent.parent / "frontend" / "build"
+
+# Check multiple possible locations for static files
 if static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    static_root = static_dir
+    print(f"✅ Serving static files from: {static_dir}")
+elif build_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(build_dir / "static")), name="static")
+    static_root = build_dir
+    print(f"✅ Serving static files from: {build_dir}")
+else:
+    static_root = None
+    print("⚠️ No static files found")
+
+# Serve React app for all non-API routes
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="API endpoint not found")
     
-    # Serve React app for all non-API routes
-    @app.get("/{full_path:path}")
-    async def serve_react_app(full_path: str):
-        if full_path.startswith("api/"):
-            raise HTTPException(status_code=404, detail="API endpoint not found")
-        
-        # Serve static files
-        static_file_path = static_dir / full_path
+    # Try to serve static files first
+    if static_root and full_path:
+        static_file_path = static_root / full_path
         if static_file_path.is_file():
             return FileResponse(str(static_file_path))
-        
-        # For all other paths, serve the React app
-        index_file = static_dir / "index.html"
-        if index_file.exists():
+    
+    # For all other paths, serve the React app
+    index_locations = [
+        static_root / "index.html" if static_root else None,
+        Path(__file__).parent / "static" / "index.html",
+        Path(__file__).parent.parent / "frontend" / "build" / "index.html"
+    ]
+    
+    for index_file in index_locations:
+        if index_file and index_file.exists():
+            print(f"📄 Serving index.html from: {index_file}")
             return FileResponse(str(index_file))
-        else:
-            return {"message": "Dance Studio CRM API", "status": "Frontend not built"}
-else:
-    @app.get("/")
-    async def root():
-        return {"message": "Dance Studio CRM API", "status": "Ready for deployment"}
+    
+    # Fallback: return simple HTML with error info
+    return HTMLResponse("""
+    <!DOCTYPE html>
+    <html>
+    <head><title>Dance Studio CRM</title></head>
+    <body>
+        <h1>Dance Studio CRM</h1>
+        <p>Frontend build not found. Please check deployment.</p>
+        <p><a href="/docs">API Documentation</a></p>
+        <p><a href="/api/dashboard/stats">API Test</a></p>
+    </body>
+    </html>
+    """)
 
 # Configure logging
 logging.basicConfig(
