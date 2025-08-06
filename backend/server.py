@@ -862,11 +862,132 @@ async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate
     )
 
 @api_router.delete("/lessons/{lesson_id}")
-async def delete_private_lesson(lesson_id: str):
+async def delete_private_lesson(lesson_id: str, current_user: dict = Depends(get_current_user)):
+    # Check if this is part of a recurring series
+    lesson = await db.lessons.find_one({"id": lesson_id})
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
     result = await db.lessons.delete_one({"id": lesson_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "lesson_deleted",
+        {
+            "lesson_id": lesson_id,
+            "recurring_series_id": lesson.get("recurring_series_id")
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
+    
     return {"message": "Lesson deleted successfully"}
+
+# Recurring Lesson Endpoints
+@api_router.post("/recurring-lessons", response_model=dict)
+async def create_recurring_lesson_series(series_data: RecurringLessonCreate, current_user: dict = Depends(get_current_user)):
+    """Create a new recurring lesson series and generate individual lesson instances"""
+    
+    # Create the recurring series record
+    series = RecurringLessonSeries(
+        **series_data.dict(),
+        created_by=current_user.get("id", "unknown")
+    )
+    
+    # Generate individual lesson instances
+    lessons = generate_recurring_lessons(series)
+    
+    # Store the series
+    await db.recurring_series.insert_one(series.dict())
+    
+    # Store all lesson instances
+    lesson_dicts = [lesson.dict() for lesson in lessons]
+    if lesson_dicts:
+        await db.lessons.insert_many(lesson_dicts)
+    
+    # Get student and teacher names for response
+    student = await db.students.find_one({"id": series.student_id})
+    teacher = await db.teachers.find_one({"id": series.teacher_id})
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "recurring_series_created",
+        {
+            "series_id": series.id,
+            "series": series.dict(),
+            "lessons_count": len(lessons),
+            "student_name": student["name"] if student else "Unknown",
+            "teacher_name": teacher["name"] if teacher else "Unknown"
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
+    
+    return {
+        "series_id": series.id,
+        "lessons_created": len(lessons),
+        "series": series.dict(),
+        "student_name": student["name"] if student else "Unknown",
+        "teacher_name": teacher["name"] if teacher else "Unknown"
+    }
+
+@api_router.get("/recurring-lessons")
+async def get_recurring_lesson_series():
+    """Get all active recurring lesson series"""
+    series_list = await db.recurring_series.find({"is_active": True}).to_list(1000)
+    
+    # Enrich with student and teacher names
+    enriched_series = []
+    for series in series_list:
+        student = await db.students.find_one({"id": series["student_id"]})
+        teacher = await db.teachers.find_one({"id": series["teacher_id"]})
+        series["student_name"] = student["name"] if student else "Unknown"
+        series["teacher_name"] = teacher["name"] if teacher else "Unknown"
+        enriched_series.append(series)
+    
+    return enriched_series
+
+@api_router.delete("/recurring-lessons/{series_id}")
+async def cancel_recurring_lesson_series(series_id: str, current_user: dict = Depends(get_current_user)):
+    """Cancel an entire recurring lesson series and all future lessons"""
+    
+    # Mark series as inactive
+    result = await db.recurring_series.update_one(
+        {"id": series_id}, 
+        {"$set": {"is_active": False}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Recurring series not found")
+    
+    # Cancel all future lessons in the series (after today)
+    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    cancel_result = await db.lessons.update_many(
+        {
+            "recurring_series_id": series_id,
+            "start_datetime": {"$gte": today},
+            "is_attended": False
+        },
+        {"$set": {"is_cancelled": True, "cancellation_reason": "Series cancelled"}}
+    )
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "recurring_series_cancelled",
+        {
+            "series_id": series_id,
+            "cancelled_lessons_count": cancel_result.modified_count
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
+    
+    return {
+        "message": "Recurring series cancelled successfully",
+        "cancelled_lessons_count": cancel_result.modified_count
+    }
 
 @api_router.post("/lessons/{lesson_id}/attend")
 async def mark_lesson_attended(lesson_id: str):
