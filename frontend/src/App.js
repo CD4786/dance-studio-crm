@@ -492,7 +492,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     });
   };
 
-  const LessonBlock = ({ lesson, onEdit, onDelete, onAttend }) => (
+  const LessonBlock = ({ lesson, onEdit, onDelete, onAttend, onSendReminder }) => (
     <div 
       className={`lesson-block ${lesson.is_attended ? 'attended' : ''}`}
       draggable
@@ -509,11 +509,13 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         {lesson.notes && <div className="lesson-notes">{lesson.notes}</div>}
       </div>
       <div className="lesson-actions">
-        <button onClick={() => onEdit(lesson)} className="lesson-action-btn">✏️</button>
-        <button onClick={() => onDelete(lesson.id)} className="lesson-action-btn">🗑️</button>
+        <button onClick={() => onEdit(lesson)} className="lesson-action-btn" title="Edit">✏️</button>
+        <button onClick={() => onDelete(lesson.id)} className="lesson-action-btn" title="Delete">🗑️</button>
         {!lesson.is_attended && (
-          <button onClick={() => onAttend(lesson.id)} className="lesson-action-btn">✅</button>
+          <button onClick={() => onAttend(lesson.id)} className="lesson-action-btn" title="Mark Attended">✅</button>
         )}
+        <button onClick={() => onSendReminder(lesson.id, 'email')} className="lesson-action-btn" title="Send Email Reminder">📧</button>
+        <button onClick={() => onSendReminder(lesson.id, 'sms')} className="lesson-action-btn" title="Send SMS Reminder">📱</button>
       </div>
     </div>
   );
