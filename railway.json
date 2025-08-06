@@ -1,11 +1,8 @@
 {
   "build": {
-    "builder": "nixpacks",
-    "buildCommand": "echo 'Build completed'",
-    "watchPatterns": ["backend/**"]
+    "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "cd backend && python -m uvicorn server:app --host 0.0.0.0 --port $PORT",
-    "restartPolicyType": "ON_FAILURE"
+    "startCommand": "cd backend && python -m uvicorn server:app --host 0.0.0.0 --port $PORT"
   }
 }
