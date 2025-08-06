@@ -4,12 +4,9 @@
   "description": "Dance Studio CRM with SMS integration",
   "main": "start.py",
   "scripts": {
-    "start": "python start.py",
-    "build": "./railway-build.sh"
+    "start": "python start.py"
   },
   "engines": {
-    "python": "3.11.x",
-    "node": "18.x",
-    "yarn": "1.x"
+    "python": "3.11.x"
   }
 }
