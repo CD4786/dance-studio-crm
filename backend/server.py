@@ -148,6 +148,29 @@ class PrivateLessonResponse(BaseModel):
 class AttendanceCreate(BaseModel):
     lesson_id: str
 
+class NotificationPreference(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    student_id: str
+    email_enabled: bool = True
+    sms_enabled: bool = False
+    reminder_hours: int = 24  # Hours before lesson to send reminder
+    email_address: Optional[str] = None
+    phone_number: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class NotificationPreferenceCreate(BaseModel):
+    student_id: str
+    email_enabled: bool = True
+    sms_enabled: bool = False
+    reminder_hours: int = 24
+    email_address: Optional[str] = None
+    phone_number: Optional[str] = None
+
+class ReminderRequest(BaseModel):
+    lesson_id: str
+    notification_type: str  # "email" or "sms"
+    message: Optional[str] = None
+
 class UserCreate(BaseModel):
     email: str
     name: str
