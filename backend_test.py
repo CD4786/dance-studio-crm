@@ -734,10 +734,12 @@ class DanceStudioAPITester:
         
         success, response = self.make_request('POST', 'lessons', lesson_data, 200)
         
+        lesson_id = ""
         if success:
             self.reminder_test_lesson_id = response.get('id')
+            lesson_id = self.reminder_test_lesson_id
             
-        self.log_test("Create Lesson for Reminder Testing", success, f"- Lesson ID: {self.reminder_test_lesson_id}")
+        self.log_test("Create Lesson for Reminder Testing", success, f"- Lesson ID: {lesson_id}")
         return success
 
     def test_send_email_reminder(self):
