@@ -14,6 +14,10 @@ class DanceStudioAPITester:
         self.tests_passed = 0
         self.created_teacher_id = None
         self.created_class_id = None
+        self.created_student_id = None
+        self.created_lesson_id = None
+        self.created_enrollment_id = None
+        self.available_packages = []
 
     def log_test(self, name: str, success: bool, details: str = ""):
         """Log test results"""
