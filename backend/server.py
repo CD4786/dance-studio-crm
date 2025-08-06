@@ -648,7 +648,7 @@ async def get_student(student_id: str):
     return Student(**student)
 
 @api_router.put("/students/{student_id}", response_model=Student)
-async def update_student(student_id: str, student_data: StudentCreate):
+async def update_student(student_id: str, student_data: StudentCreate, current_user: dict = Depends(get_current_user)):
     existing_student = await db.students.find_one({"id": student_id})
     if not existing_student:
         raise HTTPException(status_code=404, detail="Student not found")
@@ -657,10 +657,22 @@ async def update_student(student_id: str, student_data: StudentCreate):
     await db.students.update_one({"id": student_id}, {"$set": update_data})
     
     updated_student = await db.students.find_one({"id": student_id})
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "student_updated",
+        {
+            "student_id": student_id,
+            "student": updated_student
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
+    
     return Student(**updated_student)
 
 @api_router.delete("/students/{student_id}")
-async def delete_student(student_id: str):
+async def delete_student(student_id: str, current_user: dict = Depends(get_current_user)):
     # Check if student exists
     existing_student = await db.students.find_one({"id": student_id})
     if not existing_student:
@@ -672,6 +684,19 @@ async def delete_student(student_id: str):
     
     # Delete the student
     result = await db.students.delete_one({"id": student_id})
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "student_deleted",
+        {
+            "student_id": student_id,
+            "student_name": existing_student.get("name", "Unknown"),
+            "associated_lessons": associated_lessons,
+            "associated_enrollments": associated_enrollments
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
     
     return {
         "message": "Student deleted successfully",
