@@ -516,8 +516,8 @@ async def create_teacher(teacher_data: TeacherCreate, current_user: User = Depen
             "teacher_id": teacher.id,
             "teacher": teacher.dict()
         },
-        current_user.get("id", "unknown"),
-        current_user.get("name", "Unknown User")
+        current_user.id,
+        current_user.name
     )
     
     return teacher
