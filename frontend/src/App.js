@@ -756,6 +756,13 @@ const StudentsManager = ({ onRefresh }) => {
               >
                 Enroll
               </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => handleDeleteStudent(student.id, student.name)}
+                className="delete-btn"
+              >
+                Delete
+              </Button>
             </div>
           </Card>
         ))}
