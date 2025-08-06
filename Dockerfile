@@ -1,14 +1,13 @@
-# Multi-stage build for React + FastAPI
-FROM node:18 AS frontend-builder
+# Build frontend first
+FROM node:18-alpine AS frontend-build
 
-# Build frontend
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm ci --only=production
 COPY frontend/ ./
 RUN npm run build
 
-# Python backend stage
+# Python backend
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -18,22 +17,19 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies
-COPY backend/requirements.txt ./
+# Copy requirements and install Python dependencies  
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend code
+# Copy backend source code
 COPY backend/ ./
 
-# Copy built frontend
-COPY --from=frontend-builder /app/frontend/build ./static
+# Copy built frontend to serve as static files
+COPY --from=frontend-build /app/frontend/build ./static
 
-# Create startup script
-RUN echo '#!/bin/bash\nuvicorn server:app --host 0.0.0.0 --port $PORT' > start.sh
-RUN chmod +x start.sh
+# Expose port (Railway will set PORT automatically)
+EXPOSE 8000
 
-# Expose port
-EXPOSE $PORT
-
-# Start the application
-CMD ["./start.sh"]
+# Start command
+CMD uvicorn server:app --host 0.0.0.0 --port $PORT
