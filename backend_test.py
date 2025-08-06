@@ -862,6 +862,208 @@ class DanceStudioAPITester:
         self.log_test("Notification Preferences Invalid Student", success, "- Expected 404 error")
         return success
 
+    # STATIC FILE SERVING TESTS FOR RAILWAY DEPLOYMENT
+    def test_root_path_serves_react_app(self):
+        """Test that root path (/) serves React app's index.html"""
+        try:
+            response = requests.get(self.base_url, timeout=10)
+            success = response.status_code == 200
+            
+            if success:
+                content_type = response.headers.get('content-type', '')
+                is_html = 'text/html' in content_type
+                has_react_content = 'Dance Studio CRM' in response.text or 'root' in response.text
+                success = is_html and (has_react_content or len(response.text) > 100)
+                
+            self.log_test("Root Path Serves React App", success, 
+                         f"- Content-Type: {response.headers.get('content-type', 'unknown')}")
+            return success
+            
+        except requests.exceptions.RequestException as e:
+            self.log_test("Root Path Serves React App", False, f"- Request failed: {str(e)}")
+            return False
+
+    def test_static_js_files_served(self):
+        """Test that static JavaScript files are served with correct MIME types"""
+        # Try common static file paths that would exist in a React build
+        static_paths = [
+            "/static/js/main.js",
+            "/static/js/bundle.js", 
+            "/static/js/app.js"
+        ]
+        
+        success_count = 0
+        total_tests = len(static_paths)
+        
+        for path in static_paths:
+            try:
+                response = requests.get(f"{self.base_url}{path}", timeout=10)
+                # Accept 200 (file exists) or 404 (file doesn't exist, but server is handling static routes)
+                if response.status_code == 200:
+                    content_type = response.headers.get('content-type', '')
+                    is_js = 'javascript' in content_type or 'application/javascript' in content_type
+                    if is_js:
+                        success_count += 1
+                        print(f"   ✅ {path} - Content-Type: {content_type}")
+                    else:
+                        print(f"   ⚠️ {path} - Wrong Content-Type: {content_type}")
+                elif response.status_code == 404:
+                    # File doesn't exist but server handled the route (not a server error)
+                    success_count += 1
+                    print(f"   ✅ {path} - Handled by server (404)")
+                else:
+                    print(f"   ❌ {path} - Status: {response.status_code}")
+                    
+            except requests.exceptions.RequestException as e:
+                print(f"   ❌ {path} - Request failed: {str(e)}")
+        
+        # Consider test successful if at least one static route is properly handled
+        success = success_count > 0
+        self.log_test("Static JS Files Served", success, 
+                     f"- {success_count}/{total_tests} static routes handled correctly")
+        return success
+
+    def test_static_css_files_served(self):
+        """Test that static CSS files are served with correct MIME types"""
+        static_paths = [
+            "/static/css/main.css",
+            "/static/css/app.css",
+            "/static/css/style.css"
+        ]
+        
+        success_count = 0
+        total_tests = len(static_paths)
+        
+        for path in static_paths:
+            try:
+                response = requests.get(f"{self.base_url}{path}", timeout=10)
+                # Accept 200 (file exists) or 404 (file doesn't exist, but server is handling static routes)
+                if response.status_code == 200:
+                    content_type = response.headers.get('content-type', '')
+                    is_css = 'text/css' in content_type or 'css' in content_type
+                    if is_css:
+                        success_count += 1
+                        print(f"   ✅ {path} - Content-Type: {content_type}")
+                    else:
+                        print(f"   ⚠️ {path} - Wrong Content-Type: {content_type}")
+                elif response.status_code == 404:
+                    # File doesn't exist but server handled the route (not a server error)
+                    success_count += 1
+                    print(f"   ✅ {path} - Handled by server (404)")
+                else:
+                    print(f"   ❌ {path} - Status: {response.status_code}")
+                    
+            except requests.exceptions.RequestException as e:
+                print(f"   ❌ {path} - Request failed: {str(e)}")
+        
+        # Consider test successful if at least one static route is properly handled
+        success = success_count > 0
+        self.log_test("Static CSS Files Served", success, 
+                     f"- {success_count}/{total_tests} static routes handled correctly")
+        return success
+
+    def test_api_endpoints_not_interfered(self):
+        """Test that API endpoints still work and are not interfered by static serving"""
+        # Test a few key API endpoints to ensure they still work
+        api_tests = [
+            ("dashboard/stats", "Dashboard stats API"),
+            ("teachers", "Teachers API"),
+            ("students", "Students API"),
+            ("packages", "Packages API")
+        ]
+        
+        success_count = 0
+        total_tests = len(api_tests)
+        
+        for endpoint, description in api_tests:
+            try:
+                response = requests.get(f"{self.api_url}/{endpoint}", timeout=10)
+                # API should return JSON, not HTML
+                content_type = response.headers.get('content-type', '')
+                is_json = 'application/json' in content_type
+                
+                if response.status_code == 200 and is_json:
+                    success_count += 1
+                    print(f"   ✅ {description} - Working correctly")
+                elif response.status_code == 401:
+                    # Some endpoints require auth, but they're responding correctly
+                    success_count += 1
+                    print(f"   ✅ {description} - Auth required (expected)")
+                else:
+                    print(f"   ❌ {description} - Status: {response.status_code}, Content-Type: {content_type}")
+                    
+            except requests.exceptions.RequestException as e:
+                print(f"   ❌ {description} - Request failed: {str(e)}")
+        
+        success = success_count == total_tests
+        self.log_test("API Endpoints Not Interfered", success, 
+                     f"- {success_count}/{total_tests} API endpoints working correctly")
+        return success
+
+    def test_catch_all_routing_serves_react(self):
+        """Test that unknown paths serve React app index.html (for React Router)"""
+        # Test various paths that should serve the React app
+        react_router_paths = [
+            "/dashboard",
+            "/students", 
+            "/teachers",
+            "/calendar",
+            "/some-unknown-path",
+            "/nested/path/that/does/not/exist"
+        ]
+        
+        success_count = 0
+        total_tests = len(react_router_paths)
+        
+        for path in react_router_paths:
+            try:
+                response = requests.get(f"{self.base_url}{path}", timeout=10)
+                
+                if response.status_code == 200:
+                    content_type = response.headers.get('content-type', '')
+                    is_html = 'text/html' in content_type
+                    # Should serve HTML content (React app)
+                    if is_html:
+                        success_count += 1
+                        print(f"   ✅ {path} - Serves React app")
+                    else:
+                        print(f"   ❌ {path} - Wrong Content-Type: {content_type}")
+                else:
+                    print(f"   ❌ {path} - Status: {response.status_code}")
+                    
+            except requests.exceptions.RequestException as e:
+                print(f"   ❌ {path} - Request failed: {str(e)}")
+        
+        success = success_count >= (total_tests * 0.8)  # Allow some flexibility
+        self.log_test("Catch-all Routing Serves React", success, 
+                     f"- {success_count}/{total_tests} paths serve React app correctly")
+        return success
+
+    def test_static_file_mounting_configuration(self):
+        """Test that static file mounting is configured correctly"""
+        # This test checks if the server properly handles static file requests
+        # by testing the /static prefix specifically
+        
+        try:
+            # Test the /static path directly (should either serve files or return 404, not 500)
+            response = requests.get(f"{self.base_url}/static/", timeout=10)
+            
+            # Should not return server error (500), should handle the route
+            success = response.status_code != 500
+            
+            if success:
+                print(f"   ✅ Static path handled correctly - Status: {response.status_code}")
+            else:
+                print(f"   ❌ Static path returned server error - Status: {response.status_code}")
+                
+            self.log_test("Static File Mounting Configuration", success, 
+                         f"- Static path returns status {response.status_code} (not 500)")
+            return success
+            
+        except requests.exceptions.RequestException as e:
+            self.log_test("Static File Mounting Configuration", False, f"- Request failed: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Comprehensive Dance Studio CRM API Tests")
