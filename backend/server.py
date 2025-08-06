@@ -677,8 +677,8 @@ async def update_student(student_id: str, student_data: StudentCreate, current_u
             "student_id": student_id,
             "student": updated_student
         },
-        current_user.get("id", "unknown"),
-        current_user.get("name", "Unknown User")
+        current_user.id,
+        current_user.name
     )
     
     return Student(**updated_student)
