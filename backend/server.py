@@ -641,8 +641,8 @@ async def create_student(student_data: StudentCreate, current_user: dict = Depen
             "student_id": student.id,
             "student": student.dict()
         },
-        current_user.get("id", "unknown"),
-        current_user.get("name", "Unknown User")
+        current_user.id,
+        current_user.name
     )
     
     return student
