@@ -715,6 +715,16 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
           <Button type="submit">Update Lesson</Button>
         </form>
       </Modal>
+
+      {/* Recurring Lesson Modal */}
+      <RecurringLessonModal
+        isOpen={showRecurringModal}
+        onClose={() => setShowRecurringModal(false)}
+        onSubmit={handleCreateRecurringLesson}
+        students={students}
+        teachers={teachers}
+        selectedSlot={selectedTimeSlot}
+      />
     </div>
   );
 };
