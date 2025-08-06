@@ -17,6 +17,14 @@ import jwt
 from passlib.context import CryptContext
 import hashlib
 
+# SMS Integration
+try:
+    from twilio.rest import Client as TwilioClient
+    TWILIO_AVAILABLE = True
+except ImportError:
+    TWILIO_AVAILABLE = False
+    print("⚠️  Twilio not installed. SMS functionality will be limited.")
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
