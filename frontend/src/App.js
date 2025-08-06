@@ -347,6 +347,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   useEffect(() => {
     fetchDailyData();
     fetchStudents();
+    fetchTeachers();
   }, [selectedDate, onRefresh]);
 
   const fetchDailyData = async () => {
@@ -365,6 +366,15 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
       setStudents(response.data);
     } catch (error) {
       console.error('Failed to fetch students:', error);
+    }
+  };
+
+  const fetchTeachers = async () => {
+    try {
+      const response = await axios.get(`${API}/teachers`);
+      setTeachers(response.data);
+    } catch (error) {
+      console.error('Failed to fetch teachers:', error);
     }
   };
 
