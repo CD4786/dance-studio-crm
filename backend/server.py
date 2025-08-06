@@ -405,24 +405,235 @@ async def get_weekly_calendar(start_date: str):
     
     return result
 
-# Dashboard stats
-@api_router.get("/dashboard/stats")
-async def get_dashboard_stats():
-    total_classes = await db.classes.count_documents({})
-    total_teachers = await db.teachers.count_documents({})
+# Student Routes
+@api_router.post("/students", response_model=Student)
+async def create_student(student_data: StudentCreate):
+    student = Student(**student_data.dict())
+    await db.students.insert_one(student.dict())
+    return student
+
+@api_router.get("/students", response_model=List[Student])
+async def get_students():
+    students = await db.students.find().to_list(1000)
+    return [Student(**student) for student in students]
+
+@api_router.get("/students/{student_id}", response_model=Student)
+async def get_student(student_id: str):
+    student = await db.students.find_one({"id": student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return Student(**student)
+
+@api_router.put("/students/{student_id}", response_model=Student)
+async def update_student(student_id: str, student_data: StudentCreate):
+    existing_student = await db.students.find_one({"id": student_id})
+    if not existing_student:
+        raise HTTPException(status_code=404, detail="Student not found")
     
-    # Classes today
-    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    tomorrow = today + timedelta(days=1)
-    classes_today = await db.classes.count_documents({
-        "start_datetime": {"$gte": today, "$lt": tomorrow}
-    })
+    update_data = student_data.dict()
+    await db.students.update_one({"id": student_id}, {"$set": update_data})
     
-    return {
-        "total_classes": total_classes,
-        "total_teachers": total_teachers,
-        "classes_today": classes_today
-    }
+    updated_student = await db.students.find_one({"id": student_id})
+    return Student(**updated_student)
+
+# Enrollment Routes
+@api_router.post("/enrollments", response_model=Enrollment)
+async def create_enrollment(enrollment_data: EnrollmentCreate):
+    # Verify student exists
+    student = await db.students.find_one({"id": enrollment_data.student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Verify package exists
+    package = await db.packages.find_one({"id": enrollment_data.package_id})
+    if not package:
+        raise HTTPException(status_code=404, detail="Package not found")
+    
+    # Create enrollment
+    enrollment = Enrollment(
+        **enrollment_data.dict(),
+        remaining_lessons=package["total_lessons"]
+    )
+    await db.enrollments.insert_one(enrollment.dict())
+    return enrollment
+
+@api_router.get("/enrollments", response_model=List[Enrollment])
+async def get_enrollments():
+    enrollments = await db.enrollments.find().to_list(1000)
+    return [Enrollment(**enrollment) for enrollment in enrollments]
+
+@api_router.get("/students/{student_id}/enrollments", response_model=List[Enrollment])
+async def get_student_enrollments(student_id: str):
+    enrollments = await db.enrollments.find({"student_id": student_id, "is_active": True}).to_list(1000)
+    return [Enrollment(**enrollment) for enrollment in enrollments]
+
+# Private Lesson Routes
+@api_router.post("/lessons", response_model=PrivateLessonResponse)
+async def create_private_lesson(lesson_data: PrivateLessonCreate):
+    # Verify student exists
+    student = await db.students.find_one({"id": lesson_data.student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Verify teacher exists
+    teacher = await db.teachers.find_one({"id": lesson_data.teacher_id})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    # Calculate end time
+    end_datetime = lesson_data.start_datetime + timedelta(minutes=lesson_data.duration_minutes)
+    
+    # Create lesson
+    lesson = PrivateLesson(
+        student_id=lesson_data.student_id,
+        teacher_id=lesson_data.teacher_id,
+        start_datetime=lesson_data.start_datetime,
+        end_datetime=end_datetime,
+        notes=lesson_data.notes,
+        enrollment_id=lesson_data.enrollment_id
+    )
+    
+    await db.lessons.insert_one(lesson.dict())
+    
+    return PrivateLessonResponse(
+        **lesson.dict(),
+        student_name=student["name"],
+        teacher_name=teacher["name"]
+    )
+
+@api_router.get("/lessons", response_model=List[PrivateLessonResponse])
+async def get_private_lessons():
+    lessons = await db.lessons.find().to_list(1000)
+    
+    # Enrich with student and teacher names
+    result = []
+    for lesson_doc in lessons:
+        student = await db.students.find_one({"id": lesson_doc["student_id"]})
+        teacher = await db.teachers.find_one({"id": lesson_doc["teacher_id"]})
+        
+        student_name = student["name"] if student else "Unknown"
+        teacher_name = teacher["name"] if teacher else "Unknown"
+        
+        result.append(PrivateLessonResponse(
+            **lesson_doc,
+            student_name=student_name,
+            teacher_name=teacher_name
+        ))
+    
+    return result
+
+@api_router.get("/lessons/{lesson_id}", response_model=PrivateLessonResponse)
+async def get_private_lesson(lesson_id: str):
+    lesson = await db.lessons.find_one({"id": lesson_id})
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    student = await db.students.find_one({"id": lesson["student_id"]})
+    teacher = await db.teachers.find_one({"id": lesson["teacher_id"]})
+    
+    return PrivateLessonResponse(
+        **lesson,
+        student_name=student["name"] if student else "Unknown",
+        teacher_name=teacher["name"] if teacher else "Unknown"
+    )
+
+@api_router.put("/lessons/{lesson_id}", response_model=PrivateLessonResponse)
+async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate):
+    # Verify lesson exists
+    existing_lesson = await db.lessons.find_one({"id": lesson_id})
+    if not existing_lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    # Prepare update data
+    update_data = {}
+    for field, value in lesson_data.dict().items():
+        if value is not None:
+            update_data[field] = value
+    
+    # If updating datetime and duration, recalculate end_datetime
+    if "start_datetime" in update_data and "duration_minutes" in update_data:
+        update_data["end_datetime"] = update_data["start_datetime"] + timedelta(minutes=update_data["duration_minutes"])
+    elif "start_datetime" in update_data:
+        # Keep the same duration
+        duration = (existing_lesson["end_datetime"] - existing_lesson["start_datetime"]).seconds // 60
+        update_data["end_datetime"] = update_data["start_datetime"] + timedelta(minutes=duration)
+    
+    await db.lessons.update_one({"id": lesson_id}, {"$set": update_data})
+    
+    # Get updated lesson with enriched data
+    updated_lesson = await db.lessons.find_one({"id": lesson_id})
+    student = await db.students.find_one({"id": updated_lesson["student_id"]})
+    teacher = await db.teachers.find_one({"id": updated_lesson["teacher_id"]})
+    
+    return PrivateLessonResponse(
+        **updated_lesson,
+        student_name=student["name"] if student else "Unknown",
+        teacher_name=teacher["name"] if teacher else "Unknown"
+    )
+
+@api_router.delete("/lessons/{lesson_id}")
+async def delete_private_lesson(lesson_id: str):
+    result = await db.lessons.delete_one({"id": lesson_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    return {"message": "Lesson deleted successfully"}
+
+@api_router.post("/lessons/{lesson_id}/attend")
+async def mark_lesson_attended(lesson_id: str):
+    # Get lesson
+    lesson = await db.lessons.find_one({"id": lesson_id})
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    # Mark as attended
+    await db.lessons.update_one({"id": lesson_id}, {"$set": {"is_attended": True}})
+    
+    # If lesson has enrollment, deduct from remaining lessons
+    if lesson.get("enrollment_id"):
+        enrollment = await db.enrollments.find_one({"id": lesson["enrollment_id"]})
+        if enrollment and enrollment["remaining_lessons"] > 0:
+            await db.enrollments.update_one(
+                {"id": lesson["enrollment_id"]}, 
+                {"$inc": {"remaining_lessons": -1}}
+            )
+    
+    return {"message": "Attendance marked successfully"}
+
+# Daily Calendar Route
+@api_router.get("/calendar/daily/{date}")
+async def get_daily_calendar(date: str):
+    try:
+        day = datetime.fromisoformat(date).replace(hour=0, minute=0, second=0, microsecond=0)
+        next_day = day + timedelta(days=1)
+        
+        # Get private lessons for the day
+        lessons = await db.lessons.find({
+            "start_datetime": {"$gte": day, "$lt": next_day}
+        }).to_list(1000)
+        
+        # Get all teachers for columns
+        teachers = await db.teachers.find().to_list(1000)
+        
+        # Enrich lessons with student and teacher names
+        enriched_lessons = []
+        for lesson_doc in lessons:
+            student = await db.students.find_one({"id": lesson_doc["student_id"]})
+            teacher = await db.teachers.find_one({"id": lesson_doc["teacher_id"]})
+            
+            enriched_lessons.append(PrivateLessonResponse(
+                **lesson_doc,
+                student_name=student["name"] if student else "Unknown",
+                teacher_name=teacher["name"] if teacher else "Unknown"
+            ))
+        
+        return {
+            "date": date,
+            "teachers": [Teacher(**teacher) for teacher in teachers],
+            "lessons": enriched_lessons
+        }
+        
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format")
 
 # Include the router in the main app
 app.include_router(api_router)
