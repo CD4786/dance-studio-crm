@@ -387,6 +387,54 @@ class ClassResponse(BaseModel):
     studio_room: Optional[str] = None
     price: Optional[float] = None
 
+# Helper function to generate recurring lesson instances
+def generate_recurring_lessons(series: RecurringLessonSeries) -> List[PrivateLesson]:
+    """Generate individual lesson instances from a recurring series"""
+    lessons = []
+    current_date = series.start_datetime
+    count = 0
+    
+    while True:
+        # Check end conditions
+        if series.end_date and current_date > series.end_date:
+            break
+        if series.max_occurrences and count >= series.max_occurrences:
+            break
+            
+        # Create lesson instance
+        lesson = PrivateLesson(
+            student_id=series.student_id,
+            teacher_id=series.teacher_id,
+            start_datetime=current_date,
+            duration_minutes=series.duration_minutes,
+            notes=series.notes,
+            enrollment_id=series.enrollment_id,
+            recurring_series_id=series.id,
+            created_at=series.created_at,
+            modified_by=series.created_by
+        )
+        lessons.append(lesson)
+        
+        # Calculate next occurrence
+        if series.recurrence_pattern == RecurrencePattern.WEEKLY:
+            current_date += timedelta(weeks=1)
+        elif series.recurrence_pattern == RecurrencePattern.BI_WEEKLY:
+            current_date += timedelta(weeks=2)
+        elif series.recurrence_pattern == RecurrencePattern.MONTHLY:
+            # Add one month (handling month boundaries)
+            if current_date.month == 12:
+                current_date = current_date.replace(year=current_date.year + 1, month=1)
+            else:
+                current_date = current_date.replace(month=current_date.month + 1)
+        
+        count += 1
+        
+        # Safety limit to prevent infinite loops
+        if count > 1000:
+            break
+    
+    return lessons
+
 # Helper functions
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
