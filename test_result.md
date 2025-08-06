@@ -488,8 +488,14 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
-  stuck_tasks: []
+  current_focus:
+    - "Recurring Lesson API System"
+    - "WebSocket Real-time Updates System"
+  stuck_tasks:
+    - "Recurring Lesson API System"
+    - "WebSocket Real-time Updates System"
+    - "Recurring Lesson Generation Logic"
+    - "Enhanced Existing Endpoints with Real-time Updates"
   test_all: false
   test_priority: "high_first"
 
