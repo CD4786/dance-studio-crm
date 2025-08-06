@@ -505,7 +505,7 @@ async def login(login_data: UserLogin):
 
 # Teacher Routes
 @api_router.post("/teachers", response_model=Teacher)
-async def create_teacher(teacher_data: TeacherCreate, current_user: dict = Depends(get_current_user)):
+async def create_teacher(teacher_data: TeacherCreate, current_user: User = Depends(get_current_user)):
     teacher = Teacher(**teacher_data.dict())
     await db.teachers.insert_one(teacher.dict())
     
