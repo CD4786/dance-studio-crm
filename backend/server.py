@@ -1092,8 +1092,8 @@ async def mark_lesson_attended(lesson_id: str, current_user: dict = Depends(get_
             "teacher_name": teacher["name"] if teacher else "Unknown",
             "start_datetime": lesson["start_datetime"]
         },
-        current_user.get("id", "unknown"),
-        current_user.get("name", "Unknown User")
+        current_user.id,
+        current_user.name
     )
     
     return {"message": "Attendance marked successfully"}
