@@ -1065,7 +1065,7 @@ async def mark_lesson_attended(lesson_id: str, current_user: dict = Depends(get_
             "$set": {
                 "is_attended": True,
                 "modified_at": datetime.utcnow(),
-                "modified_by": current_user.get("id", "unknown")
+                "modified_by": current_user.id
             }
         }
     )
