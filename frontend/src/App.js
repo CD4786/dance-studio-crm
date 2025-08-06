@@ -454,7 +454,6 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     });
     setShowRecurringModal(true);
   };
-  };
 
   const handleEditLesson = (lesson) => {
     setEditingLesson(lesson);
