@@ -941,8 +941,8 @@ async def delete_private_lesson(lesson_id: str, current_user: dict = Depends(get
             "lesson_id": lesson_id,
             "recurring_series_id": lesson.get("recurring_series_id")
         },
-        current_user.get("id", "unknown"),
-        current_user.get("name", "Unknown User")
+        current_user.id,
+        current_user.name
     )
     
     return {"message": "Lesson deleted successfully"}
