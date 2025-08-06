@@ -646,7 +646,15 @@ const StudentsManager = ({ onRefresh }) => {
   const [packages, setPackages] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    email_enabled: true,
+    sms_enabled: false,
+    reminder_hours: 24,
+    email_address: '',
+    phone_number: ''
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
