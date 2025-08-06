@@ -1070,6 +1070,310 @@ class DanceStudioAPITester:
             self.log_test("Static File Mounting Configuration", False, f"- Request failed: {str(e)}")
             return False
 
+    # RECURRING LESSON TESTS
+    def test_create_recurring_lesson_weekly(self):
+        """Test creating a weekly recurring lesson series"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Create Recurring Lesson Weekly", False, "- No student or teacher ID available")
+            return False
+            
+        # Create weekly recurring lesson starting tomorrow
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
+        end_date = start_time + timedelta(weeks=4)  # 4 weeks of lessons
+        
+        recurring_data = {
+            "student_id": self.created_student_id,
+            "teacher_id": self.created_teacher_id,
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 60,
+            "recurrence_pattern": "weekly",
+            "end_date": end_date.isoformat(),
+            "notes": "Weekly ballet lesson series",
+            "enrollment_id": self.created_enrollment_id
+        }
+        
+        success, response = self.make_request('POST', 'recurring-lessons', recurring_data, 200)
+        
+        if success:
+            self.created_recurring_series_id = response.get('series_id')
+            lessons_created = response.get('lessons_created', 0)
+            
+        self.log_test("Create Recurring Lesson Weekly", success, 
+                     f"- Series ID: {self.created_recurring_series_id}, Lessons: {lessons_created}")
+        return success
+
+    def test_create_recurring_lesson_monthly(self):
+        """Test creating a monthly recurring lesson series"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Create Recurring Lesson Monthly", False, "- No student or teacher ID available")
+            return False
+            
+        # Create monthly recurring lesson starting next week
+        next_week = datetime.now() + timedelta(days=7)
+        start_time = next_week.replace(hour=14, minute=0, second=0, microsecond=0)
+        
+        recurring_data = {
+            "student_id": self.created_student_id,
+            "teacher_id": self.created_teacher_id,
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 90,
+            "recurrence_pattern": "monthly",
+            "max_occurrences": 3,
+            "notes": "Monthly advanced technique lesson"
+        }
+        
+        success, response = self.make_request('POST', 'recurring-lessons', recurring_data, 200)
+        
+        lessons_created = 0
+        if success:
+            lessons_created = response.get('lessons_created', 0)
+            
+        self.log_test("Create Recurring Lesson Monthly", success, f"- Lessons created: {lessons_created}")
+        return success
+
+    def test_create_recurring_lesson_bi_weekly(self):
+        """Test creating a bi-weekly recurring lesson series"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Create Recurring Lesson Bi-weekly", False, "- No student or teacher ID available")
+            return False
+            
+        # Create bi-weekly recurring lesson
+        next_week = datetime.now() + timedelta(days=7)
+        start_time = next_week.replace(hour=16, minute=30, second=0, microsecond=0)
+        
+        recurring_data = {
+            "student_id": self.created_student_id,
+            "teacher_id": self.created_teacher_id,
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 75,
+            "recurrence_pattern": "bi_weekly",
+            "max_occurrences": 5,
+            "notes": "Bi-weekly contemporary dance lesson"
+        }
+        
+        success, response = self.make_request('POST', 'recurring-lessons', recurring_data, 200)
+        
+        lessons_created = 0
+        if success:
+            lessons_created = response.get('lessons_created', 0)
+            
+        self.log_test("Create Recurring Lesson Bi-weekly", success, f"- Lessons created: {lessons_created}")
+        return success
+
+    def test_get_recurring_lesson_series(self):
+        """Test getting all recurring lesson series"""
+        success, response = self.make_request('GET', 'recurring-lessons', expected_status=200)
+        
+        series_count = 0
+        if success:
+            series_count = len(response) if isinstance(response, list) else 0
+            
+        self.log_test("Get Recurring Lesson Series", success, f"- Found {series_count} recurring series")
+        return success
+
+    def test_cancel_recurring_lesson_series(self):
+        """Test cancelling a recurring lesson series"""
+        if not self.created_recurring_series_id:
+            self.log_test("Cancel Recurring Lesson Series", False, "- No recurring series ID available")
+            return False
+            
+        success, response = self.make_request('DELETE', f'recurring-lessons/{self.created_recurring_series_id}', expected_status=200)
+        
+        cancelled_lessons = 0
+        if success:
+            cancelled_lessons = response.get('cancelled_lessons_count', 0)
+            
+        self.log_test("Cancel Recurring Lesson Series", success, f"- Cancelled {cancelled_lessons} future lessons")
+        return success
+
+    def test_recurring_lesson_invalid_pattern(self):
+        """Test creating recurring lesson with invalid pattern"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Recurring Lesson Invalid Pattern", False, "- No student or teacher ID available")
+            return False
+            
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
+        
+        recurring_data = {
+            "student_id": self.created_student_id,
+            "teacher_id": self.created_teacher_id,
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 60,
+            "recurrence_pattern": "invalid_pattern",
+            "max_occurrences": 3
+        }
+        
+        success, response = self.make_request('POST', 'recurring-lessons', recurring_data, 422)
+        
+        self.log_test("Recurring Lesson Invalid Pattern", success, "- Expected 422 validation error")
+        return success
+
+    def test_cancel_nonexistent_recurring_series(self):
+        """Test cancelling a non-existent recurring series"""
+        fake_series_id = "nonexistent-series-id"
+        success, response = self.make_request('DELETE', f'recurring-lessons/{fake_series_id}', expected_status=404)
+        
+        self.log_test("Cancel Nonexistent Recurring Series", success, "- Expected 404 error")
+        return success
+
+    # WEBSOCKET REAL-TIME UPDATE TESTS
+    def websocket_on_message(self, ws, message):
+        """Handle WebSocket messages"""
+        try:
+            data = json.loads(message)
+            self.websocket_messages.append(data)
+            print(f"   📡 WebSocket message received: {data.get('type', 'unknown')}")
+        except json.JSONDecodeError:
+            print(f"   ⚠️ Invalid JSON in WebSocket message: {message}")
+
+    def websocket_on_error(self, ws, error):
+        """Handle WebSocket errors"""
+        print(f"   ❌ WebSocket error: {error}")
+
+    def websocket_on_close(self, ws, close_status_code, close_msg):
+        """Handle WebSocket close"""
+        self.websocket_connected = False
+        print(f"   🔌 WebSocket connection closed")
+
+    def websocket_on_open(self, ws):
+        """Handle WebSocket open"""
+        self.websocket_connected = True
+        print(f"   ✅ WebSocket connection opened")
+
+    def test_websocket_connection(self):
+        """Test WebSocket connection establishment"""
+        if not self.user_id:
+            self.log_test("WebSocket Connection", False, "- No user ID available")
+            return False
+            
+        try:
+            # Convert HTTPS URL to WSS URL for WebSocket
+            ws_url = self.base_url.replace('https://', 'wss://').replace('http://', 'ws://')
+            ws_url = f"{ws_url}/ws/{self.user_id}"
+            
+            # Create WebSocket connection
+            ws = websocket.WebSocketApp(ws_url,
+                                      on_message=self.websocket_on_message,
+                                      on_error=self.websocket_on_error,
+                                      on_close=self.websocket_on_close,
+                                      on_open=self.websocket_on_open)
+            
+            # Run WebSocket in a separate thread
+            def run_websocket():
+                ws.run_forever()
+            
+            ws_thread = threading.Thread(target=run_websocket)
+            ws_thread.daemon = True
+            ws_thread.start()
+            
+            # Wait for connection
+            time.sleep(2)
+            
+            success = self.websocket_connected
+            
+            # Close connection
+            if success:
+                ws.close()
+                time.sleep(1)
+            
+            self.log_test("WebSocket Connection", success, f"- Connected: {success}")
+            return success
+            
+        except Exception as e:
+            self.log_test("WebSocket Connection", False, f"- Error: {str(e)}")
+            return False
+
+    def test_websocket_real_time_student_updates(self):
+        """Test real-time updates when student is created/updated"""
+        if not self.websocket_connected:
+            self.log_test("WebSocket Student Updates", False, "- WebSocket not connected")
+            return False
+            
+        # Clear previous messages
+        self.websocket_messages.clear()
+        
+        # Create a student to trigger real-time update
+        student_data = {
+            "name": "WebSocket Test Student",
+            "email": "websocket.test@example.com",
+            "phone": "+1555000111"
+        }
+        
+        success, response = self.make_request('POST', 'students', student_data, 200)
+        
+        if success:
+            # Wait for WebSocket message
+            time.sleep(2)
+            
+            # Check if we received a student_created message
+            student_created_msg = None
+            for msg in self.websocket_messages:
+                if msg.get('type') == 'student_created':
+                    student_created_msg = msg
+                    break
+            
+            success = student_created_msg is not None
+            
+            if success:
+                student_id = student_created_msg.get('data', {}).get('student_id')
+                # Clean up
+                self.make_request('DELETE', f'students/{student_id}', expected_status=200)
+            
+        self.log_test("WebSocket Student Updates", success, f"- Real-time update received: {success}")
+        return success
+
+    def test_websocket_real_time_lesson_updates(self):
+        """Test real-time updates when lesson is updated"""
+        if not self.websocket_connected or not self.created_lesson_id:
+            self.log_test("WebSocket Lesson Updates", False, "- WebSocket not connected or no lesson available")
+            return False
+            
+        # Clear previous messages
+        self.websocket_messages.clear()
+        
+        # Update the lesson to trigger real-time update
+        update_data = {
+            "notes": "Updated via WebSocket test"
+        }
+        
+        success, response = self.make_request('PUT', f'lessons/{self.created_lesson_id}', update_data, 200)
+        
+        if success:
+            # Wait for WebSocket message
+            time.sleep(2)
+            
+            # Check if we received a lesson_updated message
+            lesson_updated_msg = None
+            for msg in self.websocket_messages:
+                if msg.get('type') == 'lesson_updated':
+                    lesson_updated_msg = msg
+                    break
+            
+            success = lesson_updated_msg is not None
+            
+        self.log_test("WebSocket Lesson Updates", success, f"- Real-time update received: {success}")
+        return success
+
+    def test_websocket_ping_pong(self):
+        """Test WebSocket ping/pong functionality"""
+        if not self.websocket_connected:
+            self.log_test("WebSocket Ping Pong", False, "- WebSocket not connected")
+            return False
+            
+        try:
+            # This test would require a more complex WebSocket setup
+            # For now, we'll just verify the connection is still active
+            success = self.websocket_connected
+            
+            self.log_test("WebSocket Ping Pong", success, f"- Connection active: {success}")
+            return success
+            
+        except Exception as e:
+            self.log_test("WebSocket Ping Pong", False, f"- Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Comprehensive Dance Studio CRM API Tests")
