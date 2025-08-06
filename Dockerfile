@@ -1,34 +1,19 @@
-# Build frontend first
-FROM node:18-alpine AS frontend-build
-
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm ci --only=production
-COPY frontend/ ./
-RUN npm run build
-
-# Python backend
+# Use Python slim image (lighter)
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements and install Python dependencies  
-COPY backend/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir --upgrade pip
+# Copy requirements first for better caching
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy backend source code
-COPY backend/ ./
+# Copy backend source
+COPY backend/ .
 
-# Copy built frontend to serve as static files
-COPY --from=frontend-build /app/frontend/build ./static
+# Copy pre-built frontend (we'll build it locally)
+COPY frontend/build ./static
 
-# Expose port (Railway will set PORT automatically)
+# Expose port
 EXPOSE 8000
 
 # Start command
