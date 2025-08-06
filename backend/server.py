@@ -618,9 +618,21 @@ async def get_weekly_calendar(start_date: str):
 
 # Student Routes
 @api_router.post("/students", response_model=Student)
-async def create_student(student_data: StudentCreate):
+async def create_student(student_data: StudentCreate, current_user: dict = Depends(get_current_user)):
     student = Student(**student_data.dict())
     await db.students.insert_one(student.dict())
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "student_created",
+        {
+            "student_id": student.id,
+            "student": student.dict()
+        },
+        current_user.get("id", "unknown"),
+        current_user.get("name", "Unknown User")
+    )
+    
     return student
 
 @api_router.get("/students", response_model=List[Student])
