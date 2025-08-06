@@ -677,9 +677,22 @@ body {
   gap: 0.5rem;
 }
 
-.student-actions {
+.student-actions,
+.teacher-actions {
   display: flex;
   gap: 0.75rem;
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  color: white !important;
+  border-color: #dc2626 !important;
+}
+
+.delete-btn:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
+  border-color: #b91c1c !important;
+  transform: translateY(-1px);
 }
 
 .specialties {
