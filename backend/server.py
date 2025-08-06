@@ -657,12 +657,20 @@ async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate
             update_data[field] = value
     
     # If updating datetime and duration, recalculate end_datetime
-    if "start_datetime" in update_data and "duration_minutes" in update_data:
-        update_data["end_datetime"] = update_data["start_datetime"] + timedelta(minutes=update_data["duration_minutes"])
-    elif "start_datetime" in update_data:
-        # Keep the same duration
-        duration = (existing_lesson["end_datetime"] - existing_lesson["start_datetime"]).seconds // 60
-        update_data["end_datetime"] = update_data["start_datetime"] + timedelta(minutes=duration)
+    if "start_datetime" in update_data:
+        # Handle timezone properly
+        if isinstance(update_data["start_datetime"], str):
+            if 'T' in update_data["start_datetime"] and not update_data["start_datetime"].endswith('Z'):
+                update_data["start_datetime"] = datetime.fromisoformat(update_data["start_datetime"].replace('Z', ''))
+        
+        if "duration_minutes" in update_data:
+            update_data["end_datetime"] = update_data["start_datetime"] + timedelta(minutes=update_data["duration_minutes"])
+        else:
+            # Keep the same duration
+            original_duration = (existing_lesson["end_datetime"] - existing_lesson["start_datetime"]).seconds // 60
+            update_data["end_datetime"] = update_data["start_datetime"] + timedelta(minutes=original_duration)
+    
+    print(f"Updating lesson to: {update_data.get('start_datetime', 'no time change')}")
     
     await db.lessons.update_one({"id": lesson_id}, {"$set": update_data})
     
