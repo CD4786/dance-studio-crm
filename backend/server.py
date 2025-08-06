@@ -718,7 +718,7 @@ async def delete_student(student_id: str, current_user: User = Depends(get_curre
     }
 
 @api_router.delete("/teachers/{teacher_id}")
-async def delete_teacher(teacher_id: str, current_user: dict = Depends(get_current_user)):
+async def delete_teacher(teacher_id: str, current_user: User = Depends(get_current_user)):
     # Check if teacher exists
     existing_teacher = await db.teachers.find_one({"id": teacher_id})
     if not existing_teacher:
