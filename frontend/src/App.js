@@ -1280,14 +1280,19 @@ const MainApp = () => {
     setRefreshKey(prev => prev + 1);
   };
 
+  // Add null check for user
+  if (!user) {
+    return <div className="loading">Loading...</div>;
+  }
+
   return (
     <div className="main-app">
       {/* Sidebar Navigation */}
       <nav className="sidebar">
         <div className="sidebar-header">
           <h1>CRM.Dance</h1>
-          <p>{user.name}</p>
-          <p className="user-role">{user.role}</p>
+          <p>{user.name || 'User'}</p>
+          <p className="user-role">{user.role || 'user'}</p>
         </div>
         
         <div className="nav-menu">
