@@ -1453,6 +1453,23 @@ class DanceStudioAPITester:
         self.test_send_reminder_disabled_notifications()
         self.test_get_upcoming_lessons()
         
+        # NEW RECURRING LESSON TESTS
+        print("\n🔄 Recurring Lesson Tests:")
+        self.test_create_recurring_lesson_weekly()
+        self.test_create_recurring_lesson_monthly()
+        self.test_create_recurring_lesson_bi_weekly()
+        self.test_get_recurring_lesson_series()
+        self.test_recurring_lesson_invalid_pattern()
+        self.test_cancel_nonexistent_recurring_series()
+        self.test_cancel_recurring_lesson_series()
+        
+        # NEW WEBSOCKET REAL-TIME UPDATE TESTS
+        print("\n📡 WebSocket Real-time Update Tests:")
+        self.test_websocket_connection()
+        self.test_websocket_real_time_student_updates()
+        self.test_websocket_real_time_lesson_updates()
+        self.test_websocket_ping_pong()
+        
         # RAILWAY DEPLOYMENT STATIC FILE SERVING TESTS
         print("\n🚀 Railway Deployment Static File Serving Tests:")
         self.test_root_path_serves_react_app()
