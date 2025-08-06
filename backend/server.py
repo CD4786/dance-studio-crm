@@ -574,14 +574,26 @@ async def create_private_lesson(lesson_data: PrivateLessonCreate):
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher not found")
     
+    # Parse the datetime - handle both formats
+    if isinstance(lesson_data.start_datetime, str):
+        # If it's a string without timezone info, treat as local time
+        if 'T' in lesson_data.start_datetime and not lesson_data.start_datetime.endswith('Z'):
+            start_datetime = datetime.fromisoformat(lesson_data.start_datetime.replace('Z', ''))
+        else:
+            start_datetime = datetime.fromisoformat(lesson_data.start_datetime.replace('Z', ''))
+    else:
+        start_datetime = lesson_data.start_datetime
+    
     # Calculate end time
-    end_datetime = lesson_data.start_datetime + timedelta(minutes=lesson_data.duration_minutes)
+    end_datetime = start_datetime + timedelta(minutes=lesson_data.duration_minutes)
+    
+    print(f"Creating lesson at: {start_datetime} (local time)")
     
     # Create lesson
     lesson = PrivateLesson(
         student_id=lesson_data.student_id,
         teacher_id=lesson_data.teacher_id,
-        start_datetime=lesson_data.start_datetime,
+        start_datetime=start_datetime,
         end_datetime=end_datetime,
         notes=lesson_data.notes,
         enrollment_id=lesson_data.enrollment_id
