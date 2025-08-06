@@ -557,6 +557,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
                       onEdit={handleEditLesson}
                       onDelete={handleDeleteLesson}
                       onAttend={handleAttendLesson}
+                      onSendReminder={handleSendReminder}
                     />
                   ) : (
                     <div className="empty-slot">+</div>
