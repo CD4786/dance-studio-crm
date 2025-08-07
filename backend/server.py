@@ -304,6 +304,9 @@ class PrivateLessonResponse(BaseModel):
     notes: Optional[str] = None
     is_attended: bool = False
     enrollment_id: Optional[str] = None
+    recurring_series_id: Optional[str] = None
+    is_cancelled: bool = False
+    cancellation_reason: Optional[str] = None
 
 class Payment(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
