@@ -773,6 +773,19 @@ async def delete_teacher(teacher_id: str, current_user: User = Depends(get_curre
         "note": "Associated lessons and classes remain in system for record keeping"
     }
 
+# Dance Programs Routes
+@api_router.get("/programs", response_model=List[DanceProgram])
+async def get_programs():
+    programs = await db.programs.find().to_list(1000)
+    return [DanceProgram(**program) for program in programs]
+
+@api_router.get("/programs/{program_id}", response_model=DanceProgram)
+async def get_program(program_id: str):
+    program = await db.programs.find_one({"id": program_id})
+    if not program:
+        raise HTTPException(status_code=404, detail="Program not found")
+    return DanceProgram(**program)
+
 # Enrollment Routes
 @api_router.post("/enrollments", response_model=Enrollment)
 async def create_enrollment(enrollment_data: EnrollmentCreate):
