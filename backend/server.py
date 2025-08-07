@@ -89,19 +89,21 @@ class ConnectionManager:
 
     async def broadcast_update(self, update_type: str, data: Dict[str, Any], user_id: str, user_name: str):
         """Broadcast real-time updates to all connected users"""
-        # Convert datetime objects to ISO strings for JSON serialization
-        def convert_datetime(obj):
+        # Convert datetime and ObjectId objects to JSON serializable formats
+        def convert_objects(obj):
             if isinstance(obj, datetime):
                 return obj.isoformat()
+            elif hasattr(obj, '__class__') and obj.__class__.__name__ == 'ObjectId':
+                return str(obj)
             elif isinstance(obj, dict):
-                return {k: convert_datetime(v) for k, v in obj.items()}
+                return {k: convert_objects(v) for k, v in obj.items()}
             elif isinstance(obj, list):
-                return [convert_datetime(item) for item in obj]
+                return [convert_objects(item) for item in obj]
             return obj
         
         message = {
             "type": update_type,
-            "data": convert_datetime(data),
+            "data": convert_objects(data),
             "user_id": user_id,
             "user_name": user_name,
             "timestamp": datetime.utcnow().isoformat()
