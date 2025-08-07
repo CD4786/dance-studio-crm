@@ -624,6 +624,16 @@ body {
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
 }
 
+.edit-btn {
+  background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.edit-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #065f46 100%) !important;
+}
+
 /* Inputs */
 .input {
   background: rgba(15, 23, 42, 0.8);
