@@ -654,10 +654,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Dance Programs API System"
-    - "Enhanced Enrollment System with Dance Programs"
-    - "Enrollment Migration and Compatibility"
-    - "Dance Program Integration with Lesson Attendance"
+    - "Payment Management API System"
+    - "Enhanced Enrollment Management with Deletion"
+    - "Comprehensive Student Ledger API System"
+    - "Student Ledger Data Integration and Calculations"
   stuck_tasks:
     - "Recurring Lesson API System"
     - "WebSocket Real-time Updates System"
