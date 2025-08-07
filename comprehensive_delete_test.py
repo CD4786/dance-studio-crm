@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 def test_comprehensive_delete_functionality():
     """Comprehensive test of delete functionality with authentication"""
-    base_url = 'https://40cca8f8-7cce-4162-b27d-7b2165da8a53.preview.emergentagent.com/api'
+    base_url = 'https://289f28fc-e8d9-451e-a1ca-a56433f8acd9.preview.emergentagent.com/api'
     
     print("🔐 Comprehensive Delete Functionality Test")
     print("=" * 50)
