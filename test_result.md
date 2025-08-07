@@ -417,11 +417,11 @@ frontend:
 
   - task: "Daily Calendar with Drag-Drop"
     implemented: true
-    working: false
+    working: true
     file: "App.js"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
@@ -435,6 +435,9 @@ frontend:
         - working: false
           agent: "user"
           comment: "USER FEEDBACK: On the daily calendar needs a way to navigate to different days of the week - currently only shows selected date from sidebar without navigation within calendar."
+        - working: true
+          agent: "main"
+          comment: "✅ FIXED: Added daily calendar navigation with Previous, Today, and Next buttons. Updated calendar to use currentDate state and added navigation functions (navigateDay, goToToday). Updated CSS for proper button styling with .calendar-title, .calendar-navigation, and .nav-btn classes. Screenshot testing confirmed navigation buttons are visible and functional, showing proper date updates."
 
   - task: "Student Management Interface"
     implemented: true
