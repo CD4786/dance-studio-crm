@@ -473,6 +473,81 @@ const StudentLedger = ({ student, onClose }) => {
             </div>
           </div>
         )}
+
+        {/* Edit Student Modal */}
+        {showEditStudent && (
+          <div className="sub-modal">
+            <div className="sub-modal-content">
+              <h3>Edit Student Information</h3>
+              <form onSubmit={handleEditStudent}>
+                <div className="form-group">
+                  <label>Full Name *</label>
+                  <input
+                    type="text"
+                    value={editStudentData.name}
+                    onChange={(e) => setEditStudentData({...editStudentData, name: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Email *</label>
+                  <input
+                    type="email"
+                    value={editStudentData.email}
+                    onChange={(e) => setEditStudentData({...editStudentData, email: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Phone *</label>
+                  <input
+                    type="tel"
+                    value={editStudentData.phone}
+                    onChange={(e) => setEditStudentData({...editStudentData, phone: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Parent Name</label>
+                  <input
+                    type="text"
+                    value={editStudentData.parent_name}
+                    onChange={(e) => setEditStudentData({...editStudentData, parent_name: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Parent Phone</label>
+                  <input
+                    type="tel"
+                    value={editStudentData.parent_phone}
+                    onChange={(e) => setEditStudentData({...editStudentData, parent_phone: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Parent Email</label>
+                  <input
+                    type="email"
+                    value={editStudentData.parent_email}
+                    onChange={(e) => setEditStudentData({...editStudentData, parent_email: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Notes</label>
+                  <textarea
+                    value={editStudentData.notes}
+                    onChange={(e) => setEditStudentData({...editStudentData, notes: e.target.value})}
+                    rows="3"
+                    placeholder="Any special notes about this student..."
+                  />
+                </div>
+                <div className="form-actions">
+                  <button type="button" onClick={() => setShowEditStudent(false)}>Cancel</button>
+                  <button type="submit">Update Student</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
