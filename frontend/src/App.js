@@ -362,14 +362,18 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   }
 
   useEffect(() => {
+    setCurrentDate(selectedDate);
+  }, [selectedDate]);
+
+  useEffect(() => {
     fetchDailyData();
     fetchStudents();
     fetchTeachers();
-  }, [selectedDate, onRefresh]);
+  }, [currentDate, onRefresh]);
 
   const fetchDailyData = async () => {
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const dateStr = currentDate.toISOString().split('T')[0];
       const response = await axios.get(`${API}/calendar/daily/${dateStr}`);
       setCalendarData(response.data);
     } catch (error) {
