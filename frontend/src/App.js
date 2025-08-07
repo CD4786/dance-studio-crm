@@ -746,6 +746,7 @@ const StudentsManager = ({ onRefresh }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showLedger, setShowLedger] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [notificationPrefs, setNotificationPrefs] = useState({
     email_enabled: true,
