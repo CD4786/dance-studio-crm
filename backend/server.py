@@ -303,6 +303,36 @@ class PrivateLessonResponse(BaseModel):
     is_attended: bool = False
     enrollment_id: Optional[str] = None
 
+class Payment(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    student_id: str
+    enrollment_id: Optional[str] = None  # Link to specific enrollment
+    amount: float
+    payment_method: str = "cash"  # cash, credit_card, check, etc.
+    payment_date: datetime = Field(default_factory=datetime.utcnow)
+    notes: Optional[str] = None
+    created_by: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class PaymentCreate(BaseModel):
+    student_id: str
+    enrollment_id: Optional[str] = None
+    amount: float
+    payment_method: str = "cash"
+    payment_date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+class StudentLedgerResponse(BaseModel):
+    student: Student
+    enrollments: List[Enrollment]
+    payments: List[Payment]
+    upcoming_lessons: List[PrivateLessonResponse]
+    lesson_history: List[PrivateLessonResponse]
+    total_paid: float
+    total_enrolled_lessons: int
+    remaining_lessons: int
+    lessons_taken: int
+
 class AttendanceCreate(BaseModel):
     lesson_id: str
 
