@@ -1486,20 +1486,25 @@ const TeachersManager = ({ onRefresh }) => {
 // Weekly Calendar Component
 const WeeklyCalendar = ({ selectedDate, onRefresh }) => {
   const [lessons, setLessons] = useState([]);
+  const [currentDate, setCurrentDate] = useState(selectedDate);
   
   useEffect(() => {
+    setCurrentDate(selectedDate);
+  }, [selectedDate]);
+
+  useEffect(() => {
     fetchWeeklyLessons();
-  }, [selectedDate, onRefresh]);
+  }, [currentDate, onRefresh]);
 
   const fetchWeeklyLessons = async () => {
     try {
-      const startDate = getWeekStart(selectedDate);
+      const startDate = getWeekStart(currentDate);
       const response = await axios.get(`${API}/lessons`);
       
       // Filter lessons for the current week
       const weekLessons = response.data.filter(lesson => {
         const lessonDate = new Date(lesson.start_datetime);
-        const weekStart = getWeekStart(selectedDate);
+        const weekStart = getWeekStart(currentDate);
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekEnd.getDate() + 6);
         return lessonDate >= weekStart && lessonDate <= weekEnd;
@@ -1509,6 +1514,16 @@ const WeeklyCalendar = ({ selectedDate, onRefresh }) => {
     } catch (error) {
       console.error('Failed to fetch weekly lessons:', error);
     }
+  };
+
+  const navigateWeek = (direction) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + (direction * 7)); // Move by weeks
+    setCurrentDate(newDate);
+  };
+
+  const goToToday = () => {
+    setCurrentDate(new Date());
   };
 
   const getWeekStart = (date) => {
