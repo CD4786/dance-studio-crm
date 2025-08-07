@@ -388,18 +388,26 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
       const allLessons = response.data.filter(lesson => lesson.teacher_id === teacherId);
       
       const today = new Date(currentDate);
-      const todayStr = today.toDateString();
+      const todayStart = new Date(today);
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(today);
+      todayEnd.setHours(23, 59, 59, 999);
+      
+      console.log(`Calculating stats for teacher ${teacherId}:`, {
+        totalLessons: allLessons.length,
+        currentDate: today.toISOString()
+      });
       
       // Daily count (today)
       const dailyCount = allLessons.filter(lesson => {
         const lessonDate = new Date(lesson.start_datetime);
-        return lessonDate.toDateString() === todayStr;
+        return lessonDate >= todayStart && lessonDate <= todayEnd;
       }).length;
       
-      // Weekly count (current week)
+      // Weekly count (current week - Monday to Sunday)
       const weekStart = new Date(today);
       const dayOfWeek = weekStart.getDay();
-      const diff = weekStart.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      const diff = weekStart.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Monday start
       weekStart.setDate(diff);
       weekStart.setHours(0, 0, 0, 0);
       
@@ -414,6 +422,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
       
       // Monthly count (current month)
       const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      monthStart.setHours(0, 0, 0, 0);
       const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
       monthEnd.setHours(23, 59, 59, 999);
       
@@ -421,6 +430,14 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         const lessonDate = new Date(lesson.start_datetime);
         return lessonDate >= monthStart && lessonDate <= monthEnd;
       }).length;
+      
+      console.log(`Stats for teacher ${teacherId}:`, {
+        daily: dailyCount,
+        weekly: weeklyCount, 
+        monthly: monthlyCount,
+        weekRange: `${weekStart.toDateString()} - ${weekEnd.toDateString()}`,
+        monthRange: `${monthStart.toDateString()} - ${monthEnd.toDateString()}`
+      });
       
       return {
         daily: dailyCount,
