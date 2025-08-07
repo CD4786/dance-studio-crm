@@ -135,12 +135,14 @@ class EditFunctionalityTester:
         
         success, response = self.make_request('PUT', f'students/{edit_test_student_id}', updated_data, 200)
         
+        updated_name = "Unknown"
+        updated_email = "Unknown"
         if success:
-            updated_name = response.get('name')
-            updated_email = response.get('email')
-            updated_phone = response.get('phone')
-            updated_parent_name = response.get('parent_name')
-            updated_notes = response.get('notes')
+            updated_name = response.get('name', 'Unknown')
+            updated_email = response.get('email', 'Unknown')
+            updated_phone = response.get('phone', 'Unknown')
+            updated_parent_name = response.get('parent_name', 'Unknown')
+            updated_notes = response.get('notes', 'Unknown')
             
             # Verify all fields were updated
             all_updated = (
