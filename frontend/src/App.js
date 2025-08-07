@@ -634,7 +634,32 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   return (
     <div className="daily-calendar">
       <div className="calendar-header">
-        <h2>Daily Schedule - {selectedDate.toDateString()}</h2>
+        <div className="calendar-title">
+          <h2>Daily Schedule - {currentDate.toDateString()}</h2>
+          <div className="calendar-navigation">
+            <button 
+              className="btn btn-outline nav-btn"
+              onClick={() => navigateDay(-1)}
+              title="Previous day"
+            >
+              ← Previous
+            </button>
+            <button 
+              className="btn btn-outline nav-btn"
+              onClick={goToToday}
+              title="Go to today"
+            >
+              Today
+            </button>
+            <button 
+              className="btn btn-outline nav-btn"
+              onClick={() => navigateDay(1)}
+              title="Next day"
+            >
+              Next →
+            </button>
+          </div>
+        </div>
         <div className="calendar-controls">
           <button 
             className="btn btn-primary"
