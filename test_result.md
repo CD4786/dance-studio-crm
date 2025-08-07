@@ -735,14 +735,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Student Information Editing System"
-    - "Teacher Information Editing System"
-    - "Enhanced Real-time Updates for Edit Operations"
-    - "Data Validation for Edit Operations"
+    - "Daily Calendar Navigation Enhancement"
+    - "Recurring Lesson Frontend and Backend Integration"
   stuck_tasks:
     - "WebSocket Real-time Updates System"
     - "Enhanced Existing Endpoints with Real-time Updates"
-    - "Recurring Lesson Frontend Modal"
     - "WebSocket Frontend Integration"
   test_all: false
   test_priority: "high_first"
