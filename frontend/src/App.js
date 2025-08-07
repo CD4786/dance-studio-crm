@@ -381,6 +381,90 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     }
   };
 
+  const calculateInstructorStats = async (teacherId) => {
+    try {
+      // Get all lessons for the instructor
+      const response = await axios.get(`${API}/lessons`);
+      const allLessons = response.data.filter(lesson => lesson.teacher_id === teacherId);
+      
+      const today = new Date(currentDate);
+      const todayStr = today.toDateString();
+      
+      // Daily count (today)
+      const dailyCount = allLessons.filter(lesson => {
+        const lessonDate = new Date(lesson.start_datetime);
+        return lessonDate.toDateString() === todayStr;
+      }).length;
+      
+      // Weekly count (current week)
+      const weekStart = new Date(today);
+      const dayOfWeek = weekStart.getDay();
+      const diff = weekStart.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      weekStart.setDate(diff);
+      weekStart.setHours(0, 0, 0, 0);
+      
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+      
+      const weeklyCount = allLessons.filter(lesson => {
+        const lessonDate = new Date(lesson.start_datetime);
+        return lessonDate >= weekStart && lessonDate <= weekEnd;
+      }).length;
+      
+      // Monthly count (current month)
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      monthEnd.setHours(23, 59, 59, 999);
+      
+      const monthlyCount = allLessons.filter(lesson => {
+        const lessonDate = new Date(lesson.start_datetime);
+        return lessonDate >= monthStart && lessonDate <= monthEnd;
+      }).length;
+      
+      return {
+        daily: dailyCount,
+        weekly: weeklyCount,
+        monthly: monthlyCount
+      };
+    } catch (error) {
+      console.error('Failed to calculate instructor stats:', error);
+      return { daily: 0, weekly: 0, monthly: 0 };
+    }
+  };
+
+  const InstructorStatsDisplay = ({ teacherId, teacherName }) => {
+    const [stats, setStats] = useState({ daily: 0, weekly: 0, monthly: 0 });
+    
+    useEffect(() => {
+      const loadStats = async () => {
+        const instructorStats = await calculateInstructorStats(teacherId);
+        setStats(instructorStats);
+      };
+      
+      if (teacherId) {
+        loadStats();
+      }
+    }, [teacherId, currentDate]);
+    
+    return (
+      <div className="instructor-stats">
+        <div className="instructor-name">{teacherName}</div>
+        <div className="stats-row">
+          <span className="stat-item" title="Lessons today">
+            📅 {stats.daily}
+          </span>
+          <span className="stat-item" title="Lessons this week">
+            📊 {stats.weekly}
+          </span>
+          <span className="stat-item" title="Lessons this month">
+            📈 {stats.monthly}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   const fetchStudents = async () => {
     try {
       const response = await axios.get(`${API}/students`);
