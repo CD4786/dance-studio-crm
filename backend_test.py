@@ -1413,9 +1413,11 @@ class DanceStudioAPITester:
         print("\n📦 Package Management Tests (Legacy):")
         self.test_get_packages()
         
-        # Enrollment tests
-        print("\n📋 Enrollment Tests:")
-        self.test_create_enrollment()
+        # Enhanced Enrollment tests (with dance programs)
+        print("\n📋 Enhanced Enrollment Tests (Dance Programs):")
+        self.test_create_enrollment_with_program()
+        self.test_create_enrollment_custom_lessons()
+        self.test_enrollment_program_validation()
         self.test_get_enrollments()
         self.test_get_student_enrollments()
         
