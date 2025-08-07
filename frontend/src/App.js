@@ -995,26 +995,38 @@ const StudentsManager = ({ onRefresh }) => {
       >
         <form onSubmit={handleCreateEnrollment}>
           <div className="form-group">
-            <label>Lesson Package</label>
+            <label>Dance Program *</label>
             <select
-              value={enrollmentData.package_id}
+              value={enrollmentData.program_name}
               onChange={(e) => {
-                const selectedPackage = packages.find(p => p.id === e.target.value);
                 setEnrollmentData({
-                  package_id: e.target.value,
-                  total_paid: selectedPackage?.price || ''
+                  ...enrollmentData,
+                  program_name: e.target.value
                 });
               }}
               required
               className="input"
             >
-              <option value="">Select Package</option>
-              {packages.map(pkg => (
-                <option key={pkg.id} value={pkg.id}>
-                  {pkg.name} - {pkg.total_lessons} lessons - ${pkg.price}
+              <option value="">Select Program</option>
+              {programs.map(program => (
+                <option key={program.id} value={program.name}>
+                  {program.name} ({program.level})
                 </option>
               ))}
             </select>
+          </div>
+          <div className="form-group">
+            <label>Number of Lessons *</label>
+            <Input
+              type="number"
+              value={enrollmentData.total_lessons}
+              onChange={(e) => setEnrollmentData({...enrollmentData, total_lessons: e.target.value})}
+              placeholder="Enter number of lessons"
+              required
+              min="1"
+              max="100"
+              className="input"
+            />
           </div>
           <div className="form-group">
             <label>Total Paid</label>
