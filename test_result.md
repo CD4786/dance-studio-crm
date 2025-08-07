@@ -226,6 +226,21 @@ backend:
           comment: "✅ TESTED: Complete notification system working. POST /api/notifications/preferences creates/updates student notification preferences, GET /api/notifications/preferences/{student_id} returns preferences (defaults if none exist), POST /api/notifications/send-reminder sends email/SMS reminders with proper validation, GET /api/notifications/upcoming-lessons returns lessons in next 48 hours. All error handling working correctly for disabled notifications and invalid data."
 
 frontend:
+  - task: "Recurring Lesson Frontend Modal"
+    implemented: true
+    working: false
+    file: "App.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Implemented RecurringLessonModal component with comprehensive form fields (student, teacher, datetime, pattern, end conditions), lesson preview functionality, and integration with daily calendar right-click events."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL ISSUE: Right-click functionality for recurring lesson modal not working. Testing shows 63 empty calendar slots found, but right-click events do not trigger the recurring lesson modal. Browser testing confirms no right-click handler attached to calendar slots (hasRightClickHandler: false). The RecurringLessonModal component exists but is not accessible through the intended right-click interaction."
+
   - task: "Daily Calendar with Drag-Drop"
     implemented: true
     working: true
