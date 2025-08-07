@@ -461,7 +461,7 @@ frontend:
     implemented: true
     working: false
     file: "server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -471,6 +471,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ CANNOT TEST: Unable to test recurring lesson generation logic because the recurring lesson API endpoints are not accessible. The logic appears correctly implemented in the code but cannot be verified due to deployment issues."
+        - working: false
+          agent: "testing"
+          comment: "❌ STILL CANNOT TEST: Recurring lesson generation logic cannot be tested because API endpoints remain inaccessible. GET/POST /api/recurring-lessons still return 404/405 errors, preventing any testing of the generation logic functionality."
 
   - task: "Enhanced Existing Endpoints with Real-time Updates"
     implemented: true
