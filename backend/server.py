@@ -183,6 +183,14 @@ class StudentCreate(BaseModel):
     parent_email: Optional[str] = None
     notes: Optional[str] = None
 
+# New Dance Program model to replace LessonPackage
+class DanceProgram(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    level: str  # Bronze, Silver, Gold, Beginner, etc.
+    description: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 class LessonPackage(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
