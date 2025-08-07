@@ -767,7 +767,12 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         
         {calendarData.teachers.map(teacher => (
           <div key={teacher.id} className="teacher-column">
-            <div className="teacher-header">{teacher.name}</div>
+            <div className="teacher-header">
+              <InstructorStatsDisplay 
+                teacherId={teacher.id}
+                teacherName={teacher.name}
+              />
+            </div>
             {hours.map(hour => {
               const lesson = getLessonForSlot(hour, teacher.id);
               return (
