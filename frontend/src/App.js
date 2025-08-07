@@ -237,7 +237,7 @@ const LoginPage = () => {
 };
 
 // Dashboard Component
-const Dashboard = ({ onRefresh }) => {
+const Dashboard = ({ onRefresh, onNavigate }) => {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
