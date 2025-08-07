@@ -213,7 +213,8 @@ class Enrollment(BaseModel):
 
 class EnrollmentCreate(BaseModel):
     student_id: str
-    package_id: str
+    program_name: str
+    total_lessons: int  # Allow custom lesson numbers
     total_paid: float
     expiry_date: Optional[datetime] = None
 
