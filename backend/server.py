@@ -1438,16 +1438,44 @@ app.add_middleware(
 # WebSocket endpoint for real-time updates
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
-    await manager.connect(websocket, user_id)
+    print(f"🔌 WebSocket connection attempt from user: {user_id}")
     try:
+        await manager.connect(websocket, user_id)
+        print(f"✅ WebSocket connected for user: {user_id}")
+        
+        # Send initial connection confirmation
+        await websocket.send_text(json.dumps({
+            "type": "connection",
+            "data": {"status": "connected", "user_id": user_id},
+            "timestamp": datetime.utcnow().isoformat()
+        }))
+        
         while True:
             # Keep connection alive and listen for client messages
-            data = await websocket.receive_text()
-            # Handle client messages if needed (like ping/pong)
-            if data == "ping":
-                await websocket.send_text("pong")
+            try:
+                data = await websocket.receive_text()
+                print(f"📡 WebSocket message from {user_id}: {data}")
+                
+                # Handle client messages
+                if data == "ping":
+                    await websocket.send_text("pong")
+                else:
+                    # Echo back or handle other messages
+                    await websocket.send_text(f"Echo: {data}")
+                    
+            except Exception as receive_error:
+                print(f"❌ WebSocket receive error for user {user_id}: {receive_error}")
+                break
+                
     except WebSocketDisconnect:
+        print(f"🔌 WebSocket disconnected for user: {user_id}")
         manager.disconnect(websocket, user_id)
+    except Exception as e:
+        print(f"❌ WebSocket error for user {user_id}: {e}")
+        try:
+            manager.disconnect(websocket, user_id)
+        except:
+            pass
 
 # Mount static files for production deployment
 build_dir = Path(__file__).parent.parent / "frontend" / "build"
