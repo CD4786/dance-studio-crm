@@ -343,6 +343,7 @@ class DanceStudioAPITester:
         
         success, response = self.make_request('PUT', f'students/{self.created_student_id}', update_data, 200)
         
+        updated_name = "Unknown"
         if success:
             updated_name = response.get('name', 'Unknown')
             
