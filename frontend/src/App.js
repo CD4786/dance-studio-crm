@@ -1143,6 +1143,19 @@ const StudentsManager = ({ onRefresh }) => {
           <Button type="submit">Save Preferences</Button>
         </form>
       </Modal>
+
+      {/* Student Ledger */}
+      {showLedger && selectedStudent && (
+        <StudentLedger 
+          student={selectedStudent}
+          onClose={() => {
+            setShowLedger(false);
+            setSelectedStudent(null);
+            fetchStudents(); // Refresh to show updated data
+            onRefresh();
+          }}
+        />
+      )}
     </div>
   );
 };
