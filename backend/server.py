@@ -1400,9 +1400,6 @@ async def send_textbelt_sms(phone_number, message, formatted_datetime):
             "lesson_datetime": formatted_datetime,
             "error": str(e)
         }
-    
-    else:
-        raise HTTPException(status_code=400, detail="Invalid notification type")
 
 @api_router.get("/notifications/upcoming-lessons")
 async def get_upcoming_lessons_for_reminders():
