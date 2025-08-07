@@ -410,6 +410,16 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     setShowAddModal(true);
   };
 
+  const navigateDay = (direction) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + direction);
+    setCurrentDate(newDate);
+  };
+
+  const goToToday = () => {
+    setCurrentDate(new Date());
+  };
+
   const handleCreateLesson = async (e) => {
     e.preventDefault();
     try {
