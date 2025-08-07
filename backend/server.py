@@ -818,10 +818,13 @@ async def create_payment(payment_data: PaymentCreate, current_user: User = Depen
             raise HTTPException(status_code=404, detail="Enrollment not found")
     
     # Create payment
+    payment_dict = payment_data.dict()
+    if not payment_dict.get('payment_date'):
+        payment_dict['payment_date'] = datetime.utcnow()
+    
     payment = Payment(
-        **payment_data.dict(),
-        created_by=current_user.id,
-        payment_date=payment_data.payment_date or datetime.utcnow()
+        **payment_dict,
+        created_by=current_user.id
     )
     
     await db.payments.insert_one(payment.dict())
