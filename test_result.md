@@ -450,6 +450,12 @@ frontend:
         - working: false
           agent: "user"
           comment: "USER FEEDBACK: Issues with new features: 1) Statistics for each instructor shows but is not calculating properly (not showing the correct amounts), 2) Weekly calendar needs option to delete lessons, 3) Changes made to weekly calendar should update instructor statistics when lessons are added or deleted."
+        - working: true
+          agent: "main"
+          comment: "✅ FIXED: All three issues resolved - instructor statistics now calculate correctly showing real lesson counts, weekly calendar has delete functionality with confirmation dialogs, and statistics update in real-time when lessons are modified on any calendar view."
+        - working: false
+          agent: "user"
+          comment: "USER FEEDBACK: Timezone issue with recurring lessons - when creating recurring lessons, the time selected is creating lessons 4 hours later than the intended time. This appears to be a timezone conversion problem between frontend datetime input and backend lesson generation."
 
   - task: "Student Management Interface"
     implemented: true
