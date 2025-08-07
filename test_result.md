@@ -535,17 +535,32 @@ frontend:
           agent: "testing"
           comment: "✅ TESTED: Teacher management fully functional. Add teacher form working with specialty selection (ballet, jazz, etc.), teacher cards display all information including specialties and bio. Multiple dance style selection working."
 
-  - task: "Weekly Calendar View"
+  - task: "Weekly Calendar with Navigation"
     implemented: true
-    working: true
+    working: false
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ TESTED: Weekly calendar displaying proper 7-day grid layout, lessons appear in correct day columns, date navigation working. Week display shows lessons with proper time and student/teacher information."
+        - working: false
+          agent: "user"
+          comment: "USER FEEDBACK: Weekly calendar needs Previous, Today, and Next navigation buttons like daily calendar to navigate through different weeks."
+
+  - task: "Instructor Lesson Statistics on Daily Calendar"
+    implemented: false
+    working: false
     file: "App.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
-        - working: true
-          agent: "testing"
-          comment: "✅ TESTED: Weekly calendar displaying proper 7-day grid layout, lessons appear in correct day columns, date navigation working. Week display shows lessons with proper time and student/teacher information."
+        - working: "NA"
+          agent: "user"
+          comment: "USER REQUEST: Daily calendar needs to show lesson counts (daily, weekly, monthly totals) under each instructor name to see how many lessons each instructor is teaching."
 
   - task: "Navigation & UI/UX"
     implemented: true
