@@ -479,7 +479,7 @@ frontend:
     implemented: true
     working: false
     file: "server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "medium"
     needs_retesting: false
     status_history:
@@ -489,6 +489,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ CANNOT TEST: Unable to test real-time update broadcasting because WebSocket functionality is not working in the deployed environment. The broadcast_update calls are added to the endpoints but cannot be verified due to WebSocket connection issues."
+        - working: false
+          agent: "testing"
+          comment: "❌ STILL CANNOT TEST: Real-time update broadcasting still cannot be tested due to WebSocket connection failures. While existing endpoints work normally, the real-time broadcasting functionality remains unverifiable due to WebSocket handshake errors."
 
 metadata:
   created_by: "main_agent"
