@@ -1356,6 +1356,73 @@ const TeachersManager = ({ onRefresh }) => {
           <Button type="submit">Add Teacher</Button>
         </form>
       </Modal>
+
+      {/* Edit Teacher Modal */}
+      <Modal 
+        isOpen={showEditModal} 
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingTeacher(null);
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            specialties: [],
+            bio: ''
+          });
+        }}
+        title="Edit Teacher"
+      >
+        <form onSubmit={handleUpdateTeacher} className="teacher-form">
+          <Input
+            placeholder="Full Name"
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            required
+            className="input"
+          />
+          <Input
+            type="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={(e) => setFormData({...formData, email: e.target.value})}
+            required
+            className="input"
+          />
+          <Input
+            type="tel"
+            placeholder="Phone"
+            value={formData.phone}
+            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            className="input"
+          />
+          
+          <div className="specialties-section">
+            <h4>Dance Specialties</h4>
+            <div className="specialties-grid">
+              {danceBtyles.map(style => (
+                <label key={style} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={formData.specialties.includes(style)}
+                    onChange={() => handleSpecialtyChange(style)}
+                  />
+                  <span>{style.replace('_', ' ')}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <textarea
+            placeholder="Bio (optional)"
+            value={formData.bio}
+            onChange={(e) => setFormData({...formData, bio: e.target.value})}
+            className="input"
+            rows="3"
+          />
+          <Button type="submit">Update Teacher</Button>
+        </form>
+      </Modal>
     </div>
   );
 };
