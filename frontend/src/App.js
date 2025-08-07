@@ -424,7 +424,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     e.preventDefault();
     try {
       // Create date in local timezone, not UTC
-      const startDateTime = new Date(selectedDate);
+      const startDateTime = new Date(currentDate);
       startDateTime.setHours(selectedTimeSlot.hour, 0, 0, 0);
       
       // Convert to local ISO string (without timezone conversion)
