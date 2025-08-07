@@ -340,6 +340,7 @@ const Dashboard = ({ onRefresh, onNavigate }) => {
 // Daily Calendar Component
 const DailyCalendar = ({ selectedDate, onRefresh }) => {
   const [calendarData, setCalendarData] = useState(null);
+  const [currentDate, setCurrentDate] = useState(selectedDate);
   const [draggedLesson, setDraggedLesson] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
