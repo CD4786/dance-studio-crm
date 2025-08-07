@@ -1772,7 +1772,10 @@ const MainApp = () => {
       {/* Main Content */}
       <main className="main-content">
         {currentView === 'dashboard' && (
-          <Dashboard onRefresh={refreshKey} />
+          <Dashboard 
+            onRefresh={refreshKey}
+            onNavigate={handleNavigation}
+          />
         )}
         {currentView === 'daily' && (
           <DailyCalendar 
