@@ -453,12 +453,15 @@ def generate_recurring_lessons(series: RecurringLessonSeries) -> List[PrivateLes
         if series.max_occurrences and count >= series.max_occurrences:
             break
             
+        # Calculate end datetime
+        end_datetime = current_date + timedelta(minutes=series.duration_minutes)
+        
         # Create lesson instance
         lesson = PrivateLesson(
             student_id=series.student_id,
             teacher_id=series.teacher_id,
             start_datetime=current_date,
-            duration_minutes=series.duration_minutes,
+            end_datetime=end_datetime,
             notes=series.notes,
             enrollment_id=series.enrollment_id,
             recurring_series_id=series.id,
