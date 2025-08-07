@@ -534,11 +534,11 @@ class DanceStudioAPITester:
         self.log_test("Get Packages (Legacy)", success, f"- Found {packages_count} legacy packages")
         return success
 
-    # Enrollment Tests
+    # Legacy Enrollment Tests (for backward compatibility)
     def test_create_enrollment(self):
-        """Test creating a student enrollment"""
+        """Test creating a student enrollment (legacy package system)"""
         if not self.created_student_id or not self.available_packages:
-            self.log_test("Create Enrollment", False, "- No student ID or packages available")
+            self.log_test("Create Enrollment (Legacy)", False, "- No student ID or packages available")
             return False
             
         # Use the first available package
@@ -552,9 +552,9 @@ class DanceStudioAPITester:
         success, response = self.make_request('POST', 'enrollments', enrollment_data, 200)
         
         if success:
-            self.created_enrollment_id = response.get('id')
+            legacy_enrollment_id = response.get('id')
             
-        self.log_test("Create Enrollment", success, f"- Enrollment ID: {self.created_enrollment_id}")
+        self.log_test("Create Enrollment (Legacy)", success, f"- Legacy Enrollment ID: {legacy_enrollment_id}")
         return success
 
     def test_get_enrollments(self):
