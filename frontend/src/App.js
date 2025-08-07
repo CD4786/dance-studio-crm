@@ -3,6 +3,7 @@ import "./App.css";
 import axios from "axios";
 import wsManager from "./websocket";
 import RecurringLessonModal from "./RecurringLessonModal";
+import StudentLedger from "./StudentLedger";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API = `${BACKEND_URL}/api`;
