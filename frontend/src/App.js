@@ -1635,6 +1635,20 @@ const WeeklyCalendar = ({ selectedDate, onRefresh }) => {
     setCurrentDate(new Date());
   };
 
+  const handleDeleteLesson = async (lessonId) => {
+    if (window.confirm('Are you sure you want to delete this lesson?')) {
+      try {
+        await axios.delete(`${API}/lessons/${lessonId}`);
+        fetchWeeklyLessons(); // Refresh weekly view
+        onRefresh(); // Refresh parent component and daily calendar stats
+        alert('Lesson deleted successfully!');
+      } catch (error) {
+        console.error('Failed to delete lesson:', error);
+        alert('Failed to delete lesson');
+      }
+    }
+  };
+
   const getWeekStart = (date) => {
     const start = new Date(date);
     const day = start.getDay();
