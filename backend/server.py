@@ -1207,38 +1207,78 @@ async def get_dashboard_stats():
         "estimated_monthly_revenue": estimated_monthly_revenue
     }
 
-# Initialize default packages on startup
+# Initialize default dance programs on startup
 @app.on_event("startup")
-async def create_default_packages():
-    # Check if packages already exist
-    existing_packages = await db.packages.count_documents({})
-    if existing_packages == 0:
-        default_packages = [
-            LessonPackage(
-                name="4-Lesson Package",
-                total_lessons=4,
-                price=200.0,
-                expiry_days=60,
-                description="Perfect for beginners - 4 private lessons"
+async def create_default_programs():
+    # Check if programs already exist
+    existing_programs = await db.programs.count_documents({})
+    if existing_programs == 0:
+        default_programs = [
+            DanceProgram(
+                name="Beginner Program",
+                level="Beginner",
+                description="Introduction to ballroom dance for complete beginners"
             ),
-            LessonPackage(
-                name="8-Lesson Package",
-                total_lessons=8,
-                price=380.0,
-                expiry_days=90,
-                description="Most popular - 8 private lessons with discount"
+            DanceProgram(
+                name="Social Foundation",
+                level="Social",
+                description="Basic social dancing skills and etiquette"
             ),
-            LessonPackage(
-                name="Monthly Unlimited",
-                total_lessons=999,
-                price=500.0,
-                expiry_days=30,
-                description="Unlimited private lessons for one month"
+            DanceProgram(
+                name="Newcomers Bronze",
+                level="Bronze",
+                description="Entry level bronze syllabus for newcomer dancers"
             ),
+            DanceProgram(
+                name="Beginner Bronze",
+                level="Bronze",
+                description="Beginner level bronze techniques and figures"
+            ),
+            DanceProgram(
+                name="Intermediate Bronze",
+                level="Bronze",
+                description="Intermediate bronze syllabus with more complex patterns"
+            ),
+            DanceProgram(
+                name="Full Bronze",
+                level="Bronze",
+                description="Complete bronze syllabus mastery"
+            ),
+            DanceProgram(
+                name="Beginner Silver",
+                level="Silver",
+                description="Introduction to silver level techniques"
+            ),
+            DanceProgram(
+                name="Intermediate Silver",
+                level="Silver",
+                description="Intermediate silver level dancing"
+            ),
+            DanceProgram(
+                name="Full Silver",
+                level="Silver",
+                description="Complete silver syllabus program"
+            ),
+            DanceProgram(
+                name="Beginner Gold",
+                level="Gold",
+                description="Entry to gold level competitive dancing"
+            ),
+            DanceProgram(
+                name="Intermediate Gold",
+                level="Gold",
+                description="Advanced gold level techniques"
+            ),
+            DanceProgram(
+                name="Full Gold",
+                level="Gold",
+                description="Complete gold syllabus mastery"
+            )
         ]
         
-        for package in default_packages:
-            await db.packages.insert_one(package.dict())
+        for program in default_programs:
+            await db.programs.insert_one(program.dict())
+        print(f"✅ Created {len(default_programs)} default dance programs")
 
 # Notification Preferences Routes
 @api_router.post("/notifications/preferences", response_model=NotificationPreference)
