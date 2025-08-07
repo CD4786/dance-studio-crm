@@ -1722,14 +1722,25 @@ const WeeklyCalendar = ({ selectedDate, onRefresh }) => {
               <div className="day-lessons">
                 {dayLessons.map(lesson => (
                   <div key={lesson.id} className={`week-lesson ${lesson.is_attended ? 'attended' : ''}`}>
-                    <div className="lesson-time">
-                      {new Date(lesson.start_datetime).toLocaleTimeString('en-US', { 
-                        hour: 'numeric', 
-                        minute: '2-digit' 
-                      })}
+                    <div className="lesson-content">
+                      <div className="lesson-time">
+                        {new Date(lesson.start_datetime).toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit' 
+                        })}
+                      </div>
+                      <div className="lesson-student">{lesson.student_name}</div>
+                      <div className="lesson-teacher">{lesson.teacher_name}</div>
                     </div>
-                    <div className="lesson-student">{lesson.student_name}</div>
-                    <div className="lesson-teacher">{lesson.teacher_name}</div>
+                    <div className="lesson-actions">
+                      <button 
+                        onClick={() => handleDeleteLesson(lesson.id)} 
+                        className="lesson-delete-btn" 
+                        title="Delete lesson"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
