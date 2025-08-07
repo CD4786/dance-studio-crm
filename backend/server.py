@@ -203,7 +203,8 @@ class LessonPackage(BaseModel):
 class Enrollment(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     student_id: str
-    package_id: str
+    program_name: str  # Changed from package_id to program_name
+    total_lessons: int  # Total lessons for this enrollment
     remaining_lessons: int
     total_paid: float
     purchase_date: datetime = Field(default_factory=datetime.utcnow)
