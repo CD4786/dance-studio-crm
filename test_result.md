@@ -401,9 +401,9 @@ frontend:
     implemented: true
     working: false
     file: "App.js"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
@@ -411,14 +411,17 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ CRITICAL ISSUE: Right-click functionality for recurring lesson modal not working. Testing shows 63 empty calendar slots found, but right-click events do not trigger the recurring lesson modal. Browser testing confirms no right-click handler attached to calendar slots (hasRightClickHandler: false). The RecurringLessonModal component exists but is not accessible through the intended right-click interaction."
+        - working: false
+          agent: "user"
+          comment: "USER FEEDBACK: Recurring lessons is not allowing to do recurring lessons - functionality is not working as expected."
 
   - task: "Daily Calendar with Drag-Drop"
     implemented: true
-    working: true
+    working: false
     file: "App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
@@ -429,6 +432,9 @@ frontend:
         - working: true
           agent: "testing"
           comment: "✅ TESTED: Daily calendar fully functional with 9am-9pm time slots, 7 teacher columns, lesson creation by clicking empty slots, edit/delete/attendance marking working perfectly. Calendar grid structure excellent with proper time column and teacher columns."
+        - working: false
+          agent: "user"
+          comment: "USER FEEDBACK: On the daily calendar needs a way to navigate to different days of the week - currently only shows selected date from sidebar without navigation within calendar."
 
   - task: "Student Management Interface"
     implemented: true
