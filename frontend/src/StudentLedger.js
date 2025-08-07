@@ -38,6 +38,16 @@ const StudentLedger = ({ student, onClose }) => {
     if (student) {
       fetchLedgerData();
       fetchPrograms();
+      // Initialize edit form with current student data
+      setEditStudentData({
+        name: student.name || '',
+        email: student.email || '',
+        phone: student.phone || '',
+        parent_name: student.parent_name || '',
+        parent_phone: student.parent_phone || '',
+        parent_email: student.parent_email || '',
+        notes: student.notes || ''
+      });
     }
   }, [student]);
 
