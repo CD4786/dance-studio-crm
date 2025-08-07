@@ -1054,6 +1054,38 @@ async def get_student_enrollments(student_id: str):
     
     return result
 
+@api_router.delete("/enrollments/{enrollment_id}")
+async def delete_enrollment(enrollment_id: str, current_user: User = Depends(get_current_user)):
+    # Check if enrollment exists
+    enrollment = await db.enrollments.find_one({"id": enrollment_id})
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Enrollment not found")
+    
+    # Check for associated lessons
+    associated_lessons = await db.lessons.count_documents({"enrollment_id": enrollment_id})
+    
+    # Delete the enrollment
+    result = await db.enrollments.delete_one({"id": enrollment_id})
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "enrollment_deleted",
+        {
+            "enrollment_id": enrollment_id,
+            "student_id": enrollment.get("student_id"),
+            "program_name": enrollment.get("program_name"),
+            "associated_lessons": associated_lessons
+        },
+        current_user.id,
+        current_user.name
+    )
+    
+    return {
+        "message": "Enrollment deleted successfully",
+        "associated_lessons": associated_lessons,
+        "note": "Associated lessons remain in system for record keeping"
+    }
+
 # Private Lesson Routes
 @api_router.post("/lessons", response_model=PrivateLessonResponse)
 async def create_private_lesson(lesson_data: PrivateLessonCreate):
