@@ -734,9 +734,7 @@ test_plan:
     - "Enhanced Real-time Updates for Edit Operations"
     - "Data Validation for Edit Operations"
   stuck_tasks:
-    - "Recurring Lesson API System"
     - "WebSocket Real-time Updates System"
-    - "Recurring Lesson Generation Logic"
     - "Enhanced Existing Endpoints with Real-time Updates"
     - "Recurring Lesson Frontend Modal"
     - "WebSocket Frontend Integration"
