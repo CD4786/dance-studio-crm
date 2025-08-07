@@ -1594,6 +1594,10 @@ class DanceStudioAPITester:
         self.test_get_enrollments()
         self.test_get_student_enrollments()
         
+        # Legacy Enrollment tests (for backward compatibility)
+        print("\n📋 Legacy Enrollment Tests:")
+        self.test_create_enrollment()
+        
         # Private lesson tests
         print("\n🎯 Private Lesson Tests:")
         self.test_create_private_lesson()
