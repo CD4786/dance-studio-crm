@@ -741,7 +741,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
 // Students Manager Component
 const StudentsManager = ({ onRefresh }) => {
   const [students, setStudents] = useState([]);
-  const [packages, setPackages] = useState([]);
+  const [programs, setPrograms] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
