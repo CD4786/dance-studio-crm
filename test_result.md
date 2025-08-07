@@ -604,10 +604,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Recurring Lesson API System"
-    - "WebSocket Real-time Updates System"
-    - "Recurring Lesson Frontend Modal"
-    - "WebSocket Frontend Integration"
+    - "Dance Programs API System"
+    - "Enhanced Enrollment System with Dance Programs"
+    - "Enrollment Migration and Compatibility"
+    - "Dance Program Integration with Lesson Attendance"
   stuck_tasks:
     - "Recurring Lesson API System"
     - "WebSocket Real-time Updates System"
