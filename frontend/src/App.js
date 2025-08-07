@@ -452,30 +452,33 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
 
   const InstructorStatsDisplay = ({ teacherId, teacherName }) => {
     const [stats, setStats] = useState({ daily: 0, weekly: 0, monthly: 0 });
+    const [isLoading, setIsLoading] = useState(true);
     
     useEffect(() => {
       const loadStats = async () => {
+        setIsLoading(true);
         const instructorStats = await calculateInstructorStats(teacherId);
         setStats(instructorStats);
+        setIsLoading(false);
       };
       
       if (teacherId) {
         loadStats();
       }
-    }, [teacherId, currentDate]);
+    }, [teacherId, currentDate, onRefresh]); // Added onRefresh as dependency
     
     return (
       <div className="instructor-stats">
         <div className="instructor-name">{teacherName}</div>
         <div className="stats-row">
           <span className="stat-item" title="Lessons today">
-            📅 {stats.daily}
+            📅 {isLoading ? '...' : stats.daily}
           </span>
           <span className="stat-item" title="Lessons this week">
-            📊 {stats.weekly}
+            📊 {isLoading ? '...' : stats.weekly}
           </span>
           <span className="stat-item" title="Lessons this month">
-            📈 {stats.monthly}
+            📈 {isLoading ? '...' : stats.monthly}
           </span>
         </div>
       </div>
