@@ -798,8 +798,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Weekly Calendar Navigation Enhancement"
-    - "Instructor Lesson Statistics Implementation"  
+    - "Recurring Lesson Timezone Fix Verification"
   stuck_tasks:
     - "WebSocket Real-time Updates System"
     - "Enhanced Existing Endpoints with Real-time Updates"
