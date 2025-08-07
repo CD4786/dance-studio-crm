@@ -1552,14 +1552,39 @@ const WeeklyCalendar = ({ selectedDate, onRefresh }) => {
     });
   };
 
-  const weekStart = getWeekStart(selectedDate);
+  const weekStart = getWeekStart(currentDate);
   const weekDays = getWeekDays(weekStart);
 
   return (
     <div className="weekly-calendar">
-      <div className="week-header">
-        <h2>Weekly Schedule</h2>
-        <p>{weekStart.toDateString()} - {weekDays[6].toDateString()}</p>
+      <div className="calendar-header">
+        <div className="calendar-title">
+          <h2>Weekly Schedule</h2>
+          <p>{weekStart.toDateString()} - {weekDays[6].toDateString()}</p>
+          <div className="calendar-navigation">
+            <button 
+              className="btn btn-outline nav-btn"
+              onClick={() => navigateWeek(-1)}
+              title="Previous week"
+            >
+              ← Previous Week
+            </button>
+            <button 
+              className="btn btn-outline nav-btn"
+              onClick={goToToday}
+              title="Go to current week"
+            >
+              This Week
+            </button>
+            <button 
+              className="btn btn-outline nav-btn"
+              onClick={() => navigateWeek(1)}
+              title="Next week"
+            >
+              Next Week →
+            </button>
+          </div>
+        </div>
       </div>
       
       <div className="week-grid">
