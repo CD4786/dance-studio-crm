@@ -140,6 +140,20 @@ const StudentLedger = ({ student, onClose }) => {
     }
   };
 
+  const handleEditStudent = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`${API}/students/${student.id}`, editStudentData);
+      
+      setShowEditStudent(false);
+      fetchLedgerData();
+      alert('Student information updated successfully!');
+    } catch (error) {
+      console.error('Failed to update student:', error);
+      alert('Failed to update student information');
+    }
+  };
+
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString('en-US', { 
       year: 'numeric', 
