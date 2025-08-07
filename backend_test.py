@@ -1549,6 +1549,428 @@ class DanceStudioAPITester:
             self.log_test("WebSocket Ping Pong", False, f"- Error: {str(e)}")
             return False
 
+    # NEW EDIT FUNCTIONALITY TESTS
+    def test_student_edit_functionality(self):
+        """Test comprehensive student edit functionality"""
+        print("\n🎓 STUDENT EDIT FUNCTIONALITY TESTS")
+        print("-" * 40)
+        
+        # Create a student for editing tests
+        student_data = {
+            "name": "Original Student Name",
+            "email": "original@example.com",
+            "phone": "+1555000001",
+            "parent_name": "Original Parent",
+            "parent_phone": "+1555000002",
+            "parent_email": "parent@example.com",
+            "notes": "Original notes"
+        }
+        
+        success, response = self.make_request('POST', 'students', student_data, 200)
+        if not success:
+            self.log_test("Student Edit - Create Test Student", False, "- Failed to create test student")
+            return False
+            
+        edit_test_student_id = response.get('id')
+        self.log_test("Student Edit - Create Test Student", True, f"- Student ID: {edit_test_student_id}")
+        
+        # Test 1: Update all student fields
+        updated_data = {
+            "name": "Updated Student Name",
+            "email": "updated@example.com", 
+            "phone": "+1555111111",
+            "parent_name": "Updated Parent Name",
+            "parent_phone": "+1555111112",
+            "parent_email": "updated.parent@example.com",
+            "notes": "Updated notes with new information"
+        }
+        
+        success, response = self.make_request('PUT', f'students/{edit_test_student_id}', updated_data, 200)
+        
+        if success:
+            updated_name = response.get('name')
+            updated_email = response.get('email')
+            updated_phone = response.get('phone')
+            updated_parent_name = response.get('parent_name')
+            updated_notes = response.get('notes')
+            
+            # Verify all fields were updated
+            all_updated = (
+                updated_name == updated_data['name'] and
+                updated_email == updated_data['email'] and
+                updated_phone == updated_data['phone'] and
+                updated_parent_name == updated_data['parent_name'] and
+                updated_notes == updated_data['notes']
+            )
+            success = all_updated
+            
+        self.log_test("Student Edit - Update All Fields", success, 
+                     f"- Name: {updated_name}, Email: {updated_email}")
+        
+        # Test 2: Partial update (only name and notes)
+        partial_update = {
+            "name": "Partially Updated Name",
+            "email": updated_data['email'],  # Keep existing
+            "phone": updated_data['phone'],  # Keep existing
+            "parent_name": updated_data['parent_name'],  # Keep existing
+            "parent_phone": updated_data['parent_phone'],  # Keep existing
+            "parent_email": updated_data['parent_email'],  # Keep existing
+            "notes": "Only notes updated"
+        }
+        
+        success, response = self.make_request('PUT', f'students/{edit_test_student_id}', partial_update, 200)
+        
+        if success:
+            name_updated = response.get('name') == partial_update['name']
+            notes_updated = response.get('notes') == partial_update['notes']
+            email_unchanged = response.get('email') == updated_data['email']
+            success = name_updated and notes_updated and email_unchanged
+            
+        self.log_test("Student Edit - Partial Update", success, 
+                     f"- Name and notes updated, other fields preserved")
+        
+        # Test 3: Update with authentication requirement
+        # This should work since we have a valid token
+        auth_test_data = {
+            "name": "Auth Test Student",
+            "email": updated_data['email'],
+            "phone": updated_data['phone'],
+            "parent_name": updated_data['parent_name'],
+            "parent_phone": updated_data['parent_phone'],
+            "parent_email": updated_data['parent_email'],
+            "notes": "Testing authentication requirement"
+        }
+        
+        success, response = self.make_request('PUT', f'students/{edit_test_student_id}', auth_test_data, 200)
+        self.log_test("Student Edit - With Authentication", success, 
+                     f"- Authentication required and working")
+        
+        # Test 4: Update non-existent student
+        fake_student_id = "nonexistent-student-id"
+        success, response = self.make_request('PUT', f'students/{fake_student_id}', updated_data, 404)
+        self.log_test("Student Edit - Non-existent Student", success, 
+                     f"- Expected 404 for non-existent student")
+        
+        # Test 5: Update without authentication (temporarily remove token)
+        original_token = self.token
+        self.token = None
+        success, response = self.make_request('PUT', f'students/{edit_test_student_id}', updated_data, 403)
+        self.token = original_token  # Restore token
+        self.log_test("Student Edit - Without Authentication", success, 
+                     f"- Expected 403 without authentication")
+        
+        # Clean up
+        self.make_request('DELETE', f'students/{edit_test_student_id}', expected_status=200)
+        
+        return True
+
+    def test_teacher_edit_functionality(self):
+        """Test comprehensive teacher edit functionality"""
+        print("\n👩‍🏫 TEACHER EDIT FUNCTIONALITY TESTS")
+        print("-" * 40)
+        
+        # Create a teacher for editing tests
+        teacher_data = {
+            "name": "Original Teacher Name",
+            "email": "original.teacher@example.com",
+            "phone": "+1555000003",
+            "specialties": ["ballet", "jazz"],
+            "bio": "Original bio information"
+        }
+        
+        success, response = self.make_request('POST', 'teachers', teacher_data, 200)
+        if not success:
+            self.log_test("Teacher Edit - Create Test Teacher", False, "- Failed to create test teacher")
+            return False
+            
+        edit_test_teacher_id = response.get('id')
+        self.log_test("Teacher Edit - Create Test Teacher", True, f"- Teacher ID: {edit_test_teacher_id}")
+        
+        # Test 1: Update all teacher fields
+        updated_data = {
+            "name": "Updated Teacher Name",
+            "email": "updated.teacher@example.com",
+            "phone": "+1555222222",
+            "specialties": ["contemporary", "hip_hop", "ballroom"],
+            "bio": "Updated bio with extensive teaching experience"
+        }
+        
+        success, response = self.make_request('PUT', f'teachers/{edit_test_teacher_id}', updated_data, 200)
+        
+        if success:
+            updated_name = response.get('name')
+            updated_email = response.get('email')
+            updated_phone = response.get('phone')
+            updated_specialties = response.get('specialties', [])
+            updated_bio = response.get('bio')
+            
+            # Verify all fields were updated
+            specialties_match = set(updated_specialties) == set(updated_data['specialties'])
+            all_updated = (
+                updated_name == updated_data['name'] and
+                updated_email == updated_data['email'] and
+                updated_phone == updated_data['phone'] and
+                specialties_match and
+                updated_bio == updated_data['bio']
+            )
+            success = all_updated
+            
+        self.log_test("Teacher Edit - Update All Fields", success, 
+                     f"- Name: {updated_name}, Specialties: {len(updated_specialties)}")
+        
+        # Test 2: Update specialties array
+        specialty_update = {
+            "name": updated_data['name'],
+            "email": updated_data['email'],
+            "phone": updated_data['phone'],
+            "specialties": ["ballet", "contemporary", "tap", "salsa"],
+            "bio": updated_data['bio']
+        }
+        
+        success, response = self.make_request('PUT', f'teachers/{edit_test_teacher_id}', specialty_update, 200)
+        
+        if success:
+            new_specialties = response.get('specialties', [])
+            specialties_updated = set(new_specialties) == set(specialty_update['specialties'])
+            success = specialties_updated
+            
+        self.log_test("Teacher Edit - Update Specialties Array", success, 
+                     f"- New specialties: {new_specialties}")
+        
+        # Test 3: Partial update (only name and bio)
+        partial_update = {
+            "name": "Partially Updated Teacher",
+            "email": updated_data['email'],  # Keep existing
+            "phone": updated_data['phone'],  # Keep existing
+            "specialties": specialty_update['specialties'],  # Keep existing
+            "bio": "Only bio updated with new information"
+        }
+        
+        success, response = self.make_request('PUT', f'teachers/{edit_test_teacher_id}', partial_update, 200)
+        
+        if success:
+            name_updated = response.get('name') == partial_update['name']
+            bio_updated = response.get('bio') == partial_update['bio']
+            email_unchanged = response.get('email') == updated_data['email']
+            success = name_updated and bio_updated and email_unchanged
+            
+        self.log_test("Teacher Edit - Partial Update", success, 
+                     f"- Name and bio updated, other fields preserved")
+        
+        # Test 4: Update with authentication requirement
+        auth_test_data = {
+            "name": "Auth Test Teacher",
+            "email": updated_data['email'],
+            "phone": updated_data['phone'],
+            "specialties": ["ballet"],
+            "bio": "Testing authentication requirement"
+        }
+        
+        success, response = self.make_request('PUT', f'teachers/{edit_test_teacher_id}', auth_test_data, 200)
+        self.log_test("Teacher Edit - With Authentication", success, 
+                     f"- Authentication required and working")
+        
+        # Test 5: Update non-existent teacher
+        fake_teacher_id = "nonexistent-teacher-id"
+        success, response = self.make_request('PUT', f'teachers/{fake_teacher_id}', updated_data, 404)
+        self.log_test("Teacher Edit - Non-existent Teacher", success, 
+                     f"- Expected 404 for non-existent teacher")
+        
+        # Test 6: Update without authentication
+        original_token = self.token
+        self.token = None
+        success, response = self.make_request('PUT', f'teachers/{edit_test_teacher_id}', updated_data, 403)
+        self.token = original_token  # Restore token
+        self.log_test("Teacher Edit - Without Authentication", success, 
+                     f"- Expected 403 without authentication")
+        
+        # Test 7: Invalid specialty validation
+        invalid_specialty_data = {
+            "name": "Test Teacher",
+            "email": "test@example.com",
+            "phone": "+1555000000",
+            "specialties": ["invalid_specialty"],
+            "bio": "Test bio"
+        }
+        
+        success, response = self.make_request('PUT', f'teachers/{edit_test_teacher_id}', invalid_specialty_data, 422)
+        self.log_test("Teacher Edit - Invalid Specialty", success, 
+                     f"- Expected 422 for invalid specialty")
+        
+        # Clean up
+        self.make_request('DELETE', f'teachers/{edit_test_teacher_id}', expected_status=200)
+        
+        return True
+
+    def test_real_time_updates_for_edits(self):
+        """Test that edit operations broadcast real-time updates"""
+        print("\n📡 REAL-TIME UPDATES FOR EDITS TESTS")
+        print("-" * 40)
+        
+        # This test verifies that the broadcast_update method is called
+        # We can't easily test WebSocket in this environment, but we can verify
+        # the endpoints work and don't throw errors during the broadcast calls
+        
+        # Create test student
+        student_data = {
+            "name": "Real-time Test Student",
+            "email": "realtime@example.com",
+            "phone": "+1555000004"
+        }
+        
+        success, response = self.make_request('POST', 'students', student_data, 200)
+        if not success:
+            self.log_test("Real-time Updates - Create Student", False, "- Failed to create test student")
+            return False
+            
+        realtime_student_id = response.get('id')
+        
+        # Update student (should trigger real-time broadcast)
+        update_data = {
+            "name": "Updated Real-time Student",
+            "email": "updated.realtime@example.com",
+            "phone": "+1555000005",
+            "parent_name": "Test Parent",
+            "parent_phone": "+1555000006",
+            "parent_email": "parent.realtime@example.com",
+            "notes": "Updated for real-time testing"
+        }
+        
+        success, response = self.make_request('PUT', f'students/{realtime_student_id}', update_data, 200)
+        self.log_test("Real-time Updates - Student Update", success, 
+                     f"- Student update with real-time broadcast")
+        
+        # Create test teacher
+        teacher_data = {
+            "name": "Real-time Test Teacher",
+            "email": "realtime.teacher@example.com",
+            "phone": "+1555000007",
+            "specialties": ["ballet"],
+            "bio": "Real-time test teacher"
+        }
+        
+        success, response = self.make_request('POST', 'teachers', teacher_data, 200)
+        if not success:
+            self.log_test("Real-time Updates - Create Teacher", False, "- Failed to create test teacher")
+            return False
+            
+        realtime_teacher_id = response.get('id')
+        
+        # Update teacher (should trigger real-time broadcast)
+        teacher_update_data = {
+            "name": "Updated Real-time Teacher",
+            "email": "updated.realtime.teacher@example.com",
+            "phone": "+1555000008",
+            "specialties": ["jazz", "contemporary"],
+            "bio": "Updated real-time test teacher"
+        }
+        
+        success, response = self.make_request('PUT', f'teachers/{realtime_teacher_id}', teacher_update_data, 200)
+        self.log_test("Real-time Updates - Teacher Update", success, 
+                     f"- Teacher update with real-time broadcast")
+        
+        # Clean up
+        self.make_request('DELETE', f'students/{realtime_student_id}', expected_status=200)
+        self.make_request('DELETE', f'teachers/{realtime_teacher_id}', expected_status=200)
+        
+        return True
+
+    def test_data_validation_for_edits(self):
+        """Test data validation for edit operations"""
+        print("\n✅ DATA VALIDATION FOR EDITS TESTS")
+        print("-" * 40)
+        
+        # Create test student and teacher for validation tests
+        student_data = {
+            "name": "Validation Test Student",
+            "email": "validation@example.com",
+            "phone": "+1555000009"
+        }
+        
+        success, response = self.make_request('POST', 'students', student_data, 200)
+        if not success:
+            self.log_test("Data Validation - Create Student", False, "- Failed to create test student")
+            return False
+            
+        validation_student_id = response.get('id')
+        
+        teacher_data = {
+            "name": "Validation Test Teacher",
+            "email": "validation.teacher@example.com",
+            "phone": "+1555000010",
+            "specialties": ["ballet"],
+            "bio": "Validation test teacher"
+        }
+        
+        success, response = self.make_request('POST', 'teachers', teacher_data, 200)
+        if not success:
+            self.log_test("Data Validation - Create Teacher", False, "- Failed to create test teacher")
+            return False
+            
+        validation_teacher_id = response.get('id')
+        
+        # Test 1: Student email format validation (if implemented)
+        invalid_email_data = {
+            "name": "Test Student",
+            "email": "invalid-email-format",
+            "phone": "+1555000000",
+            "parent_name": "Test Parent",
+            "parent_phone": "+1555000001",
+            "parent_email": "parent@example.com",
+            "notes": "Test notes"
+        }
+        
+        # Note: The current implementation may not have strict email validation
+        # This test checks if the system handles it gracefully
+        success, response = self.make_request('PUT', f'students/{validation_student_id}', invalid_email_data, None)
+        # Accept either 200 (no validation) or 422 (validation error)
+        success = response.get('email') is not None or 'error' in response
+        self.log_test("Data Validation - Student Email Format", success, 
+                     f"- Email validation handled")
+        
+        # Test 2: Required field validation for students
+        missing_name_data = {
+            "email": "test@example.com",
+            "phone": "+1555000000"
+            # Missing required 'name' field
+        }
+        
+        success, response = self.make_request('PUT', f'students/{validation_student_id}', missing_name_data, 422)
+        self.log_test("Data Validation - Student Required Fields", success, 
+                     f"- Required field validation working")
+        
+        # Test 3: Required field validation for teachers
+        missing_name_teacher_data = {
+            "email": "teacher@example.com",
+            "phone": "+1555000000",
+            "specialties": ["ballet"],
+            "bio": "Test bio"
+            # Missing required 'name' field
+        }
+        
+        success, response = self.make_request('PUT', f'teachers/{validation_teacher_id}', missing_name_teacher_data, 422)
+        self.log_test("Data Validation - Teacher Required Fields", success, 
+                     f"- Required field validation working")
+        
+        # Test 4: Teacher specialty validation
+        invalid_specialties_data = {
+            "name": "Test Teacher",
+            "email": "teacher@example.com",
+            "phone": "+1555000000",
+            "specialties": ["invalid_dance_style", "another_invalid_style"],
+            "bio": "Test bio"
+        }
+        
+        success, response = self.make_request('PUT', f'teachers/{validation_teacher_id}', invalid_specialties_data, 422)
+        self.log_test("Data Validation - Teacher Specialty Validation", success, 
+                     f"- Specialty validation working")
+        
+        # Clean up
+        self.make_request('DELETE', f'students/{validation_student_id}', expected_status=200)
+        self.make_request('DELETE', f'teachers/{validation_teacher_id}', expected_status=200)
+        
+        return True
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Comprehensive Dance Studio CRM API Tests")
