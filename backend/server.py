@@ -1336,14 +1336,18 @@ async def get_recurring_lesson_series():
     """Get all active recurring lesson series"""
     series_list = await db.recurring_series.find({"is_active": True}).to_list(1000)
     
-    # Enrich with student and teacher names
+    # Enrich with student and teacher names and convert to proper format
     enriched_series = []
-    for series in series_list:
-        student = await db.students.find_one({"id": series["student_id"]})
-        teacher = await db.teachers.find_one({"id": series["teacher_id"]})
-        series["student_name"] = student["name"] if student else "Unknown"
-        series["teacher_name"] = teacher["name"] if teacher else "Unknown"
-        enriched_series.append(series)
+    for series_doc in series_list:
+        student = await db.students.find_one({"id": series_doc["student_id"]})
+        teacher = await db.teachers.find_one({"id": series_doc["teacher_id"]})
+        
+        # Convert to RecurringLessonSeries model to handle serialization
+        series = RecurringLessonSeries(**series_doc)
+        series_dict = series.dict()
+        series_dict["student_name"] = student["name"] if student else "Unknown"
+        series_dict["teacher_name"] = teacher["name"] if teacher else "Unknown"
+        enriched_series.append(series_dict)
     
     return enriched_series
 
