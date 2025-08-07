@@ -212,6 +212,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "✅ TESTED: Delete functionality working perfectly. DELETE /api/students/{student_id} and DELETE /api/teachers/{teacher_id} endpoints properly delete records while reporting associated lessons/enrollments/classes that remain for record keeping. Error handling for non-existent records returns proper 404 responses."
+        - working: true
+          agent: "testing"
+          comment: "✅ RE-TESTED AFTER AUTHENTICATION FIX: Delete functionality with authentication working perfectly! All delete endpoints (teachers, students, lessons) now properly require valid JWT authentication. Fixed critical bugs: 1) WebSocket broadcast JSON serialization error with datetime objects, 2) JWT token validation error (jwt.JWTError -> jwt.InvalidTokenError). Comprehensive testing confirms: DELETE with valid auth returns 200 with proper association counts, DELETE without auth returns 403 Forbidden, DELETE with invalid token returns 401 Unauthorized, DELETE non-existent records returns 404 Not Found. Authentication system fully functional."
 
   - task: "Notification System"
     implemented: true
