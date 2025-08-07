@@ -613,8 +613,6 @@ body {
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
 }
 
-.btn.btn-danger {
-
 /* Inputs */
 .input {
   background: rgba(15, 23, 42, 0.8);
