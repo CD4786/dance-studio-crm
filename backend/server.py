@@ -771,15 +771,10 @@ async def create_enrollment(enrollment_data: EnrollmentCreate):
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
-    # Verify package exists
-    package = await db.packages.find_one({"id": enrollment_data.package_id})
-    if not package:
-        raise HTTPException(status_code=404, detail="Package not found")
-    
-    # Create enrollment
+    # Create enrollment with the provided data
     enrollment = Enrollment(
         **enrollment_data.dict(),
-        remaining_lessons=package["total_lessons"]
+        remaining_lessons=enrollment_data.total_lessons  # Use the total_lessons from the request
     )
     await db.enrollments.insert_one(enrollment.dict())
     return enrollment
