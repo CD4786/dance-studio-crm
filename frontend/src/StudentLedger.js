@@ -203,12 +203,24 @@ const StudentLedger = ({ student, onClose }) => {
 
         {/* Student Info */}
         <div className="ledger-section student-info">
-          <h3>{ledgerData.student.name}</h3>
+          <div className="student-header">
+            <h3>{ledgerData.student.name}</h3>
+            <button 
+              onClick={() => setShowEditStudent(true)}
+              className="btn btn-primary btn-sm"
+              title="Edit Student Information"
+            >
+              ✏️ Edit Info
+            </button>
+          </div>
           <div className="student-details">
             <p>📧 {ledgerData.student.email}</p>
             <p>📞 {ledgerData.student.phone}</p>
             {ledgerData.student.parent_name && (
               <p>👨‍👩‍👧‍👦 Parent: {ledgerData.student.parent_name} ({ledgerData.student.parent_phone})</p>
+            )}
+            {ledgerData.student.notes && (
+              <p>📝 Notes: {ledgerData.student.notes}</p>
             )}
           </div>
           
