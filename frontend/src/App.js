@@ -816,7 +816,8 @@ const StudentsManager = ({ onRefresh }) => {
   const handleEnroll = (student) => {
     setSelectedStudent(student);
     setEnrollmentData({
-      package_id: '',
+      program_name: '',
+      total_lessons: '',
       total_paid: ''
     });
     setShowEnrollModal(true);
