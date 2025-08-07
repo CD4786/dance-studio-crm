@@ -759,8 +759,8 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Daily Calendar Navigation Enhancement"
-    - "Recurring Lesson Frontend and Backend Integration"
+    - "Weekly Calendar Navigation Enhancement"
+    - "Instructor Lesson Statistics Implementation"  
   stuck_tasks:
     - "WebSocket Real-time Updates System"
     - "Enhanced Existing Endpoints with Real-time Updates"
