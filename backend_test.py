@@ -349,16 +349,189 @@ class DanceStudioAPITester:
         self.log_test("Update Student", success, f"- Updated name: {updated_name}")
         return success
 
-    # Package Management Tests
+    # Dance Programs Tests
+    def test_get_programs(self):
+        """Test getting all dance programs"""
+        success, response = self.make_request('GET', 'programs', expected_status=200)
+        
+        if success:
+            programs_count = len(response) if isinstance(response, list) else 0
+            # Should have 12 default programs
+            expected_programs = [
+                "Beginner Program", "Social Foundation", "Newcomers Bronze", 
+                "Beginner Bronze", "Intermediate Bronze", "Full Bronze",
+                "Beginner Silver", "Intermediate Silver", "Full Silver",
+                "Beginner Gold", "Intermediate Gold", "Full Gold"
+            ]
+            
+            program_names = [p.get('name', '') for p in response] if isinstance(response, list) else []
+            has_expected_programs = all(name in program_names for name in expected_programs)
+            
+            success = success and programs_count >= 12 and has_expected_programs
+            
+        self.log_test("Get Dance Programs", success, f"- Found {programs_count} programs (expected 12+)")
+        return success
+
+    def test_get_program_by_id(self):
+        """Test getting a specific dance program"""
+        # First get all programs to get an ID
+        success, programs = self.make_request('GET', 'programs', expected_status=200)
+        if not success or not programs:
+            self.log_test("Get Program by ID", False, "- No programs available")
+            return False
+            
+        program_id = programs[0].get('id')
+        success, response = self.make_request('GET', f'programs/{program_id}', expected_status=200)
+        
+        if success:
+            program_name = response.get('name', 'Unknown')
+            program_level = response.get('level', 'Unknown')
+            
+        self.log_test("Get Program by ID", success, f"- Program: {program_name} ({program_level})")
+        return success
+
+    def test_programs_startup_creation(self):
+        """Test that default programs are created on startup"""
+        success, response = self.make_request('GET', 'programs', expected_status=200)
+        
+        if success:
+            programs_count = len(response) if isinstance(response, list) else 0
+            
+            # Check for specific program levels
+            levels_found = set()
+            for program in response:
+                level = program.get('level', '')
+                levels_found.add(level)
+            
+            expected_levels = {'Beginner', 'Social', 'Bronze', 'Silver', 'Gold'}
+            has_all_levels = expected_levels.issubset(levels_found)
+            
+            success = success and programs_count >= 12 and has_all_levels
+            
+        self.log_test("Programs Startup Creation", success, 
+                     f"- Found {programs_count} programs with levels: {sorted(levels_found)}")
+        return success
+
+    # Enhanced Enrollment Tests
+    def test_create_enrollment_with_program(self):
+        """Test creating enrollment with dance program name"""
+        if not self.created_student_id:
+            self.log_test("Create Enrollment with Program", False, "- No student ID available")
+            return False
+            
+        # Get available programs first
+        success, programs = self.make_request('GET', 'programs', expected_status=200)
+        if not success or not programs:
+            self.log_test("Create Enrollment with Program", False, "- No programs available")
+            return False
+            
+        # Use the first program
+        program = programs[0]
+        enrollment_data = {
+            "student_id": self.created_student_id,
+            "program_name": program['name'],
+            "total_lessons": 8,
+            "total_paid": 400.0
+        }
+        
+        success, response = self.make_request('POST', 'enrollments', enrollment_data, 200)
+        
+        if success:
+            self.created_enrollment_id = response.get('id')
+            program_name = response.get('program_name')
+            total_lessons = response.get('total_lessons')
+            remaining_lessons = response.get('remaining_lessons')
+            
+            # Verify remaining_lessons equals total_lessons on creation
+            success = success and remaining_lessons == total_lessons
+            
+        self.log_test("Create Enrollment with Program", success, 
+                     f"- Program: {program_name}, Lessons: {total_lessons}/{remaining_lessons}")
+        return success
+
+    def test_create_enrollment_custom_lessons(self):
+        """Test creating enrollment with custom lesson numbers"""
+        if not self.created_student_id:
+            self.log_test("Create Enrollment Custom Lessons", False, "- No student ID available")
+            return False
+            
+        # Get available programs
+        success, programs = self.make_request('GET', 'programs', expected_status=200)
+        if not success or not programs:
+            self.log_test("Create Enrollment Custom Lessons", False, "- No programs available")
+            return False
+            
+        # Test various custom lesson numbers
+        test_cases = [
+            {"lessons": 1, "paid": 50.0, "program": "Beginner Program"},
+            {"lessons": 25, "paid": 1250.0, "program": "Intermediate Bronze"},
+            {"lessons": 100, "paid": 4500.0, "program": "Full Gold"}
+        ]
+        
+        successful_enrollments = 0
+        
+        for case in test_cases:
+            enrollment_data = {
+                "student_id": self.created_student_id,
+                "program_name": case["program"],
+                "total_lessons": case["lessons"],
+                "total_paid": case["paid"]
+            }
+            
+            success, response = self.make_request('POST', 'enrollments', enrollment_data, 200)
+            
+            if success:
+                total_lessons = response.get('total_lessons')
+                remaining_lessons = response.get('remaining_lessons')
+                
+                if total_lessons == case["lessons"] and remaining_lessons == case["lessons"]:
+                    successful_enrollments += 1
+                    print(f"   ✅ {case['lessons']} lessons enrollment created successfully")
+                else:
+                    print(f"   ❌ Lesson count mismatch for {case['lessons']} lessons")
+            else:
+                print(f"   ❌ Failed to create enrollment with {case['lessons']} lessons")
+        
+        success = successful_enrollments == len(test_cases)
+        self.log_test("Create Enrollment Custom Lessons", success, 
+                     f"- {successful_enrollments}/{len(test_cases)} custom enrollments created")
+        return success
+
+    def test_enrollment_program_validation(self):
+        """Test enrollment validation with invalid program names"""
+        if not self.created_student_id:
+            self.log_test("Enrollment Program Validation", False, "- No student ID available")
+            return False
+            
+        # Test with invalid program name
+        enrollment_data = {
+            "student_id": self.created_student_id,
+            "program_name": "Non-existent Program",
+            "total_lessons": 10,
+            "total_paid": 500.0
+        }
+        
+        # This should still succeed as we don't validate program names against existing programs
+        # The system allows any program name for flexibility
+        success, response = self.make_request('POST', 'enrollments', enrollment_data, 200)
+        
+        if success:
+            program_name = response.get('program_name')
+            
+        self.log_test("Enrollment Program Validation", success, 
+                     f"- Accepts any program name: {program_name}")
+        return success
+
+    # Package Management Tests (Legacy)
     def test_get_packages(self):
-        """Test getting lesson packages"""
+        """Test getting lesson packages (legacy system)"""
         success, response = self.make_request('GET', 'packages', expected_status=200)
         
         if success:
             packages_count = len(response) if isinstance(response, list) else 0
             self.available_packages = response
             
-        self.log_test("Get Packages", success, f"- Found {packages_count} packages")
+        self.log_test("Get Packages (Legacy)", success, f"- Found {packages_count} legacy packages")
         return success
 
     # Enrollment Tests
