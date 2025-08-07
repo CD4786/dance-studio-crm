@@ -1638,13 +1638,36 @@ const WeeklyCalendar = ({ selectedDate, onRefresh }) => {
   const handleDeleteLesson = async (lessonId) => {
     if (window.confirm('Are you sure you want to delete this lesson?')) {
       try {
-        await axios.delete(`${API}/lessons/${lessonId}`);
+        console.log('Attempting to delete lesson:', lessonId);
+        console.log('API URL:', `${API}/lessons/${lessonId}`);
+        
+        const response = await axios.delete(`${API}/lessons/${lessonId}`);
+        console.log('Delete response:', response);
+        
         fetchWeeklyLessons(); // Refresh weekly view
         onRefresh(); // Refresh parent component and daily calendar stats
         alert('Lesson deleted successfully!');
       } catch (error) {
         console.error('Failed to delete lesson:', error);
-        alert('Failed to delete lesson');
+        console.error('Error response:', error.response);
+        
+        // More detailed error message
+        let errorMessage = 'Failed to delete lesson';
+        if (error.response) {
+          if (error.response.status === 401) {
+            errorMessage = 'Authentication failed. Please log in again.';
+          } else if (error.response.status === 403) {
+            errorMessage = 'You do not have permission to delete this lesson.';
+          } else if (error.response.status === 404) {
+            errorMessage = 'Lesson not found or already deleted.';
+          } else if (error.response.data && error.response.data.detail) {
+            errorMessage = error.response.data.detail;
+          }
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        alert(errorMessage);
       }
     }
   };
