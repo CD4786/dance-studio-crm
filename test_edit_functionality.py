@@ -246,12 +246,13 @@ class EditFunctionalityTester:
         
         success, response = self.make_request('PUT', f'teachers/{edit_test_teacher_id}', updated_data, 200)
         
+        updated_name = "Unknown"
         if success:
-            updated_name = response.get('name')
-            updated_email = response.get('email')
-            updated_phone = response.get('phone')
+            updated_name = response.get('name', 'Unknown')
+            updated_email = response.get('email', 'Unknown')
+            updated_phone = response.get('phone', 'Unknown')
             updated_specialties = response.get('specialties', [])
-            updated_bio = response.get('bio')
+            updated_bio = response.get('bio', 'Unknown')
             
             # Verify all fields were updated
             specialties_match = set(updated_specialties) == set(updated_data['specialties'])
