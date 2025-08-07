@@ -1369,18 +1369,56 @@ const MainApp = () => {
   // WebSocket connection and real-time updates
   useEffect(() => {
     if (user && user.id) {
-      // Connect to WebSocket
-      wsManager.connect(user.id);
+      console.log('🔄 Initializing real-time updates for user:', user.id);
+      
+      // Try to connect to WebSocket with fallback
+      try {
+        wsManager.connect(user.id);
 
-      // Add global listener for all real-time updates
-      wsManager.on('*', handleRealTimeUpdate);
+        // Add connection status listener
+        wsManager.on('connection', (status) => {
+          console.log('📡 WebSocket connection status:', status);
+          if (status.status === 'connected') {
+            showToast('🔗 Real-time updates connected', 'connection');
+          } else if (status.status === 'failed' || status.status === 'error') {
+            console.warn('⚠️ WebSocket failed, using polling fallback');
+            // Set up polling fallback for updates
+            setupPollingFallback();
+          }
+        });
 
-      // Cleanup on component unmount
-      return () => {
-        wsManager.disconnect();
-      };
+        // Add global listener for all real-time updates
+        wsManager.on('*', handleRealTimeUpdate);
+
+        // Set timeout for connection attempt
+        const connectionTimeout = setTimeout(() => {
+          if (!wsManager.getStatus().connected) {
+            console.warn('⚠️ WebSocket connection timeout, using polling fallback');
+            setupPollingFallback();
+          }
+        }, 5000);
+
+        // Cleanup on component unmount
+        return () => {
+          clearTimeout(connectionTimeout);
+          wsManager.disconnect();
+        };
+      } catch (error) {
+        console.error('❌ WebSocket initialization failed:', error);
+        setupPollingFallback();
+      }
     }
   }, [user]);
+
+  const setupPollingFallback = () => {
+    console.log('🔄 Setting up polling fallback for real-time updates');
+    // Set up periodic refresh as fallback
+    const interval = setInterval(() => {
+      setRefreshKey(prev => prev + 1);
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  };
 
   const handleRealTimeUpdate = (message) => {
     console.log('Real-time update received:', message);
