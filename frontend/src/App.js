@@ -763,7 +763,8 @@ const StudentsManager = ({ onRefresh }) => {
     notes: ''
   });
   const [enrollmentData, setEnrollmentData] = useState({
-    package_id: '',
+    program_name: '',
+    total_lessons: '',
     total_paid: ''
   });
 
