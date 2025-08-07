@@ -280,6 +280,7 @@ class EditFunctionalityTester:
         
         success, response = self.make_request('PUT', f'teachers/{edit_test_teacher_id}', specialty_update, 200)
         
+        new_specialties = []
         if success:
             new_specialties = response.get('specialties', [])
             specialties_updated = set(new_specialties) == set(specialty_update['specialties'])
