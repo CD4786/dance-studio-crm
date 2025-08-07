@@ -258,7 +258,10 @@ const Dashboard = ({ onRefresh, onNavigate }) => {
   return (
     <div className="dashboard">
       <div className="stats-grid">
-        <Card className="stat-card">
+        <Card 
+          className="stat-card clickable"
+          onClick={() => onNavigate && onNavigate('students')}
+        >
           <div className="stat-content">
             <div>
               <p className="stat-number">{stats.total_students}</p>
@@ -268,7 +271,10 @@ const Dashboard = ({ onRefresh, onNavigate }) => {
           </div>
         </Card>
         
-        <Card className="stat-card">
+        <Card 
+          className="stat-card clickable"
+          onClick={() => onNavigate && onNavigate('teachers')}
+        >
           <div className="stat-content">
             <div>
               <p className="stat-number">{stats.total_teachers}</p>
@@ -278,7 +284,10 @@ const Dashboard = ({ onRefresh, onNavigate }) => {
           </div>
         </Card>
         
-        <Card className="stat-card">
+        <Card 
+          className="stat-card clickable"
+          onClick={() => onNavigate && onNavigate('students')}
+        >
           <div className="stat-content">
             <div>
               <p className="stat-number">{stats.active_enrollments}</p>
@@ -288,7 +297,10 @@ const Dashboard = ({ onRefresh, onNavigate }) => {
           </div>
         </Card>
         
-        <Card className="stat-card">
+        <Card 
+          className="stat-card clickable"
+          onClick={() => onNavigate && onNavigate('daily-calendar')}
+        >
           <div className="stat-content">
             <div>
               <p className="stat-number">{stats.lessons_today}</p>
@@ -298,7 +310,10 @@ const Dashboard = ({ onRefresh, onNavigate }) => {
           </div>
         </Card>
         
-        <Card className="stat-card">
+        <Card 
+          className="stat-card clickable"
+          onClick={() => onNavigate && onNavigate('daily-calendar')}
+        >
           <div className="stat-content">
             <div>
               <p className="stat-number">{stats.lessons_attended_today}</p>
