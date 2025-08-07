@@ -654,10 +654,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Payment Management API System"
-    - "Enhanced Enrollment Management with Deletion"
-    - "Comprehensive Student Ledger API System"
-    - "Student Ledger Data Integration and Calculations"
+    - "Student Ledger Card Frontend Implementation"
   stuck_tasks:
     - "Recurring Lesson API System"
     - "WebSocket Real-time Updates System"
