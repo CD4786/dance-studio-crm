@@ -769,7 +769,7 @@ const StudentsManager = ({ onRefresh }) => {
 
   useEffect(() => {
     fetchStudents();
-    fetchPackages();
+    fetchPrograms();
   }, [onRefresh]);
 
   const fetchStudents = async () => {
