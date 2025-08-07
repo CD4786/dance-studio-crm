@@ -1403,8 +1403,14 @@ class DanceStudioAPITester:
         self.test_get_student_by_id()
         self.test_update_student()
         
-        # Package management tests
-        print("\n📦 Package Management Tests:")
+        # Dance Programs tests
+        print("\n🎭 Dance Programs Tests:")
+        self.test_get_programs()
+        self.test_get_program_by_id()
+        self.test_programs_startup_creation()
+        
+        # Package management tests (legacy)
+        print("\n📦 Package Management Tests (Legacy):")
         self.test_get_packages()
         
         # Enrollment tests
