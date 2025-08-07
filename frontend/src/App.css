@@ -342,6 +342,17 @@ body {
   color: #667eea;
 }
 
+.student-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.student-header h3 {
+  margin: 0;
+}
+
 .student-details {
   margin-bottom: 20px;
 }
