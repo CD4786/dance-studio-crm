@@ -95,8 +95,8 @@ const RecurringLessonModal = ({
     // Convert form data to API format
     const submitData = {
       ...formData,
-      start_datetime: new Date(formData.start_datetime).toISOString(),
-      end_date: formData.end_date ? new Date(formData.end_date).toISOString() : null,
+      start_datetime: formData.start_datetime, // Keep as local datetime string
+      end_date: formData.end_date || null,
       max_occurrences: formData.max_occurrences ? parseInt(formData.max_occurrences) : null,
       duration_minutes: parseInt(formData.duration_minutes)
     };
