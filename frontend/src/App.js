@@ -1696,6 +1696,18 @@ const MainApp = () => {
     setRefreshKey(prev => prev + 1);
   };
 
+  const handleNavigation = (view) => {
+    // Map dashboard navigation to actual view names
+    const viewMap = {
+      'students': 'students',
+      'teachers': 'teachers',
+      'daily-calendar': 'daily'
+    };
+    
+    const targetView = viewMap[view] || view;
+    setCurrentView(targetView);
+  };
+
   // Add null check for user
   if (!user) {
     return <div className="loading">Loading...</div>;
