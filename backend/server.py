@@ -805,12 +805,66 @@ async def create_enrollment(enrollment_data: EnrollmentCreate):
 @api_router.get("/enrollments", response_model=List[Enrollment])
 async def get_enrollments():
     enrollments = await db.enrollments.find().to_list(1000)
-    return [Enrollment(**enrollment) for enrollment in enrollments]
+    
+    # Handle migration from old package-based system to new program-based system
+    result = []
+    for enrollment_doc in enrollments:
+        # If it's an old enrollment with package_id, migrate it
+        if "package_id" in enrollment_doc and "program_name" not in enrollment_doc:
+            # Get package info to determine program name and total lessons
+            package = await db.packages.find_one({"id": enrollment_doc["package_id"]})
+            if package:
+                enrollment_doc["program_name"] = f"Legacy Package: {package['name']}"
+                enrollment_doc["total_lessons"] = package["total_lessons"]
+            else:
+                # Fallback if package not found
+                enrollment_doc["program_name"] = "Legacy Package (Unknown)"
+                enrollment_doc["total_lessons"] = enrollment_doc.get("remaining_lessons", 0)
+            
+            # Remove the old package_id field for the response
+            enrollment_doc.pop("package_id", None)
+        
+        # Ensure required fields exist
+        if "program_name" not in enrollment_doc:
+            enrollment_doc["program_name"] = "Unknown Program"
+        if "total_lessons" not in enrollment_doc:
+            enrollment_doc["total_lessons"] = enrollment_doc.get("remaining_lessons", 0)
+            
+        result.append(Enrollment(**enrollment_doc))
+    
+    return result
 
 @api_router.get("/students/{student_id}/enrollments", response_model=List[Enrollment])
 async def get_student_enrollments(student_id: str):
     enrollments = await db.enrollments.find({"student_id": student_id, "is_active": True}).to_list(1000)
-    return [Enrollment(**enrollment) for enrollment in enrollments]
+    
+    # Handle migration from old package-based system to new program-based system
+    result = []
+    for enrollment_doc in enrollments:
+        # If it's an old enrollment with package_id, migrate it
+        if "package_id" in enrollment_doc and "program_name" not in enrollment_doc:
+            # Get package info to determine program name and total lessons
+            package = await db.packages.find_one({"id": enrollment_doc["package_id"]})
+            if package:
+                enrollment_doc["program_name"] = f"Legacy Package: {package['name']}"
+                enrollment_doc["total_lessons"] = package["total_lessons"]
+            else:
+                # Fallback if package not found
+                enrollment_doc["program_name"] = "Legacy Package (Unknown)"
+                enrollment_doc["total_lessons"] = enrollment_doc.get("remaining_lessons", 0)
+            
+            # Remove the old package_id field for the response
+            enrollment_doc.pop("package_id", None)
+        
+        # Ensure required fields exist
+        if "program_name" not in enrollment_doc:
+            enrollment_doc["program_name"] = "Unknown Program"
+        if "total_lessons" not in enrollment_doc:
+            enrollment_doc["total_lessons"] = enrollment_doc.get("remaining_lessons", 0)
+            
+        result.append(Enrollment(**enrollment_doc))
+    
+    return result
 
 # Private Lesson Routes
 @api_router.post("/lessons", response_model=PrivateLessonResponse)
