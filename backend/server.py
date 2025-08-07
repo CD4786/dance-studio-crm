@@ -803,6 +803,164 @@ async def delete_teacher(teacher_id: str, current_user: User = Depends(get_curre
         "note": "Associated lessons and classes remain in system for record keeping"
     }
 
+# Payment Management Routes
+@api_router.post("/payments", response_model=Payment)
+async def create_payment(payment_data: PaymentCreate, current_user: User = Depends(get_current_user)):
+    # Verify student exists
+    student = await db.students.find_one({"id": payment_data.student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Verify enrollment exists if provided
+    if payment_data.enrollment_id:
+        enrollment = await db.enrollments.find_one({"id": payment_data.enrollment_id})
+        if not enrollment:
+            raise HTTPException(status_code=404, detail="Enrollment not found")
+    
+    # Create payment
+    payment = Payment(
+        **payment_data.dict(),
+        created_by=current_user.id,
+        payment_date=payment_data.payment_date or datetime.utcnow()
+    )
+    
+    await db.payments.insert_one(payment.dict())
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "payment_created",
+        {
+            "payment_id": payment.id,
+            "student_id": payment.student_id,
+            "amount": payment.amount,
+            "payment_method": payment.payment_method
+        },
+        current_user.id,
+        current_user.name
+    )
+    
+    return payment
+
+@api_router.get("/payments", response_model=List[Payment])
+async def get_payments():
+    payments = await db.payments.find().to_list(1000)
+    return [Payment(**payment) for payment in payments]
+
+@api_router.get("/students/{student_id}/payments", response_model=List[Payment])
+async def get_student_payments(student_id: str):
+    payments = await db.payments.find({"student_id": student_id}).sort("payment_date", -1).to_list(1000)
+    return [Payment(**payment) for payment in payments]
+
+@api_router.delete("/payments/{payment_id}")
+async def delete_payment(payment_id: str, current_user: User = Depends(get_current_user)):
+    payment = await db.payments.find_one({"id": payment_id})
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    result = await db.payments.delete_one({"id": payment_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "payment_deleted",
+        {
+            "payment_id": payment_id,
+            "student_id": payment.get("student_id"),
+            "amount": payment.get("amount")
+        },
+        current_user.id,
+        current_user.name
+    )
+    
+    return {"message": "Payment deleted successfully"}
+
+# Student Ledger Route
+@api_router.get("/students/{student_id}/ledger", response_model=StudentLedgerResponse)
+async def get_student_ledger(student_id: str):
+    # Get student
+    student = await db.students.find_one({"id": student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get enrollments (with migration handling)
+    enrollments_data = await db.enrollments.find({"student_id": student_id}).sort("purchase_date", -1).to_list(1000)
+    enrollments = []
+    for enrollment_doc in enrollments_data:
+        # Handle migration from old package-based system
+        if "package_id" in enrollment_doc and "program_name" not in enrollment_doc:
+            package = await db.packages.find_one({"id": enrollment_doc["package_id"]})
+            if package:
+                enrollment_doc["program_name"] = f"Legacy Package: {package['name']}"
+                enrollment_doc["total_lessons"] = package["total_lessons"]
+            else:
+                enrollment_doc["program_name"] = "Legacy Package (Unknown)"
+                enrollment_doc["total_lessons"] = enrollment_doc.get("remaining_lessons", 0)
+            enrollment_doc.pop("package_id", None)
+        
+        if "program_name" not in enrollment_doc:
+            enrollment_doc["program_name"] = "Unknown Program"
+        if "total_lessons" not in enrollment_doc:
+            enrollment_doc["total_lessons"] = enrollment_doc.get("remaining_lessons", 0)
+            
+        enrollments.append(Enrollment(**enrollment_doc))
+    
+    # Get payments
+    payments_data = await db.payments.find({"student_id": student_id}).sort("payment_date", -1).to_list(1000)
+    payments = [Payment(**payment) for payment in payments_data]
+    
+    # Get upcoming lessons (future lessons)
+    today = datetime.utcnow()
+    upcoming_lessons_data = await db.lessons.find({
+        "student_id": student_id,
+        "start_datetime": {"$gte": today},
+        "is_cancelled": {"$ne": True}
+    }).sort("start_datetime", 1).to_list(1000)
+    
+    upcoming_lessons = []
+    for lesson in upcoming_lessons_data:
+        student_doc = await db.students.find_one({"id": lesson["student_id"]})
+        teacher_doc = await db.teachers.find_one({"id": lesson["teacher_id"]})
+        upcoming_lessons.append(PrivateLessonResponse(
+            **lesson,
+            student_name=student_doc["name"] if student_doc else "Unknown",
+            teacher_name=teacher_doc["name"] if teacher_doc else "Unknown"
+        ))
+    
+    # Get lesson history (past lessons)
+    lesson_history_data = await db.lessons.find({
+        "student_id": student_id,
+        "start_datetime": {"$lt": today}
+    }).sort("start_datetime", -1).to_list(1000)
+    
+    lesson_history = []
+    for lesson in lesson_history_data:
+        student_doc = await db.students.find_one({"id": lesson["student_id"]})
+        teacher_doc = await db.teachers.find_one({"id": lesson["teacher_id"]})
+        lesson_history.append(PrivateLessonResponse(
+            **lesson,
+            student_name=student_doc["name"] if student_doc else "Unknown",
+            teacher_name=teacher_doc["name"] if teacher_doc else "Unknown"
+        ))
+    
+    # Calculate totals
+    total_paid = sum(payment.amount for payment in payments)
+    total_enrolled_lessons = sum(enrollment.total_lessons for enrollment in enrollments)
+    remaining_lessons = sum(enrollment.remaining_lessons for enrollment in enrollments if enrollment.is_active)
+    lessons_taken = len([lesson for lesson in lesson_history if lesson.is_attended])
+    
+    return StudentLedgerResponse(
+        student=Student(**student),
+        enrollments=enrollments,
+        payments=payments,
+        upcoming_lessons=upcoming_lessons,
+        lesson_history=lesson_history,
+        total_paid=total_paid,
+        total_enrolled_lessons=total_enrolled_lessons,
+        remaining_lessons=remaining_lessons,
+        lessons_taken=lessons_taken
+    )
+
 # Dance Programs Routes
 @api_router.get("/programs", response_model=List[DanceProgram])
 async def get_programs():
