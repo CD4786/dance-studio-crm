@@ -355,8 +355,21 @@ body {
 }
 
 .calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
-  text-align: center;
+  padding: 0 20px;
+}
+
+.calendar-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.calendar-controls .btn {
+  font-size: 14px;
+  padding: 8px 16px;
 }
 
 .calendar-header h2 {
