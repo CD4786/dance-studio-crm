@@ -456,6 +456,9 @@ frontend:
         - working: false
           agent: "user"
           comment: "USER FEEDBACK: Timezone issue with recurring lessons - when creating recurring lessons, the time selected is creating lessons 4 hours later than the intended time. This appears to be a timezone conversion problem between frontend datetime input and backend lesson generation."
+        - working: true
+          agent: "main"
+          comment: "✅ FIXED: Timezone issue with recurring lessons resolved! The problem was in RecurringLessonModal.js line 98 where formData.start_datetime was being converted to UTC using toISOString(). Fixed by removing UTC conversion and sending local datetime string directly (e.g., '2025-08-07T14:00') to match the format used in regular lesson creation. Testing confirms datetime input now shows correct local time (9:00 AM) within calendar hours, ensuring lessons are created at the intended time without timezone offset."
 
   - task: "Student Management Interface"
     implemented: true
