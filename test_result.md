@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implement pending tasks for dance studio CRM: 1) Full drag-and-drop functionality for moving private lessons between time slots and teachers, 2) Edit functionality for private lessons"
+user_problem_statement: "Please conduct comprehensive testing of the newly implemented dance program enrollment system that replaces the old package-based system. Test the Dance Programs API (GET /api/programs, GET /api/programs/{program_id}) with 12 default programs, Updated Enrollment System (now accepts program_name, total_lessons, total_paid), and integration with existing lesson attendance functionality."
 
 backend:
   - task: "Student Management System"
