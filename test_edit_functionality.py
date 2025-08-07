@@ -247,6 +247,7 @@ class EditFunctionalityTester:
         success, response = self.make_request('PUT', f'teachers/{edit_test_teacher_id}', updated_data, 200)
         
         updated_name = "Unknown"
+        updated_specialties = []
         if success:
             updated_name = response.get('name', 'Unknown')
             updated_email = response.get('email', 'Unknown')
