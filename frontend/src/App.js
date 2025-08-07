@@ -923,6 +923,16 @@ const StudentsManager = ({ onRefresh }) => {
             <div className="student-actions">
               <Button 
                 variant="outline" 
+                onClick={() => {
+                  setSelectedStudent(student);
+                  setShowLedger(true);
+                }}
+                className="ledger-btn"
+              >
+                📊 Ledger
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={() => handleEnroll(student)}
               >
                 Enroll
