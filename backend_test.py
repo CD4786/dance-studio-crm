@@ -1244,6 +1244,279 @@ class DanceStudioAPITester:
             self.log_test("Static File Mounting Configuration", False, f"- Request failed: {str(e)}")
             return False
 
+    # RECURRING LESSON TIMEZONE FIX TESTS
+    def test_recurring_lesson_timezone_fix(self):
+        """Test that recurring lessons are created at the correct local time without timezone offset"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Recurring Lesson Timezone Fix", False, "- No student or teacher ID available")
+            return False
+            
+        # Test specific time: 2:00 PM (14:00) local time
+        tomorrow = datetime.now() + timedelta(days=1)
+        test_time = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0)
+        
+        print(f"   🕐 Testing with local time: {test_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # Create weekly recurring lesson series
+        recurring_data = {
+            "student_id": self.created_student_id,
+            "teacher_id": self.created_teacher_id,
+            "start_datetime": test_time.strftime('%Y-%m-%dT%H:%M'),  # Send as local datetime string
+            "duration_minutes": 60,
+            "recurrence_pattern": "weekly",
+            "max_occurrences": 3,
+            "notes": "Timezone fix test - should be at 2:00 PM exactly"
+        }
+        
+        success, response = self.make_request('POST', 'recurring-lessons', recurring_data, 200)
+        
+        if not success:
+            self.log_test("Recurring Lesson Timezone Fix", False, "- Failed to create recurring series")
+            return False
+            
+        series_id = response.get('series_id')
+        lessons_created = response.get('lessons_created', 0)
+        
+        print(f"   📅 Created {lessons_created} lessons in series {series_id}")
+        
+        # Now verify the generated lessons have correct times
+        success, lessons_response = self.make_request('GET', 'lessons', expected_status=200)
+        
+        if not success:
+            self.log_test("Recurring Lesson Timezone Fix", False, "- Failed to retrieve lessons")
+            return False
+            
+        # Find lessons from our recurring series
+        recurring_lessons = []
+        for lesson in lessons_response:
+            if lesson.get('recurring_series_id') == series_id:
+                recurring_lessons.append(lesson)
+        
+        print(f"   🔍 Found {len(recurring_lessons)} lessons from recurring series")
+        
+        # Verify each lesson has the correct time (should be 14:00, not 18:00)
+        timezone_fix_working = True
+        for i, lesson in enumerate(recurring_lessons):
+            start_datetime_str = lesson.get('start_datetime')
+            if start_datetime_str:
+                # Parse the datetime
+                if 'T' in start_datetime_str:
+                    lesson_datetime = datetime.fromisoformat(start_datetime_str.replace('Z', ''))
+                    lesson_hour = lesson_datetime.hour
+                    
+                    print(f"   📍 Lesson {i+1}: {lesson_datetime.strftime('%Y-%m-%d %H:%M:%S')} (Hour: {lesson_hour})")
+                    
+                    # Check if the hour is 14 (2:00 PM) and not 18 (6:00 PM)
+                    if lesson_hour != 14:
+                        print(f"   ❌ TIMEZONE ISSUE: Expected hour 14 (2:00 PM), got hour {lesson_hour}")
+                        timezone_fix_working = False
+                    else:
+                        print(f"   ✅ Correct time: {lesson_hour}:00 (2:00 PM)")
+                else:
+                    print(f"   ⚠️ Unexpected datetime format: {start_datetime_str}")
+                    timezone_fix_working = False
+            else:
+                print(f"   ❌ No start_datetime found in lesson {i+1}")
+                timezone_fix_working = False
+        
+        # Clean up - cancel the recurring series
+        if series_id:
+            self.make_request('DELETE', f'recurring-lessons/{series_id}', expected_status=200)
+        
+        success = timezone_fix_working and len(recurring_lessons) == lessons_created
+        
+        self.log_test("Recurring Lesson Timezone Fix", success, 
+                     f"- {len(recurring_lessons)} lessons created at correct time (14:00, not 18:00)")
+        return success
+
+    def test_compare_regular_vs_recurring_lesson_times(self):
+        """Test that regular lessons and recurring lessons have consistent time handling"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Compare Regular vs Recurring Times", False, "- No student or teacher ID available")
+            return False
+            
+        # Test time: 3:30 PM (15:30)
+        tomorrow = datetime.now() + timedelta(days=2)
+        test_time = tomorrow.replace(hour=15, minute=30, second=0, microsecond=0)
+        
+        print(f"   🕐 Testing consistency with time: {test_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # Create a regular lesson
+        regular_lesson_data = {
+            "student_id": self.created_student_id,
+            "teacher_id": self.created_teacher_id,
+            "start_datetime": test_time.strftime('%Y-%m-%dT%H:%M'),
+            "duration_minutes": 60,
+            "notes": "Regular lesson for time comparison"
+        }
+        
+        success, regular_response = self.make_request('POST', 'lessons', regular_lesson_data, 200)
+        
+        if not success:
+            self.log_test("Compare Regular vs Recurring Times", False, "- Failed to create regular lesson")
+            return False
+            
+        regular_lesson_id = regular_response.get('id')
+        regular_start_time = regular_response.get('start_datetime')
+        
+        # Create a recurring lesson with the same time
+        recurring_data = {
+            "student_id": self.created_student_id,
+            "teacher_id": self.created_teacher_id,
+            "start_datetime": test_time.strftime('%Y-%m-%dT%H:%M'),
+            "duration_minutes": 60,
+            "recurrence_pattern": "weekly",
+            "max_occurrences": 1,
+            "notes": "Recurring lesson for time comparison"
+        }
+        
+        success, recurring_response = self.make_request('POST', 'recurring-lessons', recurring_data, 200)
+        
+        if not success:
+            self.log_test("Compare Regular vs Recurring Times", False, "- Failed to create recurring lesson")
+            return False
+            
+        series_id = recurring_response.get('series_id')
+        
+        # Get the generated recurring lesson
+        success, lessons_response = self.make_request('GET', 'lessons', expected_status=200)
+        
+        if not success:
+            self.log_test("Compare Regular vs Recurring Times", False, "- Failed to retrieve lessons")
+            return False
+            
+        # Find the recurring lesson
+        recurring_lesson = None
+        for lesson in lessons_response:
+            if lesson.get('recurring_series_id') == series_id:
+                recurring_lesson = lesson
+                break
+        
+        if not recurring_lesson:
+            self.log_test("Compare Regular vs Recurring Times", False, "- Could not find recurring lesson")
+            return False
+            
+        recurring_start_time = recurring_lesson.get('start_datetime')
+        
+        # Compare the times
+        print(f"   📅 Regular lesson time: {regular_start_time}")
+        print(f"   🔄 Recurring lesson time: {recurring_start_time}")
+        
+        # Parse both times and compare hours
+        regular_hour = None
+        recurring_hour = None
+        
+        if regular_start_time and 'T' in regular_start_time:
+            regular_dt = datetime.fromisoformat(regular_start_time.replace('Z', ''))
+            regular_hour = regular_dt.hour
+            
+        if recurring_start_time and 'T' in recurring_start_time:
+            recurring_dt = datetime.fromisoformat(recurring_start_time.replace('Z', ''))
+            recurring_hour = recurring_dt.hour
+        
+        times_match = regular_hour == recurring_hour == 15  # Both should be 15:30 (3:30 PM)
+        
+        print(f"   ⏰ Regular lesson hour: {regular_hour}")
+        print(f"   ⏰ Recurring lesson hour: {recurring_hour}")
+        print(f"   ✅ Times consistent: {times_match}")
+        
+        # Clean up
+        if regular_lesson_id:
+            self.make_request('DELETE', f'lessons/{regular_lesson_id}', expected_status=200)
+        if series_id:
+            self.make_request('DELETE', f'recurring-lessons/{series_id}', expected_status=200)
+        
+        success = times_match
+        
+        self.log_test("Compare Regular vs Recurring Times", success, 
+                     f"- Both lessons at hour {regular_hour} (expected 15)")
+        return success
+
+    def test_multiple_recurring_occurrences_time_consistency(self):
+        """Test that all occurrences in a recurring series maintain consistent times"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Multiple Recurring Occurrences Time Consistency", False, "- No student or teacher ID available")
+            return False
+            
+        # Test time: 11:15 AM (11:15)
+        tomorrow = datetime.now() + timedelta(days=3)
+        test_time = tomorrow.replace(hour=11, minute=15, second=0, microsecond=0)
+        
+        print(f"   🕐 Testing multiple occurrences with time: {test_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # Create weekly recurring lesson series with 4 occurrences
+        recurring_data = {
+            "student_id": self.created_student_id,
+            "teacher_id": self.created_teacher_id,
+            "start_datetime": test_time.strftime('%Y-%m-%dT%H:%M'),
+            "duration_minutes": 45,
+            "recurrence_pattern": "weekly",
+            "max_occurrences": 4,
+            "notes": "Multiple occurrences time consistency test"
+        }
+        
+        success, response = self.make_request('POST', 'recurring-lessons', recurring_data, 200)
+        
+        if not success:
+            self.log_test("Multiple Recurring Occurrences Time Consistency", False, "- Failed to create recurring series")
+            return False
+            
+        series_id = response.get('series_id')
+        lessons_created = response.get('lessons_created', 0)
+        
+        print(f"   📅 Created {lessons_created} lessons in series")
+        
+        # Get all lessons from the series
+        success, lessons_response = self.make_request('GET', 'lessons', expected_status=200)
+        
+        if not success:
+            self.log_test("Multiple Recurring Occurrences Time Consistency", False, "- Failed to retrieve lessons")
+            return False
+            
+        # Find all lessons from our recurring series
+        recurring_lessons = []
+        for lesson in lessons_response:
+            if lesson.get('recurring_series_id') == series_id:
+                recurring_lessons.append(lesson)
+        
+        # Sort by start_datetime
+        recurring_lessons.sort(key=lambda x: x.get('start_datetime', ''))
+        
+        print(f"   🔍 Found {len(recurring_lessons)} lessons from recurring series")
+        
+        # Verify all lessons have the same time (11:15) but different dates
+        all_times_consistent = True
+        expected_hour = 11
+        expected_minute = 15
+        
+        for i, lesson in enumerate(recurring_lessons):
+            start_datetime_str = lesson.get('start_datetime')
+            if start_datetime_str and 'T' in start_datetime_str:
+                lesson_datetime = datetime.fromisoformat(start_datetime_str.replace('Z', ''))
+                lesson_hour = lesson_datetime.hour
+                lesson_minute = lesson_datetime.minute
+                
+                print(f"   📍 Occurrence {i+1}: {lesson_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+                
+                if lesson_hour != expected_hour or lesson_minute != expected_minute:
+                    print(f"   ❌ TIME INCONSISTENCY: Expected {expected_hour}:{expected_minute:02d}, got {lesson_hour}:{lesson_minute:02d}")
+                    all_times_consistent = False
+                else:
+                    print(f"   ✅ Correct time: {lesson_hour}:{lesson_minute:02d}")
+            else:
+                print(f"   ❌ Invalid datetime format in occurrence {i+1}")
+                all_times_consistent = False
+        
+        # Clean up
+        if series_id:
+            self.make_request('DELETE', f'recurring-lessons/{series_id}', expected_status=200)
+        
+        success = all_times_consistent and len(recurring_lessons) == lessons_created
+        
+        self.log_test("Multiple Recurring Occurrences Time Consistency", success, 
+                     f"- All {len(recurring_lessons)} occurrences at {expected_hour}:{expected_minute:02d}")
+        return success
+
     # RECURRING LESSON TESTS
     def test_create_recurring_lesson_weekly(self):
         """Test creating a weekly recurring lesson series"""
