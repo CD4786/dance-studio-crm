@@ -2244,6 +2244,25 @@ class DanceStudioAPITester:
         
         return True
 
+    def run_timezone_fix_tests(self):
+        """Run timezone fix specific tests for recurring lessons"""
+        print("\n" + "="*80)
+        print("🕐 RECURRING LESSON TIMEZONE FIX TESTS")
+        print("="*80)
+        
+        timezone_tests = [
+            self.test_recurring_lesson_timezone_fix,
+            self.test_compare_regular_vs_recurring_lesson_times,
+            self.test_multiple_recurring_occurrences_time_consistency
+        ]
+        
+        for test in timezone_tests:
+            try:
+                test()
+            except Exception as e:
+                print(f"❌ {test.__name__} - EXCEPTION: {str(e)}")
+                self.tests_run += 1
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Comprehensive Dance Studio CRM API Tests")
