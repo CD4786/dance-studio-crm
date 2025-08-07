@@ -443,7 +443,7 @@ frontend:
     implemented: true
     working: false
     file: "server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -453,6 +453,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ CRITICAL ISSUE: WebSocket functionality not working in deployed environment. WebSocket connection at /ws/{user_id} fails with handshake error, returning HTML content instead of WebSocket upgrade. All 4 WebSocket tests failed. The WebSocket endpoint is defined but not properly handling WebSocket connections in the deployed Railway environment."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL CONFIRMED: WebSocket real-time updates still not working. Browser testing shows WebSocket connection to 'wss://dependable-imagination-production.up.railway.app/ws/test-user' fails with 'Error during WebSocket handshake: Unexpected response code: 200'. WebSocket manager not found in frontend (window.wsManager undefined). Real-time notifications and live updates completely non-functional."
 
   - task: "Recurring Lesson Generation Logic"
     implemented: true
