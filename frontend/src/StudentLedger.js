@@ -8,6 +8,7 @@ const StudentLedger = ({ student, onClose }) => {
   const [programs, setPrograms] = useState([]);
   const [showAddEnrollment, setShowAddEnrollment] = useState(false);
   const [showAddPayment, setShowAddPayment] = useState(false);
+  const [showEditStudent, setShowEditStudent] = useState(false);
   const [loading, setLoading] = useState(true);
   
   const [enrollmentData, setEnrollmentData] = useState({
@@ -20,6 +21,16 @@ const StudentLedger = ({ student, onClose }) => {
     amount: '',
     payment_method: 'cash',
     enrollment_id: '',
+    notes: ''
+  });
+
+  const [editStudentData, setEditStudentData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    parent_name: '',
+    parent_phone: '',
+    parent_email: '',
     notes: ''
   });
 
