@@ -1290,10 +1290,17 @@ const TeachersManager = ({ onRefresh }) => {
             <div className="teacher-actions">
               <Button 
                 variant="outline" 
+                onClick={() => handleEditTeacher(teacher)}
+                className="edit-btn"
+              >
+                ✏️ Edit
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={() => handleDeleteTeacher(teacher.id, teacher.name)}
                 className="delete-btn"
               >
-                Delete
+                🗑️ Delete
               </Button>
             </div>
           </Card>
