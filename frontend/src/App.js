@@ -603,6 +603,15 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     <div className="daily-calendar">
       <div className="calendar-header">
         <h2>Daily Schedule - {selectedDate.toDateString()}</h2>
+        <div className="calendar-controls">
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowRecurringModal(true)}
+            title="Create recurring lessons"
+          >
+            🔄 Recurring Lessons
+          </button>
+        </div>
       </div>
       
       <div className="calendar-grid">
