@@ -1657,6 +1657,13 @@ class DanceStudioAPITester:
         self.test_websocket_real_time_lesson_updates()
         self.test_websocket_ping_pong()
         
+        # NEW EDIT FUNCTIONALITY TESTS
+        print("\n✏️ Edit Functionality Tests:")
+        self.test_student_edit_functionality()
+        self.test_teacher_edit_functionality()
+        self.test_real_time_updates_for_edits()
+        self.test_data_validation_for_edits()
+        
         # RAILWAY DEPLOYMENT STATIC FILE SERVING TESTS
         print("\n🚀 Railway Deployment Static File Serving Tests:")
         self.test_root_path_serves_react_app()
