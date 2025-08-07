@@ -880,10 +880,16 @@ const StudentsManager = ({ onRefresh }) => {
     try {
       await axios.post(`${API}/enrollments`, {
         student_id: selectedStudent.id,
-        package_id: enrollmentData.package_id,
+        program_name: enrollmentData.program_name,
+        total_lessons: parseInt(enrollmentData.total_lessons),
         total_paid: parseFloat(enrollmentData.total_paid)
       });
       setShowEnrollModal(false);
+      setEnrollmentData({
+        program_name: '',
+        total_lessons: '',
+        total_paid: ''
+      });
       onRefresh();
       alert('Enrollment created successfully!');
     } catch (error) {
