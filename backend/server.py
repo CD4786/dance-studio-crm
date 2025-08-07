@@ -1335,7 +1335,7 @@ async def create_recurring_lesson_series(series_data: RecurringLessonCreate, cur
     }
 
 @api_router.get("/recurring-lessons")
-async def get_recurring_lesson_series():
+async def get_recurring_lesson_series(current_user: User = Depends(get_current_user)):
     """Get all active recurring lesson series"""
     series_list = await db.recurring_series.find({"is_active": True}).to_list(1000)
     
