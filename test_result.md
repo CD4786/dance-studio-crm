@@ -425,7 +425,7 @@ frontend:
     implemented: true
     working: false
     file: "server.py"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -435,6 +435,9 @@ frontend:
         - working: false
           agent: "testing"
           comment: "❌ CRITICAL ISSUE: Recurring lesson endpoints are not accessible in deployed environment. POST /api/recurring-lessons returns 405 Method Not Allowed, GET /api/recurring-lessons returns 404 API endpoint not found. All 7 recurring lesson tests failed. The endpoints are defined in server.py but not being recognized by the deployed server. This suggests a deployment issue or server configuration problem."
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL CONFIRMED: Comprehensive testing shows recurring lesson API endpoints still not working. GET /api/recurring-lessons returns 404 'API endpoint not found', POST /api/recurring-lessons returns 405 'Method Not Allowed'. Direct browser API testing confirms endpoints are not registered or accessible in deployed environment. Main agent claims to have fixed authentication and endpoint registration, but deployment still has issues."
 
   - task: "WebSocket Real-time Updates System"
     implemented: true
