@@ -603,6 +603,16 @@ body {
   }
 }
 
+.ledger-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.ledger-btn:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+}
+
 .btn.btn-danger {
 
 /* Inputs */
