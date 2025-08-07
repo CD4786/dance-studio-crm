@@ -2244,6 +2244,54 @@ class DanceStudioAPITester:
         
         return True
 
+    def run_timezone_fix_tests_only(self):
+        """Run only the timezone fix tests for recurring lessons"""
+        print("🚀 Starting Timezone Fix Tests for Recurring Lessons")
+        print(f"🌐 Testing against: {self.base_url}")
+        print("="*80)
+        
+        # Setup: Register and login
+        if not self.test_user_registration():
+            print("❌ Failed to register user - cannot continue")
+            return 1
+            
+        if not self.test_user_login():
+            print("❌ Failed to login - cannot continue")
+            return 1
+            
+        # Create necessary test data
+        if not self.test_create_teacher():
+            print("❌ Failed to create teacher - cannot continue")
+            return 1
+            
+        if not self.test_create_student():
+            print("❌ Failed to create student - cannot continue")
+            return 1
+            
+        # Create enrollment for lessons
+        if not self.test_create_enrollment_with_program():
+            print("❌ Failed to create enrollment - cannot continue")
+            return 1
+        
+        # Run timezone fix tests
+        self.run_timezone_fix_tests()
+        
+        # Print summary
+        print("\n" + "="*80)
+        print("📊 TIMEZONE FIX TEST SUMMARY")
+        print("="*80)
+        print(f"Total tests run: {self.tests_run}")
+        print(f"Tests passed: {self.tests_passed}")
+        print(f"Tests failed: {self.tests_run - self.tests_passed}")
+        print(f"Success rate: {(self.tests_passed/self.tests_run*100):.1f}%" if self.tests_run > 0 else "No tests run")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 ALL TIMEZONE FIX TESTS PASSED!")
+            return 0
+        else:
+            print("❌ Some timezone fix tests failed")
+            return 1
+
     def run_timezone_fix_tests(self):
         """Run timezone fix specific tests for recurring lessons"""
         print("\n" + "="*80)
