@@ -1216,6 +1216,40 @@ const TeachersManager = ({ onRefresh }) => {
     setFormData({...formData, specialties: newSpecialties});
   };
 
+  const handleEditTeacher = (teacher) => {
+    setEditingTeacher(teacher);
+    setFormData({
+      name: teacher.name,
+      email: teacher.email,
+      phone: teacher.phone,
+      specialties: teacher.specialties || [],
+      bio: teacher.bio || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateTeacher = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`${API}/teachers/${editingTeacher.id}`, formData);
+      setShowEditModal(false);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        specialties: [],
+        bio: ''
+      });
+      setEditingTeacher(null);
+      fetchTeachers();
+      onRefresh();
+      alert('Teacher updated successfully!');
+    } catch (error) {
+      console.error('Failed to update teacher:', error);
+      alert('Failed to update teacher');
+    }
+  };
+
   const handleDeleteTeacher = async (teacherId, teacherName) => {
     if (window.confirm(`Are you sure you want to delete ${teacherName}? This action cannot be undone.`)) {
       try {
