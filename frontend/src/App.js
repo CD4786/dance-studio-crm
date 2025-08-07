@@ -1405,7 +1405,7 @@ const TeachersManager = ({ onRefresh }) => {
                   <input
                     type="checkbox"
                     checked={formData.specialties.includes(style)}
-                    onChange={() => handleSpecialtyChange(style)}
+                    onChange={() => toggleSpecialty(style)}
                   />
                   <span>{style.replace('_', ' ')}</span>
                 </label>
