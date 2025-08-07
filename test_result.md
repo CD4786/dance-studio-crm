@@ -437,10 +437,13 @@ frontend:
           comment: "✅ TESTED: Daily calendar fully functional with 9am-9pm time slots, 7 teacher columns, lesson creation by clicking empty slots, edit/delete/attendance marking working perfectly. Calendar grid structure excellent with proper time column and teacher columns."
         - working: false
           agent: "user"
-          comment: "USER FEEDBACK: On the daily calendar needs a way to navigate to different days of the week - currently only shows selected date from sidebar without navigation within calendar."
+          comment: "USER FEEDBACK: Two critical issues reported: 1) Daily calendar needs navigation to different days of the week - currently only shows selected date from sidebar without way to navigate within calendar, 2) Recurring lessons not allowing creation - right-click functionality and recurring lesson API endpoints not working as expected."
         - working: true
           agent: "main"
           comment: "✅ FIXED: Added daily calendar navigation with Previous, Today, and Next buttons. Updated calendar to use currentDate state and added navigation functions (navigateDay, goToToday). Updated CSS for proper button styling with .calendar-title, .calendar-navigation, and .nav-btn classes. Screenshot testing confirmed navigation buttons are visible and functional, showing proper date updates."
+        - working: false
+          agent: "user"
+          comment: "USER FEEDBACK: Additional requests: 1) Weekly calendar needs Previous, Today, and Next navigation buttons like daily calendar, 2) Daily calendar needs to show lesson counts (daily, weekly, monthly totals) under each instructor name to see how many lessons each instructor is teaching."
 
   - task: "Student Management Interface"
     implemented: true
