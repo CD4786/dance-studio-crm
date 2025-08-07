@@ -1087,6 +1087,9 @@ body {
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
   opacity: 1 !important;
   visibility: visible !important;
+  position: relative;
+  z-index: 10;
+  pointer-events: all;
 }
 
 .lesson-delete-btn:hover {
