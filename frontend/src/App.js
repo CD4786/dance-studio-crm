@@ -566,7 +566,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
 
     try {
       // Create date in local timezone
-      const startDateTime = new Date(selectedDate);
+      const startDateTime = new Date(currentDate);
       startDateTime.setHours(hour, 0, 0, 0);
       
       // Convert to local ISO string (without timezone conversion)
