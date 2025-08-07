@@ -533,11 +533,15 @@ test_plan:
   current_focus:
     - "Recurring Lesson API System"
     - "WebSocket Real-time Updates System"
+    - "Recurring Lesson Frontend Modal"
+    - "WebSocket Frontend Integration"
   stuck_tasks:
     - "Recurring Lesson API System"
     - "WebSocket Real-time Updates System"
     - "Recurring Lesson Generation Logic"
     - "Enhanced Existing Endpoints with Real-time Updates"
+    - "Recurring Lesson Frontend Modal"
+    - "WebSocket Frontend Integration"
   test_all: false
   test_priority: "high_first"
 
