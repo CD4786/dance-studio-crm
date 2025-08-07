@@ -1359,6 +1359,9 @@ async def send_lesson_reminder(reminder_request: ReminderRequest):
         else:
             # Try free TextBelt API
             return await send_textbelt_sms(clean_phone, message, formatted_datetime)
+    
+    else:
+        raise HTTPException(status_code=400, detail="Invalid notification type")
 
 # Free SMS function using TextBelt
 async def send_textbelt_sms(phone_number, message, formatted_datetime):
