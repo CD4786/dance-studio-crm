@@ -456,7 +456,7 @@ def verify_token(token: str) -> dict:
     except jwt.JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = security):
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     token = credentials.credentials
     payload = verify_token(token)
     user_id = payload.get("user_id")
