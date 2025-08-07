@@ -781,12 +781,12 @@ const StudentsManager = ({ onRefresh }) => {
     }
   };
 
-  const fetchPackages = async () => {
+  const fetchPrograms = async () => {
     try {
-      const response = await axios.get(`${API}/packages`);
-      setPackages(response.data);
+      const response = await axios.get(`${API}/programs`);
+      setPrograms(response.data);
     } catch (error) {
-      console.error('Failed to fetch packages:', error);
+      console.error('Failed to fetch programs:', error);
     }
   };
 
