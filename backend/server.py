@@ -769,6 +769,30 @@ async def delete_student(student_id: str, current_user: User = Depends(get_curre
         "note": "Associated lessons and enrollments remain in system for record keeping"
     }
 
+@api_router.put("/teachers/{teacher_id}", response_model=Teacher)
+async def update_teacher(teacher_id: str, teacher_data: TeacherCreate, current_user: User = Depends(get_current_user)):
+    existing_teacher = await db.teachers.find_one({"id": teacher_id})
+    if not existing_teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    update_data = teacher_data.dict()
+    await db.teachers.update_one({"id": teacher_id}, {"$set": update_data})
+    
+    updated_teacher = await db.teachers.find_one({"id": teacher_id})
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "teacher_updated",
+        {
+            "teacher_id": teacher_id,
+            "teacher": updated_teacher
+        },
+        current_user.id,
+        current_user.name
+    )
+    
+    return Teacher(**updated_teacher)
+
 @api_router.delete("/teachers/{teacher_id}")
 async def delete_teacher(teacher_id: str, current_user: User = Depends(get_current_user)):
     # Check if teacher exists
