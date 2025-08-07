@@ -717,7 +717,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Student Ledger Card Frontend Implementation"
+    - "Student Information Editing System"
+    - "Teacher Information Editing System"
+    - "Enhanced Real-time Updates for Edit Operations"
+    - "Data Validation for Edit Operations"
   stuck_tasks:
     - "Recurring Lesson API System"
     - "WebSocket Real-time Updates System"
