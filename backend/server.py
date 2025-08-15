@@ -1584,39 +1584,49 @@ async def mark_lesson_attended(lesson_id: str, current_user: User = Depends(get_
 
 # Daily Calendar Route
 @api_router.get("/calendar/daily/{date}")
-async def get_daily_calendar(date: str):
+async def get_daily_data(date: str, current_user: User = Depends(get_current_user)):
+    """Get daily calendar data with optimized queries"""
     try:
-        day = datetime.fromisoformat(date).replace(hour=0, minute=0, second=0, microsecond=0)
-        next_day = day + timedelta(days=1)
+        # Parse date
+        target_date = datetime.strptime(date, "%Y-%m-%d")
+        start_date = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_date = target_date.replace(hour=23, minute=59, second=59, microsecond=999999)
         
-        # Get private lessons for the day
-        lessons = await db.lessons.find({
-            "start_datetime": {"$gte": day, "$lt": next_day}
-        }).to_list(1000)
+        # Parallel database queries for better performance
+        lessons_query = db.lessons.find({
+            "start_datetime": {"$gte": start_date, "$lt": end_date}
+        })
         
-        # Get all teachers for columns
-        teachers = await db.teachers.find().to_list(1000)
+        teachers_query = db.teachers.find({"is_active": True})
+        students_query = db.students.find({"is_active": True})
         
-        # Enrich lessons with student and teacher names
+        # Execute queries concurrently
+        lessons_task = lessons_query.to_list(200)
+        teachers_task = teachers_query.to_list(100)
+        students_task = students_query.to_list(500)
+        
+        lessons, teachers, students = await asyncio.gather(
+            lessons_task, teachers_task, students_task
+        )
+        
+        # Create lookup dictionaries for O(1) access
+        students_dict = {s["id"]: s for s in students}
+        teachers_dict = {t["id"]: t for t in teachers}
+        
+        # Enrich lessons with student and teacher names efficiently
         enriched_lessons = []
         for lesson_doc in lessons:
-            # Handle migration from old teacher_id to new teacher_ids array
-            if "teacher_id" in lesson_doc and "teacher_ids" not in lesson_doc:
-                # Migrate old single teacher_id to teacher_ids array
-                lesson_doc["teacher_ids"] = [lesson_doc["teacher_id"]]
-                lesson_doc.pop("teacher_id", None)
-            elif "teacher_ids" not in lesson_doc:
-                # Fallback if neither field exists
-                lesson_doc["teacher_ids"] = []
+            student = students_dict.get(lesson_doc["student_id"])
             
-            student = await db.students.find_one({"id": lesson_doc["student_id"]})
-            
-            # Get all teachers for this lesson
+            # Get all teachers for this lesson efficiently
             teacher_names = []
-            for teacher_id in lesson_doc.get("teacher_ids", []):
-                teacher = await db.teachers.find_one({"id": teacher_id})
-                if teacher:
-                    teacher_names.append(teacher["name"])
+            teacher_ids = lesson_doc.get("teacher_ids", [lesson_doc.get("teacher_id")] if lesson_doc.get("teacher_id") else [])
+            
+            for teacher_id in teacher_ids:
+                if teacher_id:
+                    teacher = teachers_dict.get(teacher_id)
+                    if teacher:
+                        teacher_names.append(teacher["name"])
             
             enriched_lessons.append(PrivateLessonResponse(
                 **lesson_doc,
@@ -1624,14 +1634,23 @@ async def get_daily_calendar(date: str):
                 teacher_names=teacher_names
             ))
         
+        # Only return active teachers with their colors
+        active_teachers = []
+        for teacher in teachers:
+            teacher_data = TeacherResponse(**teacher)
+            active_teachers.append(teacher_data)
+        
         return {
             "date": date,
-            "teachers": [Teacher(**teacher) for teacher in teachers],
-            "lessons": enriched_lessons
+            "lessons": enriched_lessons,
+            "teachers": active_teachers
         }
         
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format")
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+    except Exception as e:
+        print(f"Error fetching daily data: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch daily calendar data")
 
 # Package Routes (for pre-defined lesson packages)
 @api_router.get("/packages", response_model=List[LessonPackage])
