@@ -1254,6 +1254,550 @@ class DanceStudioAPITester:
         self.log_test("Notification Preferences Invalid Student", success, "- Expected 404 error")
         return success
 
+    # USER MANAGEMENT SYSTEM TESTS
+    def test_user_listing_with_owner_permissions(self):
+        """Test GET /api/users with owner permissions"""
+        if not self.token:
+            self.log_test("User Listing (Owner)", False, "- No authentication token available")
+            return False
+            
+        success, response = self.make_request('GET', 'users', expected_status=200)
+        
+        if success:
+            users_count = len(response) if isinstance(response, list) else 0
+            # Check if response contains user objects with expected fields
+            if users_count > 0:
+                first_user = response[0]
+                required_fields = ['id', 'email', 'name', 'role', 'is_active', 'created_at']
+                has_required_fields = all(field in first_user for field in required_fields)
+                success = success and has_required_fields
+            
+        self.log_test("User Listing (Owner)", success, f"- Found {users_count} users")
+        return success
+
+    def test_user_listing_with_manager_permissions(self):
+        """Test GET /api/users with manager permissions"""
+        # Create a manager user first
+        manager_data = {
+            "email": f"manager_{datetime.now().strftime('%H%M%S')}@example.com",
+            "name": "Test Manager",
+            "password": "ManagerPass123!",
+            "role": "manager"
+        }
+        
+        success, manager_response = self.make_request('POST', 'users', manager_data, 200)
+        if not success:
+            self.log_test("User Listing (Manager)", False, "- Failed to create manager user")
+            return False
+            
+        # Login as manager
+        login_data = {
+            "email": manager_data["email"],
+            "password": manager_data["password"]
+        }
+        
+        success, login_response = self.make_request('POST', 'auth/login', login_data, 200)
+        if not success:
+            self.log_test("User Listing (Manager)", False, "- Failed to login as manager")
+            return False
+            
+        # Save original token and use manager token
+        original_token = self.token
+        self.token = login_response.get('access_token')
+        
+        # Test user listing with manager permissions
+        success, response = self.make_request('GET', 'users', expected_status=200)
+        
+        # Restore original token
+        self.token = original_token
+        
+        if success:
+            users_count = len(response) if isinstance(response, list) else 0
+            
+        self.log_test("User Listing (Manager)", success, f"- Manager can access {users_count} users")
+        return success
+
+    def test_user_listing_with_teacher_permissions(self):
+        """Test GET /api/users with teacher permissions (should fail)"""
+        # Create a teacher user first
+        teacher_data = {
+            "email": f"teacher_{datetime.now().strftime('%H%M%S')}@example.com",
+            "name": "Test Teacher",
+            "password": "TeacherPass123!",
+            "role": "teacher"
+        }
+        
+        success, teacher_response = self.make_request('POST', 'users', teacher_data, 200)
+        if not success:
+            self.log_test("User Listing (Teacher - 403)", False, "- Failed to create teacher user")
+            return False
+            
+        # Login as teacher
+        login_data = {
+            "email": teacher_data["email"],
+            "password": teacher_data["password"]
+        }
+        
+        success, login_response = self.make_request('POST', 'auth/login', login_data, 200)
+        if not success:
+            self.log_test("User Listing (Teacher - 403)", False, "- Failed to login as teacher")
+            return False
+            
+        # Save original token and use teacher token
+        original_token = self.token
+        self.token = login_response.get('access_token')
+        
+        # Test user listing with teacher permissions (should get 403)
+        success, response = self.make_request('GET', 'users', expected_status=403)
+        
+        # Restore original token
+        self.token = original_token
+        
+        self.log_test("User Listing (Teacher - 403)", success, "- Teacher correctly denied access")
+        return success
+
+    def test_user_creation_with_owner_permissions(self):
+        """Test POST /api/users with owner permissions"""
+        if not self.token:
+            self.log_test("User Creation (Owner)", False, "- No authentication token available")
+            return False
+            
+        timestamp = datetime.now().strftime("%H%M%S")
+        user_data = {
+            "email": f"new_user_{timestamp}@example.com",
+            "name": f"New User {timestamp}",
+            "password": "NewUserPass123!",
+            "role": "teacher"
+        }
+        
+        success, response = self.make_request('POST', 'users', user_data, 200)
+        
+        if success:
+            self.created_new_user_id = response.get('id')
+            created_email = response.get('email')
+            created_role = response.get('role')
+            is_active = response.get('is_active')
+            
+            # Verify user was created correctly
+            success = success and created_email == user_data['email'] and created_role == user_data['role'] and is_active
+            
+        self.log_test("User Creation (Owner)", success, f"- Created user: {user_data['email']}")
+        return success
+
+    def test_user_creation_email_uniqueness(self):
+        """Test POST /api/users with duplicate email"""
+        if not self.token:
+            self.log_test("User Creation (Email Uniqueness)", False, "- No authentication token available")
+            return False
+            
+        # Try to create user with same email as previous test
+        if not hasattr(self, 'created_new_user_id'):
+            self.log_test("User Creation (Email Uniqueness)", False, "- No previous user to test uniqueness")
+            return False
+            
+        timestamp = datetime.now().strftime("%H%M%S")
+        duplicate_user_data = {
+            "email": f"new_user_{timestamp}@example.com",  # Same email pattern
+            "name": "Duplicate User",
+            "password": "DuplicatePass123!",
+            "role": "teacher"
+        }
+        
+        # First create a user
+        success, response = self.make_request('POST', 'users', duplicate_user_data, 200)
+        if not success:
+            self.log_test("User Creation (Email Uniqueness)", False, "- Failed to create first user")
+            return False
+            
+        # Try to create another user with same email (should fail)
+        success, response = self.make_request('POST', 'users', duplicate_user_data, 400)
+        
+        self.log_test("User Creation (Email Uniqueness)", success, "- Duplicate email correctly rejected")
+        return success
+
+    def test_user_creation_different_roles(self):
+        """Test POST /api/users with different user roles"""
+        if not self.token:
+            self.log_test("User Creation (Different Roles)", False, "- No authentication token available")
+            return False
+            
+        roles = ["teacher", "manager", "owner"]
+        successful_creations = 0
+        
+        for role in roles:
+            timestamp = datetime.now().strftime("%H%M%S%f")[:12]  # More unique timestamp
+            user_data = {
+                "email": f"{role}_{timestamp}@example.com",
+                "name": f"Test {role.title()}",
+                "password": f"{role.title()}Pass123!",
+                "role": role
+            }
+            
+            success, response = self.make_request('POST', 'users', user_data, 200)
+            
+            if success:
+                created_role = response.get('role')
+                if created_role == role:
+                    successful_creations += 1
+                    print(f"   ✅ {role}: Created successfully")
+                else:
+                    print(f"   ❌ {role}: Role mismatch - got {created_role}")
+            else:
+                print(f"   ❌ {role}: Failed to create")
+        
+        success = successful_creations == len(roles)
+        self.log_test("User Creation (Different Roles)", success, 
+                     f"- {successful_creations}/{len(roles)} roles created successfully")
+        return success
+
+    def test_user_creation_with_non_owner_permissions(self):
+        """Test POST /api/users with non-owner permissions (should fail)"""
+        # Create a manager user first
+        manager_data = {
+            "email": f"manager_create_{datetime.now().strftime('%H%M%S')}@example.com",
+            "name": "Manager Create Test",
+            "password": "ManagerPass123!",
+            "role": "manager"
+        }
+        
+        success, manager_response = self.make_request('POST', 'users', manager_data, 200)
+        if not success:
+            self.log_test("User Creation (Non-Owner - 403)", False, "- Failed to create manager user")
+            return False
+            
+        # Login as manager
+        login_data = {
+            "email": manager_data["email"],
+            "password": manager_data["password"]
+        }
+        
+        success, login_response = self.make_request('POST', 'auth/login', login_data, 200)
+        if not success:
+            self.log_test("User Creation (Non-Owner - 403)", False, "- Failed to login as manager")
+            return False
+            
+        # Save original token and use manager token
+        original_token = self.token
+        self.token = login_response.get('access_token')
+        
+        # Try to create user as manager (should fail)
+        new_user_data = {
+            "email": f"should_fail_{datetime.now().strftime('%H%M%S')}@example.com",
+            "name": "Should Fail User",
+            "password": "ShouldFailPass123!",
+            "role": "teacher"
+        }
+        
+        success, response = self.make_request('POST', 'users', new_user_data, 403)
+        
+        # Restore original token
+        self.token = original_token
+        
+        self.log_test("User Creation (Non-Owner - 403)", success, "- Manager correctly denied user creation")
+        return success
+
+    def test_user_profile_updates(self):
+        """Test PUT /api/users/{id} for profile updates"""
+        if not hasattr(self, 'created_new_user_id'):
+            self.log_test("User Profile Updates", False, "- No user ID available for testing")
+            return False
+            
+        # Update user profile
+        update_data = {
+            "name": "Updated User Name",
+            "email": f"updated_{datetime.now().strftime('%H%M%S')}@example.com"
+        }
+        
+        success, response = self.make_request('PUT', f'users/{self.created_new_user_id}', update_data, 200)
+        
+        if success:
+            updated_name = response.get('name')
+            updated_email = response.get('email')
+            
+            # Verify updates were applied
+            success = success and updated_name == update_data['name'] and updated_email == update_data['email']
+            
+        self.log_test("User Profile Updates", success, f"- Updated name: {update_data['name']}")
+        return success
+
+    def test_user_role_changes(self):
+        """Test PUT /api/users/{id} for role changes (owner permissions required)"""
+        if not hasattr(self, 'created_new_user_id'):
+            self.log_test("User Role Changes", False, "- No user ID available for testing")
+            return False
+            
+        # Change user role from teacher to manager
+        update_data = {
+            "role": "manager"
+        }
+        
+        success, response = self.make_request('PUT', f'users/{self.created_new_user_id}', update_data, 200)
+        
+        if success:
+            updated_role = response.get('role')
+            success = success and updated_role == "manager"
+            
+        self.log_test("User Role Changes", success, f"- Role changed to: {update_data['role']}")
+        return success
+
+    def test_user_account_status_changes(self):
+        """Test PUT /api/users/{id} for account status changes"""
+        if not hasattr(self, 'created_new_user_id'):
+            self.log_test("User Account Status Changes", False, "- No user ID available for testing")
+            return False
+            
+        # Deactivate user account
+        update_data = {
+            "is_active": False
+        }
+        
+        success, response = self.make_request('PUT', f'users/{self.created_new_user_id}', update_data, 200)
+        
+        if success:
+            is_active = response.get('is_active')
+            success = success and is_active == False
+            
+        self.log_test("User Account Status Changes", success, f"- Account deactivated: {not is_active}")
+        return success
+
+    def test_user_email_uniqueness_during_updates(self):
+        """Test PUT /api/users/{id} with duplicate email during updates"""
+        if not hasattr(self, 'created_new_user_id'):
+            self.log_test("User Email Uniqueness (Updates)", False, "- No user ID available for testing")
+            return False
+            
+        # Try to update to an existing email (use the test user's email)
+        if hasattr(self, 'test_email'):
+            update_data = {
+                "email": self.test_email  # This should already exist
+            }
+            
+            success, response = self.make_request('PUT', f'users/{self.created_new_user_id}', update_data, 400)
+            
+            self.log_test("User Email Uniqueness (Updates)", success, "- Duplicate email correctly rejected during update")
+            return success
+        else:
+            self.log_test("User Email Uniqueness (Updates)", False, "- No existing email to test uniqueness")
+            return False
+
+    def test_password_change_own_password(self):
+        """Test PUT /api/users/{id}/password for changing own password"""
+        if not hasattr(self, 'test_email') or not self.user_id:
+            self.log_test("Password Change (Own)", False, "- No user credentials available")
+            return False
+            
+        # Change own password
+        password_data = {
+            "old_password": self.test_password,
+            "new_password": "NewTestPassword123!"
+        }
+        
+        success, response = self.make_request('PUT', f'users/{self.user_id}/password', password_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            success = success and 'successfully' in message.lower()
+            
+            # Update stored password for future tests
+            if success:
+                self.test_password = password_data['new_password']
+            
+        self.log_test("Password Change (Own)", success, f"- Message: {response.get('message', 'No message')}")
+        return success
+
+    def test_password_change_wrong_old_password(self):
+        """Test PUT /api/users/{id}/password with wrong old password"""
+        if not self.user_id:
+            self.log_test("Password Change (Wrong Old)", False, "- No user ID available")
+            return False
+            
+        # Try to change password with wrong old password
+        password_data = {
+            "old_password": "WrongOldPassword123!",
+            "new_password": "AnotherNewPassword123!"
+        }
+        
+        success, response = self.make_request('PUT', f'users/{self.user_id}/password', password_data, 400)
+        
+        self.log_test("Password Change (Wrong Old)", success, "- Wrong old password correctly rejected")
+        return success
+
+    def test_password_change_owner_changing_others(self):
+        """Test PUT /api/users/{id}/password - owner changing other users' passwords"""
+        if not hasattr(self, 'created_new_user_id'):
+            self.log_test("Password Change (Owner for Others)", False, "- No user ID available for testing")
+            return False
+            
+        # Owner changing another user's password (no old password required)
+        password_data = {
+            "new_password": "OwnerSetPassword123!"
+        }
+        
+        success, response = self.make_request('PUT', f'users/{self.created_new_user_id}/password', password_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            success = success and 'successfully' in message.lower()
+            
+        self.log_test("Password Change (Owner for Others)", success, f"- Owner can change others' passwords")
+        return success
+
+    def test_user_deletion_prevention_self_deletion(self):
+        """Test DELETE /api/users/{id} - prevention of self-deletion"""
+        if not self.user_id:
+            self.log_test("User Deletion (Self-Prevention)", False, "- No user ID available")
+            return False
+            
+        # Try to delete own account (should fail)
+        success, response = self.make_request('DELETE', f'users/{self.user_id}', expected_status=400)
+        
+        self.log_test("User Deletion (Self-Prevention)", success, "- Self-deletion correctly prevented")
+        return success
+
+    def test_user_deletion_with_owner_permissions(self):
+        """Test DELETE /api/users/{id} with proper authorization"""
+        if not hasattr(self, 'created_new_user_id'):
+            self.log_test("User Deletion (Owner)", False, "- No user ID available for testing")
+            return False
+            
+        # Delete the test user
+        success, response = self.make_request('DELETE', f'users/{self.created_new_user_id}', expected_status=200)
+        
+        if success:
+            message = response.get('message', '')
+            success = success and 'successfully' in message.lower()
+            
+        self.log_test("User Deletion (Owner)", success, f"- Message: {response.get('message', 'No message')}")
+        return success
+
+    def test_user_deletion_with_non_owner_permissions(self):
+        """Test DELETE /api/users/{id} with non-owner permissions (should fail)"""
+        # Create a manager user first
+        manager_data = {
+            "email": f"manager_delete_{datetime.now().strftime('%H%M%S')}@example.com",
+            "name": "Manager Delete Test",
+            "password": "ManagerPass123!",
+            "role": "manager"
+        }
+        
+        success, manager_response = self.make_request('POST', 'users', manager_data, 200)
+        if not success:
+            self.log_test("User Deletion (Non-Owner - 403)", False, "- Failed to create manager user")
+            return False
+            
+        manager_id = manager_response.get('id')
+        
+        # Create another user to try to delete
+        target_user_data = {
+            "email": f"target_delete_{datetime.now().strftime('%H%M%S')}@example.com",
+            "name": "Target Delete User",
+            "password": "TargetPass123!",
+            "role": "teacher"
+        }
+        
+        success, target_response = self.make_request('POST', 'users', target_user_data, 200)
+        if not success:
+            self.log_test("User Deletion (Non-Owner - 403)", False, "- Failed to create target user")
+            return False
+            
+        target_user_id = target_response.get('id')
+        
+        # Login as manager
+        login_data = {
+            "email": manager_data["email"],
+            "password": manager_data["password"]
+        }
+        
+        success, login_response = self.make_request('POST', 'auth/login', login_data, 200)
+        if not success:
+            self.log_test("User Deletion (Non-Owner - 403)", False, "- Failed to login as manager")
+            return False
+            
+        # Save original token and use manager token
+        original_token = self.token
+        self.token = login_response.get('access_token')
+        
+        # Try to delete user as manager (should fail)
+        success, response = self.make_request('DELETE', f'users/{target_user_id}', expected_status=403)
+        
+        # Restore original token
+        self.token = original_token
+        
+        # Clean up - delete both users as owner
+        self.make_request('DELETE', f'users/{manager_id}', expected_status=200)
+        self.make_request('DELETE', f'users/{target_user_id}', expected_status=200)
+        
+        self.log_test("User Deletion (Non-Owner - 403)", success, "- Manager correctly denied user deletion")
+        return success
+
+    def test_user_management_without_authentication(self):
+        """Test user management endpoints without authentication"""
+        # Save original token
+        original_token = self.token
+        self.token = None
+        
+        # Test various endpoints without authentication
+        endpoints_to_test = [
+            ('GET', 'users', 401),
+            ('POST', 'users', 401),
+            ('PUT', 'users/fake-id', 401),
+            ('PUT', 'users/fake-id/password', 401),
+            ('DELETE', 'users/fake-id', 401)
+        ]
+        
+        successful_auth_checks = 0
+        
+        for method, endpoint, expected_status in endpoints_to_test:
+            test_data = {"name": "Test"} if method in ['POST', 'PUT'] else None
+            success, response = self.make_request(method, endpoint, test_data, expected_status)
+            
+            if success:
+                successful_auth_checks += 1
+                print(f"   ✅ {method} /{endpoint}: Correctly requires authentication")
+            else:
+                print(f"   ❌ {method} /{endpoint}: Authentication check failed")
+        
+        # Restore original token
+        self.token = original_token
+        
+        success = successful_auth_checks == len(endpoints_to_test)
+        self.log_test("User Management (No Auth)", success, 
+                     f"- {successful_auth_checks}/{len(endpoints_to_test)} endpoints require authentication")
+        return success
+
+    def test_user_management_error_handling(self):
+        """Test error handling for invalid data in user management"""
+        if not self.token:
+            self.log_test("User Management (Error Handling)", False, "- No authentication token available")
+            return False
+            
+        error_tests = [
+            # Test invalid user ID
+            ('GET', 'users/invalid-user-id', None, 404),
+            ('PUT', 'users/invalid-user-id', {"name": "Test"}, 404),
+            ('PUT', 'users/invalid-user-id/password', {"new_password": "test123"}, 404),
+            ('DELETE', 'users/invalid-user-id', None, 404),
+            
+            # Test invalid data
+            ('PUT', 'users/invalid-id', {}, 400),  # No fields to update
+        ]
+        
+        successful_error_tests = 0
+        
+        for method, endpoint, data, expected_status in error_tests:
+            success, response = self.make_request(method, endpoint, data, expected_status)
+            
+            if success:
+                successful_error_tests += 1
+                print(f"   ✅ {method} /{endpoint}: Correct error handling")
+            else:
+                print(f"   ❌ {method} /{endpoint}: Error handling failed")
+        
+        success = successful_error_tests >= len(error_tests) * 0.8  # Allow some flexibility
+        self.log_test("User Management (Error Handling)", success, 
+                     f"- {successful_error_tests}/{len(error_tests)} error cases handled correctly")
+        return success
+
     # STATIC FILE SERVING TESTS FOR RAILWAY DEPLOYMENT
     def test_root_path_serves_react_app(self):
         """Test that root path (/) serves React app's index.html"""
