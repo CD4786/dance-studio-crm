@@ -2796,6 +2796,20 @@ class DanceStudioAPITester:
         self.test_get_teachers()
         self.test_get_teacher_by_id()
         
+        # MULTIPLE INSTRUCTOR AND BOOKING TYPE TESTS
+        print("\n👥 Multiple Instructor & Booking Type Tests:")
+        self.test_create_additional_teachers()
+        self.test_create_lesson_single_instructor()
+        self.test_create_lesson_multiple_instructors()
+        self.test_all_booking_types()
+        self.test_invalid_teacher_ids_error_handling()
+        self.test_lesson_retrieval_teacher_names_array()
+        self.test_single_lesson_retrieval_teacher_names_array()
+        self.test_daily_calendar_teacher_names_array()
+        self.test_student_ledger_teacher_names_array()
+        self.test_notification_system_multiple_teachers()
+        self.test_multiple_instructor_system_comprehensive()
+        
         # Student management tests
         print("\n👨‍🎓 Student Management Tests:")
         self.test_create_student()
