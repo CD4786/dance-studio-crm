@@ -170,7 +170,9 @@ class User(BaseModel):
     role: UserRole
     hashed_password: str
     studio_name: Optional[str] = None
+    is_active: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
 
 class Student(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
