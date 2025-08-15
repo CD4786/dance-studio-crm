@@ -114,6 +114,52 @@ class DanceStudioAPITester:
         self.log_test("User Login", success, f"- Token received: {'Yes' if self.token else 'No'}")
         return success
 
+    def test_admin_login(self):
+        """Test login with admin@test.com / admin123 credentials"""
+        login_data = {
+            "email": "admin@test.com",
+            "password": "admin123"
+        }
+        
+        success, response = self.make_request('POST', 'auth/login', login_data, 200)
+        
+        if success:
+            self.admin_token = response.get('access_token')
+            user_info = response.get('user', {})
+            print(f"   👤 Admin user: {user_info.get('name', 'Unknown')} ({user_info.get('role', 'Unknown')})")
+            
+        self.log_test("Admin Login", success, f"- Admin token received: {'Yes' if hasattr(self, 'admin_token') and self.admin_token else 'No'}")
+        return success
+
+    def test_token_validation(self):
+        """Test JWT token validation"""
+        if not self.token:
+            self.log_test("Token Validation", False, "- No token available")
+            return False
+            
+        # Test accessing a protected endpoint
+        success, response = self.make_request('GET', 'students', expected_status=200)
+        
+        self.log_test("Token Validation", success, f"- Protected endpoint accessible: {'Yes' if success else 'No'}")
+        return success
+
+    def test_invalid_token(self):
+        """Test with invalid token"""
+        # Save current token
+        original_token = self.token
+        
+        # Set invalid token
+        self.token = "invalid.token.here"
+        
+        # Try to access protected endpoint
+        success, response = self.make_request('GET', 'students', expected_status=401)
+        
+        # Restore original token
+        self.token = original_token
+        
+        self.log_test("Invalid Token", success, f"- Expected 401 Unauthorized")
+        return success
+
     def test_dashboard_stats(self):
         """Test dashboard stats endpoint"""
         success, response = self.make_request('GET', 'dashboard/stats', expected_status=200)
