@@ -416,15 +416,121 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     }
   };
 
-  const calculateInstructorStats = async (teacherId) => {
+  // Optimized data fetching with caching and error handling
+  const [dataCache, setDataCache] = useState(new Map());
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Optimized fetch function with caching
+  const fetchWithCache = useCallback(async (url, cacheKey, forceRefresh = false) => {
+    setError(null);
+    
+    // Return cached data if available and not forcing refresh
+    if (!forceRefresh && dataCache.has(cacheKey)) {
+      const cached = dataCache.get(cacheKey);
+      // Check if cache is still valid (5 minutes)
+      if (Date.now() - cached.timestamp < 300000) {
+        return cached.data;
+      }
+    }
+
     try {
-      // Get all lessons for the instructor
+      setIsLoading(true);
+      const response = await axios.get(url);
+      const data = response.data;
+      
+      // Cache the data
+      setDataCache(prev => new Map(prev).set(cacheKey, {
+        data,
+        timestamp: Date.now()
+      }));
+      
+      return data;
+    } catch (error) {
+      console.error(`Error fetching ${url}:`, error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to fetch data';
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dataCache]);
+
+  // Optimized daily data fetching
+  const fetchDailyData = useCallback(async (forceRefresh = false) => {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    const cacheKey = `daily-${dateStr}`;
+    
+    try {
+      const data = await fetchWithCache(`${API}/calendar/daily/${dateStr}`, cacheKey, forceRefresh);
+      setCalendarData(data);
+      
+      // Update instructor stats efficiently
+      if (data.teachers) {
+        const statsPromises = data.teachers.map(teacher => 
+          calculateInstructorStats(teacher.id)
+        );
+        const stats = await Promise.all(statsPromises);
+        const statsMap = {};
+        data.teachers.forEach((teacher, index) => {
+          statsMap[teacher.id] = stats[index];
+        });
+        setInstructorStats(statsMap);
+      }
+    } catch (error) {
+      console.error('Failed to fetch daily data:', error);
+      // Don't throw, just log the error
+    }
+  }, [currentDate, fetchWithCache]);
+
+  // Memoized instructor stats calculation  
+  const calculateInstructorStats = useCallback(async (teacherId) => {
+    const cacheKey = `stats-${teacherId}`;
+    
+    try {
+      const cached = dataCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < 60000) { // 1 minute cache
+        return cached.data;
+      }
+
       const response = await axios.get(`${API}/lessons`);
-      // Filter lessons that include this teacher in teacher_ids array or old teacher_id field
       const allLessons = response.data.filter(lesson => 
         (lesson.teacher_ids && lesson.teacher_ids.includes(teacherId)) ||
         lesson.teacher_id === teacherId
       );
+
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      const stats = {
+        daily: allLessons.filter(lesson => {
+          const lessonDate = new Date(lesson.start_datetime);
+          return lessonDate.toDateString() === today.toDateString();
+        }).length,
+        weekly: allLessons.filter(lesson => {
+          const lessonDate = new Date(lesson.start_datetime);
+          return lessonDate >= startOfWeek && lessonDate <= today;
+        }).length,
+        monthly: allLessons.filter(lesson => {
+          const lessonDate = new Date(lesson.start_datetime);
+          return lessonDate >= startOfMonth && lessonDate <= today;
+        }).length
+      };
+
+      // Cache the stats
+      setDataCache(prev => new Map(prev).set(cacheKey, {
+        data: stats,
+        timestamp: Date.now()
+      }));
+
+      return stats;
+    } catch (error) {
+      console.error('Failed to calculate instructor stats:', error);
+      return { daily: 0, weekly: 0, monthly: 0 };
+    }
+  }, [dataCache]);
       
       const today = new Date(currentDate);
       const todayStart = new Date(today);
