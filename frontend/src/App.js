@@ -992,6 +992,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         title="Edit Private Lesson"
       >
         <form onSubmit={handleUpdateLesson}>
+          {/* Student Selection */}
           <div className="form-group">
             <label>Student</label>
             <select
@@ -1006,6 +1007,59 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
               ))}
             </select>
           </div>
+
+          {/* Booking Type Selection */}
+          <div className="form-group">
+            <label>Booking Type</label>
+            <select
+              value={newLessonData.booking_type}
+              onChange={(e) => setNewLessonData({...newLessonData, booking_type: e.target.value})}
+              required
+              className="input"
+            >
+              <option value="private_lesson">Private Lesson</option>
+              <option value="meeting">Meeting</option>
+              <option value="training">Training</option>
+              <option value="party">Party</option>
+            </select>
+          </div>
+
+          {/* Multiple Instructor Selection */}
+          <div className="form-group">
+            <label>Instructors</label>
+            <div className="instructor-selection">
+              {teachers.map(teacher => (
+                <div key={teacher.id} className="instructor-checkbox">
+                  <input
+                    type="checkbox"
+                    id={`edit-teacher-${teacher.id}`}
+                    checked={newLessonData.teacher_ids.includes(teacher.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setNewLessonData({
+                          ...newLessonData,
+                          teacher_ids: [...newLessonData.teacher_ids, teacher.id]
+                        });
+                      } else {
+                        setNewLessonData({
+                          ...newLessonData,
+                          teacher_ids: newLessonData.teacher_ids.filter(id => id !== teacher.id)
+                        });
+                      }
+                    }}
+                  />
+                  <label htmlFor={`edit-teacher-${teacher.id}`} className="instructor-label">
+                    {teacher.name}
+                  </label>
+                </div>
+              ))}
+            </div>
+            {newLessonData.teacher_ids.length === 0 && (
+              <p className="error-text">Please select at least one instructor</p>
+            )}
+          </div>
+
+          {/* Notes */}
           <div className="form-group">
             <label>Notes</label>
             <textarea
@@ -1016,7 +1070,13 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
               rows="3"
             />
           </div>
-          <Button type="submit">Update Lesson</Button>
+          
+          <Button 
+            type="submit"
+            disabled={newLessonData.teacher_ids.length === 0}
+          >
+            Update Lesson
+          </Button>
         </form>
       </Modal>
 
