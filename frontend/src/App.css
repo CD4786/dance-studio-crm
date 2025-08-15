@@ -169,9 +169,9 @@ body {
 /* Sidebar */
 .sidebar {
   width: 280px;
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--glass-bg);
   backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(148, 163, 184, 0.1);
+  border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
   position: fixed;
