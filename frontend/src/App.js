@@ -2212,6 +2212,12 @@ const MainApp = () => {
           >
             ⚙️ Settings
           </button>
+          <button 
+            className={currentView === 'users' ? 'nav-item active' : 'nav-item'}
+            onClick={() => setCurrentView('users')}
+          >
+            👥 Users
+          </button>
         </div>
         
         <div className="sidebar-footer">
