@@ -18,6 +18,7 @@ from passlib.context import CryptContext
 import hashlib
 import json
 import asyncio
+import bcrypt
 
 # SMS Integration
 try:
