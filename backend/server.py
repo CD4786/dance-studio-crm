@@ -1256,7 +1256,13 @@ async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate
     # Get updated lesson with enriched data
     updated_lesson = await db.lessons.find_one({"id": lesson_id})
     student = await db.students.find_one({"id": updated_lesson["student_id"]})
-    teacher = await db.teachers.find_one({"id": updated_lesson["teacher_id"]})
+    
+    # Get all teachers for this lesson and collect their names
+    teacher_names = []
+    for teacher_id in updated_lesson.get("teacher_ids", []):
+        teacher = await db.teachers.find_one({"id": teacher_id})
+        if teacher:
+            teacher_names.append(teacher["name"])
     
     # Broadcast real-time update
     await manager.broadcast_update(
@@ -1265,7 +1271,7 @@ async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate
             "lesson_id": lesson_id,
             "lesson": updated_lesson,
             "student_name": student["name"] if student else "Unknown",
-            "teacher_name": teacher["name"] if teacher else "Unknown"
+            "teacher_names": teacher_names
         },
         current_user.id,
         current_user.name
@@ -1274,7 +1280,7 @@ async def update_private_lesson(lesson_id: str, lesson_data: PrivateLessonUpdate
     return PrivateLessonResponse(
         **updated_lesson,
         student_name=student["name"] if student else "Unknown",
-        teacher_name=teacher["name"] if teacher else "Unknown"
+        teacher_names=teacher_names
     )
 
 @api_router.delete("/lessons/{lesson_id}")
