@@ -2390,6 +2390,84 @@ async def reset_settings_to_defaults(current_user: User = Depends(get_current_us
     
     return {"message": "Settings reset to defaults successfully"}
 
+# Teacher Color Management Routes
+@api_router.get("/teachers/{teacher_id}/color")
+async def get_teacher_color(teacher_id: str):
+    """Get teacher's assigned color"""
+    teacher = await db.teachers.find_one({"id": teacher_id})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    color = teacher.get("assigned_color", "#3b82f6")  # Default blue
+    return {"teacher_id": teacher_id, "color": color}
+
+@api_router.put("/teachers/{teacher_id}/color")
+async def update_teacher_color(teacher_id: str, color_data: Dict[str, str], current_user: User = Depends(get_current_user)):
+    """Update teacher's assigned color"""
+    if current_user.role not in ["owner", "manager"]:
+        raise HTTPException(status_code=403, detail="Only owners and managers can change teacher colors")
+    
+    teacher = await db.teachers.find_one({"id": teacher_id})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    color = color_data.get("color", "#3b82f6")
+    
+    # Validate hex color format
+    if not color.startswith("#") or len(color) != 7:
+        raise HTTPException(status_code=400, detail="Invalid color format. Use hex format like #3b82f6")
+    
+    await db.teachers.update_one(
+        {"id": teacher_id},
+        {"$set": {"assigned_color": color, "updated_at": datetime.utcnow()}}
+    )
+    
+    return {"teacher_id": teacher_id, "color": color, "message": "Teacher color updated successfully"}
+
+@api_router.post("/teachers/colors/auto-assign")
+async def auto_assign_teacher_colors(current_user: User = Depends(get_current_user)):
+    """Automatically assign unique colors to all teachers"""
+    if current_user.role not in ["owner", "manager"]:
+        raise HTTPException(status_code=403, detail="Only owners and managers can assign teacher colors")
+    
+    # Predefined color palette
+    color_palette = [
+        "#3b82f6",  # Blue
+        "#ef4444",  # Red
+        "#22c55e",  # Green
+        "#f59e0b",  # Amber
+        "#a855f7",  # Purple
+        "#ec4899",  # Pink
+        "#06b6d4",  # Cyan
+        "#84cc16",  # Lime
+        "#f97316",  # Orange
+        "#8b5cf6",  # Violet
+        "#14b8a6",  # Teal
+        "#f43f5e",  # Rose
+    ]
+    
+    teachers = await db.teachers.find().to_list(1000)
+    assignments = []
+    
+    for i, teacher in enumerate(teachers):
+        color = color_palette[i % len(color_palette)]
+        
+        await db.teachers.update_one(
+            {"id": teacher["id"]},
+            {"$set": {"assigned_color": color, "updated_at": datetime.utcnow()}}
+        )
+        
+        assignments.append({
+            "teacher_id": teacher["id"],
+            "teacher_name": teacher["name"],
+            "color": color
+        })
+    
+    return {
+        "message": f"Assigned colors to {len(assignments)} teachers",
+        "assignments": assignments
+    }
+
 # User Management Routes
 @api_router.get("/users", response_model=List[UserResponse])
 async def get_all_users(current_user: User = Depends(get_current_user)):
