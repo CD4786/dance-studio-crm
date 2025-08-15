@@ -1229,12 +1229,18 @@ async def get_private_lesson(lesson_id: str):
         raise HTTPException(status_code=404, detail="Lesson not found")
     
     student = await db.students.find_one({"id": lesson["student_id"]})
-    teacher = await db.teachers.find_one({"id": lesson["teacher_id"]})
+    
+    # Get all teachers for this lesson
+    teacher_names = []
+    for teacher_id in lesson.get("teacher_ids", []):
+        teacher = await db.teachers.find_one({"id": teacher_id})
+        if teacher:
+            teacher_names.append(teacher["name"])
     
     return PrivateLessonResponse(
         **lesson,
         student_name=student["name"] if student else "Unknown",
-        teacher_name=teacher["name"] if teacher else "Unknown"
+        teacher_names=teacher_names
     )
 
 @api_router.put("/lessons/{lesson_id}", response_model=PrivateLessonResponse)
