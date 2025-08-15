@@ -1254,6 +1254,432 @@ class DanceStudioAPITester:
         self.log_test("Notification Preferences Invalid Student", success, "- Expected 404 error")
         return success
 
+    # ENHANCED SETTINGS SYSTEM TESTS
+    def test_enhanced_settings_system_creation(self):
+        """Test that all 38+ enhanced settings are created properly"""
+        success, response = self.make_request('GET', 'settings', expected_status=200)
+        
+        if success:
+            settings_count = len(response) if isinstance(response, list) else 0
+            
+            # Check for all expected categories
+            categories = set()
+            for setting in response:
+                categories.add(setting.get('category', ''))
+            
+            expected_categories = {'business', 'system', 'theme', 'booking', 'calendar', 'display', 'business_rules', 'program', 'notification'}
+            has_all_categories = expected_categories.issubset(categories)
+            
+            # Verify we have at least 38 settings
+            success = success and settings_count >= 38 and has_all_categories
+            
+        self.log_test("Enhanced Settings System Creation", success, 
+                     f"- Found {settings_count} settings across {len(categories)} categories")
+        return success
+
+    def test_theme_settings_functionality(self):
+        """Test theme settings (selection, font size, UI preferences, custom colors, animation, glassmorphism)"""
+        theme_tests = [
+            {"category": "theme", "key": "selected_theme", "value": "ocean", "type": "string"},
+            {"category": "theme", "key": "font_size", "value": "large", "type": "string"},
+            {"category": "theme", "key": "animations_enabled", "value": False, "type": "boolean"},
+            {"category": "theme", "key": "glassmorphism_enabled", "value": False, "type": "boolean"},
+            {"category": "theme", "key": "custom_primary_color", "value": "#ff6b6b", "type": "string"},
+            {"category": "theme", "key": "custom_secondary_color", "value": "#4ecdc4", "type": "string"}
+        ]
+        
+        successful_updates = 0
+        
+        for test_case in theme_tests:
+            # Update the setting
+            update_data = {"value": test_case["value"]}
+            success, response = self.make_request('PUT', f'settings/{test_case["category"]}/{test_case["key"]}', 
+                                                update_data, 200)
+            
+            if success:
+                returned_value = response.get('value')
+                if returned_value == test_case["value"]:
+                    successful_updates += 1
+                    print(f"   ✅ {test_case['key']}: Updated to {returned_value}")
+                else:
+                    print(f"   ❌ {test_case['key']}: Value mismatch - got {returned_value}")
+            else:
+                print(f"   ❌ {test_case['key']}: Failed to update")
+        
+        success = successful_updates == len(theme_tests)
+        self.log_test("Theme Settings Functionality", success, 
+                     f"- {successful_updates}/{len(theme_tests)} theme settings updated successfully")
+        return success
+
+    def test_booking_color_settings(self):
+        """Test booking type color assignments, status colors, and teacher color coding"""
+        booking_color_tests = [
+            {"category": "booking", "key": "private_lesson_color", "value": "#ff5722", "type": "string"},
+            {"category": "booking", "key": "meeting_color", "value": "#4caf50", "type": "string"},
+            {"category": "booking", "key": "training_color", "value": "#ff9800", "type": "string"},
+            {"category": "booking", "key": "party_color", "value": "#e91e63", "type": "string"},
+            {"category": "booking", "key": "confirmed_status_color", "value": "#2196f3", "type": "string"},
+            {"category": "booking", "key": "pending_status_color", "value": "#ffc107", "type": "string"},
+            {"category": "booking", "key": "cancelled_status_color", "value": "#f44336", "type": "string"},
+            {"category": "booking", "key": "teacher_color_coding_enabled", "value": False, "type": "boolean"}
+        ]
+        
+        successful_updates = 0
+        
+        for test_case in booking_color_tests:
+            # Update the setting
+            update_data = {"value": test_case["value"]}
+            success, response = self.make_request('PUT', f'settings/{test_case["category"]}/{test_case["key"]}', 
+                                                update_data, 200)
+            
+            if success:
+                returned_value = response.get('value')
+                if returned_value == test_case["value"]:
+                    successful_updates += 1
+                    print(f"   ✅ {test_case['key']}: Updated to {returned_value}")
+                else:
+                    print(f"   ❌ {test_case['key']}: Value mismatch - got {returned_value}")
+            else:
+                print(f"   ❌ {test_case['key']}: Failed to update")
+        
+        success = successful_updates == len(booking_color_tests)
+        self.log_test("Booking Color Settings", success, 
+                     f"- {successful_updates}/{len(booking_color_tests)} booking color settings updated successfully")
+        return success
+
+    def test_teacher_color_management_get(self):
+        """Test GET /api/teachers/{id}/color"""
+        if not self.created_teacher_id:
+            self.log_test("Teacher Color Management GET", False, "- No teacher ID available")
+            return False
+            
+        success, response = self.make_request('GET', f'teachers/{self.created_teacher_id}/color', expected_status=200)
+        
+        if success:
+            teacher_id = response.get('teacher_id')
+            color = response.get('color')
+            
+            # Verify response structure and default color
+            success = success and teacher_id == self.created_teacher_id and color.startswith('#')
+            
+        self.log_test("Teacher Color Management GET", success, 
+                     f"- Teacher {teacher_id}: Color {color}")
+        return success
+
+    def test_teacher_color_management_put(self):
+        """Test PUT /api/teachers/{id}/color with valid hex colors"""
+        if not self.created_teacher_id:
+            self.log_test("Teacher Color Management PUT", False, "- No teacher ID available")
+            return False
+            
+        test_colors = ["#ff6b6b", "#4ecdc4", "#45b7d1", "#96ceb4", "#feca57"]
+        successful_updates = 0
+        
+        for color in test_colors:
+            color_data = {"color": color}
+            success, response = self.make_request('PUT', f'teachers/{self.created_teacher_id}/color', 
+                                                color_data, 200)
+            
+            if success:
+                returned_color = response.get('color')
+                if returned_color == color:
+                    successful_updates += 1
+                    print(f"   ✅ Color {color}: Updated successfully")
+                else:
+                    print(f"   ❌ Color {color}: Mismatch - got {returned_color}")
+            else:
+                print(f"   ❌ Color {color}: Failed to update")
+        
+        success = successful_updates == len(test_colors)
+        self.log_test("Teacher Color Management PUT", success, 
+                     f"- {successful_updates}/{len(test_colors)} color updates successful")
+        return success
+
+    def test_teacher_color_validation(self):
+        """Test color validation and error handling"""
+        if not self.created_teacher_id:
+            self.log_test("Teacher Color Validation", False, "- No teacher ID available")
+            return False
+            
+        invalid_colors = ["invalid", "#gg1122", "red", "#12345", "#1234567"]
+        validation_tests_passed = 0
+        
+        for invalid_color in invalid_colors:
+            color_data = {"color": invalid_color}
+            success, response = self.make_request('PUT', f'teachers/{self.created_teacher_id}/color', 
+                                                color_data, 400)
+            
+            if success:
+                validation_tests_passed += 1
+                print(f"   ✅ Invalid color {invalid_color}: Correctly rejected")
+            else:
+                print(f"   ❌ Invalid color {invalid_color}: Should have been rejected")
+        
+        success = validation_tests_passed == len(invalid_colors)
+        self.log_test("Teacher Color Validation", success, 
+                     f"- {validation_tests_passed}/{len(invalid_colors)} validation tests passed")
+        return success
+
+    def test_teacher_color_auto_assign(self):
+        """Test POST /api/teachers/colors/auto-assign"""
+        success, response = self.make_request('POST', 'teachers/colors/auto-assign', expected_status=200)
+        
+        if success:
+            message = response.get('message', '')
+            assignments = response.get('assignments', [])
+            assignments_count = len(assignments)
+            
+            # Verify all assignments have required fields
+            valid_assignments = 0
+            for assignment in assignments:
+                if all(key in assignment for key in ['teacher_id', 'teacher_name', 'color']):
+                    if assignment['color'].startswith('#') and len(assignment['color']) == 7:
+                        valid_assignments += 1
+            
+            success = success and valid_assignments == assignments_count
+            
+        self.log_test("Teacher Color Auto-Assign", success, 
+                     f"- Assigned colors to {assignments_count} teachers")
+        return success
+
+    def test_calendar_display_settings(self):
+        """Test calendar configuration and display preferences"""
+        calendar_display_tests = [
+            {"category": "calendar", "key": "default_view", "value": "weekly", "type": "string"},
+            {"category": "calendar", "key": "start_hour", "value": 8, "type": "integer"},
+            {"category": "calendar", "key": "end_hour", "value": 22, "type": "integer"},
+            {"category": "calendar", "key": "time_slot_minutes", "value": 30, "type": "integer"},
+            {"category": "calendar", "key": "weekend_enabled", "value": False, "type": "boolean"},
+            {"category": "calendar", "key": "instructor_stats_enabled", "value": False, "type": "boolean"},
+            {"category": "display", "key": "compact_mode", "value": True, "type": "boolean"},
+            {"category": "display", "key": "show_lesson_notes", "value": False, "type": "boolean"},
+            {"category": "display", "key": "currency_symbol", "value": "€", "type": "string"},
+            {"category": "display", "key": "language", "value": "es", "type": "string"}
+        ]
+        
+        successful_updates = 0
+        
+        for test_case in calendar_display_tests:
+            # Update the setting
+            update_data = {"value": test_case["value"]}
+            success, response = self.make_request('PUT', f'settings/{test_case["category"]}/{test_case["key"]}', 
+                                                update_data, 200)
+            
+            if success:
+                returned_value = response.get('value')
+                if returned_value == test_case["value"]:
+                    successful_updates += 1
+                    print(f"   ✅ {test_case['key']}: Updated to {returned_value}")
+                else:
+                    print(f"   ❌ {test_case['key']}: Value mismatch - got {returned_value}")
+            else:
+                print(f"   ❌ {test_case['key']}: Failed to update")
+        
+        success = successful_updates == len(calendar_display_tests)
+        self.log_test("Calendar & Display Settings", success, 
+                     f"- {successful_updates}/{len(calendar_display_tests)} settings updated successfully")
+        return success
+
+    def test_business_rules_with_float_data_type(self):
+        """Test business rules settings including new float data type"""
+        business_rules_tests = [
+            {"category": "business_rules", "key": "cancellation_policy_hours", "value": 48, "type": "integer"},
+            {"category": "business_rules", "key": "max_advance_booking_days", "value": 120, "type": "integer"},
+            {"category": "business_rules", "key": "auto_confirm_bookings", "value": False, "type": "boolean"},
+            {"category": "business_rules", "key": "require_payment_before_booking", "value": True, "type": "boolean"},
+            {"category": "business_rules", "key": "late_cancellation_fee", "value": 75.50, "type": "float"}
+        ]
+        
+        successful_updates = 0
+        
+        for test_case in business_rules_tests:
+            # Update the setting
+            update_data = {"value": test_case["value"]}
+            success, response = self.make_request('PUT', f'settings/{test_case["category"]}/{test_case["key"]}', 
+                                                update_data, 200)
+            
+            if success:
+                returned_value = response.get('value')
+                if returned_value == test_case["value"]:
+                    successful_updates += 1
+                    print(f"   ✅ {test_case['key']}: Updated to {returned_value} ({test_case['type']})")
+                else:
+                    print(f"   ❌ {test_case['key']}: Value mismatch - got {returned_value}")
+            else:
+                print(f"   ❌ {test_case['key']}: Failed to update")
+        
+        success = successful_updates == len(business_rules_tests)
+        self.log_test("Business Rules with Float Data Type", success, 
+                     f"- {successful_updates}/{len(business_rules_tests)} business rules updated successfully")
+        return success
+
+    def test_settings_by_category_retrieval(self):
+        """Test getting settings by category"""
+        categories_to_test = ['theme', 'booking', 'calendar', 'display', 'business_rules']
+        successful_retrievals = 0
+        
+        for category in categories_to_test:
+            success, response = self.make_request('GET', f'settings/{category}', expected_status=200)
+            
+            if success:
+                settings_count = len(response) if isinstance(response, list) else 0
+                # Verify all returned settings belong to the requested category
+                correct_category = all(setting.get('category') == category for setting in response)
+                
+                if settings_count > 0 and correct_category:
+                    successful_retrievals += 1
+                    print(f"   ✅ {category}: Found {settings_count} settings")
+                else:
+                    print(f"   ❌ {category}: Category mismatch or no settings")
+            else:
+                print(f"   ❌ {category}: Failed to retrieve")
+        
+        success = successful_retrievals == len(categories_to_test)
+        self.log_test("Settings by Category Retrieval", success, 
+                     f"- {successful_retrievals}/{len(categories_to_test)} categories retrieved successfully")
+        return success
+
+    def test_individual_setting_retrieval(self):
+        """Test getting individual settings by category and key"""
+        individual_settings_tests = [
+            {"category": "theme", "key": "selected_theme"},
+            {"category": "booking", "key": "private_lesson_color"},
+            {"category": "calendar", "key": "default_view"},
+            {"category": "business_rules", "key": "late_cancellation_fee"},
+            {"category": "display", "key": "language"}
+        ]
+        
+        successful_retrievals = 0
+        
+        for test_case in individual_settings_tests:
+            success, response = self.make_request('GET', f'settings/{test_case["category"]}/{test_case["key"]}', 
+                                                expected_status=200)
+            
+            if success:
+                category = response.get('category')
+                key = response.get('key')
+                value = response.get('value')
+                
+                if category == test_case["category"] and key == test_case["key"] and value is not None:
+                    successful_retrievals += 1
+                    print(f"   ✅ {category}/{key}: {value}")
+                else:
+                    print(f"   ❌ {category}/{key}: Data mismatch")
+            else:
+                print(f"   ❌ {test_case['category']}/{test_case['key']}: Failed to retrieve")
+        
+        success = successful_retrievals == len(individual_settings_tests)
+        self.log_test("Individual Setting Retrieval", success, 
+                     f"- {successful_retrievals}/{len(individual_settings_tests)} individual settings retrieved successfully")
+        return success
+
+    def test_settings_data_integrity(self):
+        """Test that settings save and retrieve correctly with different data types"""
+        data_integrity_tests = [
+            {"category": "theme", "key": "selected_theme", "value": "sunset", "expected_type": str},
+            {"category": "calendar", "key": "start_hour", "value": 7, "expected_type": int},
+            {"category": "theme", "key": "animations_enabled", "value": True, "expected_type": bool},
+            {"category": "business_rules", "key": "late_cancellation_fee", "value": 99.99, "expected_type": float},
+            {"category": "program", "key": "available_dance_styles", "value": ["Ballet", "Jazz", "Hip Hop"], "expected_type": list}
+        ]
+        
+        successful_integrity_tests = 0
+        
+        for test_case in data_integrity_tests:
+            # First update the setting
+            update_data = {"value": test_case["value"]}
+            success, update_response = self.make_request('PUT', f'settings/{test_case["category"]}/{test_case["key"]}', 
+                                                       update_data, 200)
+            
+            if success:
+                # Then retrieve it to verify data integrity
+                success, get_response = self.make_request('GET', f'settings/{test_case["category"]}/{test_case["key"]}', 
+                                                        expected_status=200)
+                
+                if success:
+                    retrieved_value = get_response.get('value')
+                    data_type = get_response.get('data_type')
+                    
+                    # Check value and type integrity
+                    if (retrieved_value == test_case["value"] and 
+                        type(retrieved_value) == test_case["expected_type"]):
+                        successful_integrity_tests += 1
+                        print(f"   ✅ {test_case['key']}: Data integrity maintained ({data_type})")
+                    else:
+                        print(f"   ❌ {test_case['key']}: Data integrity failed - got {retrieved_value} ({type(retrieved_value)})")
+                else:
+                    print(f"   ❌ {test_case['key']}: Failed to retrieve after update")
+            else:
+                print(f"   ❌ {test_case['key']}: Failed to update")
+        
+        success = successful_integrity_tests == len(data_integrity_tests)
+        self.log_test("Settings Data Integrity", success, 
+                     f"- {successful_integrity_tests}/{len(data_integrity_tests)} data integrity tests passed")
+        return success
+
+    def test_hex_color_format_validation(self):
+        """Test hex color format validation works correctly"""
+        if not self.created_teacher_id:
+            self.log_test("Hex Color Format Validation", False, "- No teacher ID available")
+            return False
+            
+        # Test valid hex colors
+        valid_colors = ["#ffffff", "#000000", "#ff6b6b", "#4ecdc4", "#a855f7"]
+        valid_tests_passed = 0
+        
+        for color in valid_colors:
+            color_data = {"color": color}
+            success, response = self.make_request('PUT', f'teachers/{self.created_teacher_id}/color', 
+                                                color_data, 200)
+            if success:
+                valid_tests_passed += 1
+        
+        # Test invalid hex colors
+        invalid_colors = ["#gggggg", "#12345", "#1234567", "red", "invalid"]
+        invalid_tests_passed = 0
+        
+        for color in invalid_colors:
+            color_data = {"color": color}
+            success, response = self.make_request('PUT', f'teachers/{self.created_teacher_id}/color', 
+                                                color_data, 400)
+            if success:
+                invalid_tests_passed += 1
+        
+        total_tests = len(valid_colors) + len(invalid_colors)
+        passed_tests = valid_tests_passed + invalid_tests_passed
+        success = passed_tests == total_tests
+        
+        self.log_test("Hex Color Format Validation", success, 
+                     f"- {passed_tests}/{total_tests} color validation tests passed")
+        return success
+
+    def test_settings_reset_to_defaults(self):
+        """Test settings reset functionality"""
+        # First modify some settings
+        modifications = [
+            {"category": "theme", "key": "selected_theme", "value": "custom"},
+            {"category": "calendar", "key": "start_hour", "value": 6}
+        ]
+        
+        for mod in modifications:
+            update_data = {"value": mod["value"]}
+            self.make_request('PUT', f'settings/{mod["category"]}/{mod["key"]}', update_data, 200)
+        
+        # Reset to defaults
+        success, response = self.make_request('POST', 'settings/reset-defaults', expected_status=200)
+        
+        if success:
+            message = response.get('message', '')
+            
+            # Verify settings were reset by checking a few key values
+            success, theme_response = self.make_request('GET', 'settings/theme/selected_theme', expected_status=200)
+            if success:
+                theme_value = theme_response.get('value')
+                success = success and theme_value == "dark"  # Default value
+            
+        self.log_test("Settings Reset to Defaults", success, f"- {message}")
+        return success
+
     # USER MANAGEMENT SYSTEM TESTS
     def test_user_listing_with_owner_permissions(self):
         """Test GET /api/users with owner permissions"""
