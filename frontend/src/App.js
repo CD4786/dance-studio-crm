@@ -2233,7 +2233,7 @@ const MainApp = () => {
         {currentView === 'weekly' && (
           <WeeklyCalendar 
             selectedDate={selectedDate} 
-            onRefresh={refreshKey}
+            onRefresh={handleRefresh}
           />
         )}
         {currentView === 'students' && (
