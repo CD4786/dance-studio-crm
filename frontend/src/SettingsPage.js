@@ -115,6 +115,144 @@ const SettingsPage = () => {
     const key = setting.key;
     const value = formData[category]?.[key] || setting.value;
 
+    // Special handling for different setting types
+    if (key.includes('color')) {
+      return (
+        <div className="setting-input-group">
+          <label>{setting.description || key}</label>
+          <div className="color-input-group">
+            <input
+              type="color"
+              value={value || '#3b82f6'}
+              onChange={(e) => handleInputChange(category, key, e.target.value)}
+              className="color-picker"
+            />
+            <input
+              type="text"
+              value={value || '#3b82f6'}
+              onChange={(e) => handleInputChange(category, key, e.target.value)}
+              className="color-text-input"
+              placeholder="#3b82f6"
+            />
+            <button 
+              onClick={() => handleSaveSetting(category, key)}
+              className="btn btn-outline btn-sm"
+              disabled={saving}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (key === 'selected_theme') {
+      return (
+        <div className="setting-input-group">
+          <label>{setting.description || key}</label>
+          <div className="input-with-button">
+            <select
+              value={value || 'dark'}
+              onChange={(e) => handleInputChange(category, key, e.target.value)}
+              className="input"
+            >
+              <option value="dark">🌙 Dark Theme</option>
+              <option value="light">☀️ Light Theme</option>
+              <option value="ocean">🌊 Ocean Theme</option>
+              <option value="sunset">🌅 Sunset Theme</option>
+              <option value="forest">🌲 Forest Theme</option>
+              <option value="royal">👑 Royal Theme</option>
+            </select>
+            <button 
+              onClick={() => handleSaveSetting(category, key)}
+              className="btn btn-outline btn-sm"
+              disabled={saving}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (key === 'font_size') {
+      return (
+        <div className="setting-input-group">
+          <label>{setting.description || key}</label>
+          <div className="input-with-button">
+            <select
+              value={value || 'medium'}
+              onChange={(e) => handleInputChange(category, key, e.target.value)}
+              className="input"
+            >
+              <option value="small">📝 Small</option>
+              <option value="medium">📄 Medium</option>
+              <option value="large">📰 Large</option>
+            </select>
+            <button 
+              onClick={() => handleSaveSetting(category, key)}
+              className="btn btn-outline btn-sm"
+              disabled={saving}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (key === 'default_view') {
+      return (
+        <div className="setting-input-group">
+          <label>{setting.description || key}</label>
+          <div className="input-with-button">
+            <select
+              value={value || 'daily'}
+              onChange={(e) => handleInputChange(category, key, e.target.value)}
+              className="input"
+            >
+              <option value="daily">📅 Daily View</option>
+              <option value="weekly">📆 Weekly View</option>
+            </select>
+            <button 
+              onClick={() => handleSaveSetting(category, key)}
+              className="btn btn-outline btn-sm"
+              disabled={saving}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (key === 'language') {
+      return (
+        <div className="setting-input-group">
+          <label>{setting.description || key}</label>
+          <div className="input-with-button">
+            <select
+              value={value || 'en'}
+              onChange={(e) => handleInputChange(category, key, e.target.value)}
+              className="input"
+            >
+              <option value="en">🇺🇸 English</option>
+              <option value="es">🇪🇸 Spanish</option>
+              <option value="fr">🇫🇷 French</option>
+              <option value="de">🇩🇪 German</option>
+            </select>
+            <button 
+              onClick={() => handleSaveSetting(category, key)}
+              className="btn btn-outline btn-sm"
+              disabled={saving}
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     switch (setting.data_type) {
       case 'boolean':
         return (
@@ -146,6 +284,29 @@ const SettingsPage = () => {
                 type="number"
                 value={value || ''}
                 onChange={(e) => handleInputChange(category, key, parseInt(e.target.value) || 0)}
+                className="input"
+              />
+              <button 
+                onClick={() => handleSaveSetting(category, key)}
+                className="btn btn-outline btn-sm"
+                disabled={saving}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        );
+
+      case 'float':
+        return (
+          <div className="setting-input-group">
+            <label>{setting.description || key}</label>
+            <div className="input-with-button">
+              <input
+                type="number"
+                step="0.01"
+                value={value || ''}
+                onChange={(e) => handleInputChange(category, key, parseFloat(e.target.value) || 0)}
                 className="input"
               />
               <button 
