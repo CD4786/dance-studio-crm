@@ -3566,6 +3566,453 @@ class DanceStudioAPITester:
             print(f"⚠️  {self.tests_run - self.tests_passed} tests failed")
             return 1
 
+    # SETTINGS MANAGEMENT SYSTEM TESTS
+    def test_get_all_settings(self):
+        """Test getting all application settings"""
+        success, response = self.make_request('GET', 'settings', expected_status=200)
+        
+        if success:
+            settings_count = len(response) if isinstance(response, list) else 0
+            
+            # Should have 15 default settings across 4 categories
+            expected_count = 15
+            has_expected_count = settings_count >= expected_count
+            
+            # Check for required categories
+            categories_found = set()
+            for setting in response:
+                categories_found.add(setting.get('category', ''))
+            
+            expected_categories = {'business', 'system', 'program', 'notification'}
+            has_all_categories = expected_categories.issubset(categories_found)
+            
+            success = has_expected_count and has_all_categories
+            
+        self.log_test("Get All Settings", success, 
+                     f"- Found {settings_count} settings across {len(categories_found)} categories")
+        return success
+
+    def test_get_settings_by_category(self):
+        """Test getting settings by category"""
+        categories = ['business', 'system', 'program', 'notification']
+        successful_categories = 0
+        
+        for category in categories:
+            success, response = self.make_request('GET', f'settings/{category}', expected_status=200)
+            
+            if success and isinstance(response, list):
+                # Verify all returned settings belong to the requested category
+                all_correct_category = all(setting.get('category') == category for setting in response)
+                settings_count = len(response)
+                
+                if all_correct_category and settings_count > 0:
+                    successful_categories += 1
+                    print(f"   ✅ {category}: {settings_count} settings")
+                else:
+                    print(f"   ❌ {category}: Category mismatch or no settings")
+            else:
+                print(f"   ❌ {category}: Failed to retrieve")
+        
+        success = successful_categories == len(categories)
+        self.log_test("Get Settings by Category", success, 
+                     f"- {successful_categories}/{len(categories)} categories working")
+        return success
+
+    def test_get_setting_by_key(self):
+        """Test getting individual settings by category and key"""
+        test_settings = [
+            ('business', 'studio_name'),
+            ('system', 'timezone'),
+            ('program', 'default_lesson_duration'),
+            ('notification', 'email_notifications_enabled')
+        ]
+        
+        successful_retrievals = 0
+        
+        for category, key in test_settings:
+            success, response = self.make_request('GET', f'settings/{category}/{key}', expected_status=200)
+            
+            if success:
+                returned_category = response.get('category')
+                returned_key = response.get('key')
+                returned_value = response.get('value')
+                
+                if returned_category == category and returned_key == key and returned_value is not None:
+                    successful_retrievals += 1
+                    print(f"   ✅ {category}/{key}: {returned_value}")
+                else:
+                    print(f"   ❌ {category}/{key}: Data mismatch")
+            else:
+                print(f"   ❌ {category}/{key}: Failed to retrieve")
+        
+        success = successful_retrievals == len(test_settings)
+        self.log_test("Get Setting by Key", success, 
+                     f"- {successful_retrievals}/{len(test_settings)} individual settings retrieved")
+        return success
+
+    def test_update_setting_string(self):
+        """Test updating a string setting"""
+        if not self.token:
+            self.log_test("Update String Setting", False, "- No authentication token")
+            return False
+            
+        # Update studio name
+        update_data = {
+            "value": "Updated Dance Studio Name",
+            "updated_by": self.user_id
+        }
+        
+        success, response = self.make_request('PUT', 'settings/business/studio_name', update_data, 200)
+        
+        if success:
+            updated_value = response.get('value')
+            updated_by = response.get('updated_by')
+            
+            success = updated_value == update_data['value'] and updated_by == self.user_id
+            
+        self.log_test("Update String Setting", success, 
+                     f"- Studio name updated to: {updated_value}")
+        return success
+
+    def test_update_setting_integer(self):
+        """Test updating an integer setting"""
+        if not self.token:
+            self.log_test("Update Integer Setting", False, "- No authentication token")
+            return False
+            
+        # Update default lesson duration
+        update_data = {
+            "value": 90,
+            "updated_by": self.user_id
+        }
+        
+        success, response = self.make_request('PUT', 'settings/program/default_lesson_duration', update_data, 200)
+        
+        if success:
+            updated_value = response.get('value')
+            data_type = response.get('data_type')
+            
+            success = updated_value == update_data['value'] and data_type == 'integer'
+            
+        self.log_test("Update Integer Setting", success, 
+                     f"- Lesson duration updated to: {updated_value} minutes")
+        return success
+
+    def test_update_setting_boolean(self):
+        """Test updating a boolean setting"""
+        if not self.token:
+            self.log_test("Update Boolean Setting", False, "- No authentication token")
+            return False
+            
+        # Update email notifications
+        update_data = {
+            "value": False,
+            "updated_by": self.user_id
+        }
+        
+        success, response = self.make_request('PUT', 'settings/notification/email_notifications_enabled', update_data, 200)
+        
+        if success:
+            updated_value = response.get('value')
+            data_type = response.get('data_type')
+            
+            success = updated_value == update_data['value'] and data_type == 'boolean'
+            
+        self.log_test("Update Boolean Setting", success, 
+                     f"- Email notifications set to: {updated_value}")
+        return success
+
+    def test_update_setting_array(self):
+        """Test updating an array setting"""
+        if not self.token:
+            self.log_test("Update Array Setting", False, "- No authentication token")
+            return False
+            
+        # Update operating hours
+        update_data = {
+            "value": ["Monday-Friday: 8AM-10PM", "Saturday: 8AM-8PM", "Sunday: 10AM-6PM", "Holidays: Closed"],
+            "updated_by": self.user_id
+        }
+        
+        success, response = self.make_request('PUT', 'settings/business/operating_hours', update_data, 200)
+        
+        if success:
+            updated_value = response.get('value')
+            data_type = response.get('data_type')
+            
+            success = updated_value == update_data['value'] and data_type == 'array'
+            
+        self.log_test("Update Array Setting", success, 
+                     f"- Operating hours updated to {len(updated_value)} entries")
+        return success
+
+    def test_update_nonexistent_setting(self):
+        """Test updating a non-existent setting"""
+        if not self.token:
+            self.log_test("Update Non-existent Setting", False, "- No authentication token")
+            return False
+            
+        update_data = {
+            "value": "test value",
+            "updated_by": self.user_id
+        }
+        
+        success, response = self.make_request('PUT', 'settings/invalid/nonexistent_key', update_data, 404)
+        
+        self.log_test("Update Non-existent Setting", success, "- Expected 404 for non-existent setting")
+        return success
+
+    def test_update_setting_without_auth(self):
+        """Test updating setting without authentication"""
+        # Save current token
+        original_token = self.token
+        self.token = None
+        
+        update_data = {
+            "value": "unauthorized update"
+        }
+        
+        success, response = self.make_request('PUT', 'settings/business/studio_name', update_data, 403)
+        
+        # Restore token
+        self.token = original_token
+        
+        self.log_test("Update Setting Without Auth", success, "- Expected 403 without authentication")
+        return success
+
+    def test_settings_categories_comprehensive(self):
+        """Test all settings categories comprehensively"""
+        print("\n🏢 SETTINGS CATEGORIES COMPREHENSIVE TEST")
+        print("-" * 50)
+        
+        # Expected settings by category
+        expected_settings = {
+            'business': ['studio_name', 'contact_email', 'contact_phone', 'address', 'operating_hours'],
+            'system': ['timezone', 'currency', 'date_format', 'time_format'],
+            'program': ['default_lesson_duration', 'max_students_per_class', 'cancellation_policy_hours'],
+            'notification': ['reminder_hours_before', 'email_notifications_enabled', 'sms_notifications_enabled']
+        }
+        
+        categories_passed = 0
+        total_categories = len(expected_settings)
+        
+        for category, expected_keys in expected_settings.items():
+            success, response = self.make_request('GET', f'settings/{category}', expected_status=200)
+            
+            if success and isinstance(response, list):
+                found_keys = [setting.get('key') for setting in response]
+                has_all_keys = all(key in found_keys for key in expected_keys)
+                
+                if has_all_keys:
+                    categories_passed += 1
+                    print(f"   ✅ {category}: All {len(expected_keys)} settings found")
+                else:
+                    missing_keys = [key for key in expected_keys if key not in found_keys]
+                    print(f"   ❌ {category}: Missing keys: {missing_keys}")
+            else:
+                print(f"   ❌ {category}: Failed to retrieve settings")
+        
+        success = categories_passed == total_categories
+        self.log_test("Settings Categories Comprehensive", success, 
+                     f"- {categories_passed}/{total_categories} categories complete")
+        return success
+
+    def test_reset_settings_to_defaults(self):
+        """Test reset functionality (owner permissions required)"""
+        if not self.token:
+            self.log_test("Reset Settings to Defaults", False, "- No authentication token")
+            return False
+            
+        # First, modify a setting
+        update_data = {
+            "value": "Modified for Reset Test",
+            "updated_by": self.user_id
+        }
+        
+        self.make_request('PUT', 'settings/business/studio_name', update_data, 200)
+        
+        # Now reset to defaults
+        success, response = self.make_request('POST', 'settings/reset-defaults', expected_status=200)
+        
+        if success:
+            message = response.get('message', '')
+            
+            # Verify the setting was reset
+            success_verify, verify_response = self.make_request('GET', 'settings/business/studio_name', expected_status=200)
+            
+            if success_verify:
+                reset_value = verify_response.get('value')
+                # Should be back to default value
+                success = reset_value == "Dance Studio"  # Default value
+            else:
+                success = False
+                
+        self.log_test("Reset Settings to Defaults", success, 
+                     f"- Settings reset: {message}")
+        return success
+
+    def test_reset_settings_non_owner(self):
+        """Test reset functionality with non-owner user"""
+        # This test assumes the current user is an owner
+        # In a real scenario, we'd create a non-owner user
+        # For now, we'll test the endpoint exists and requires auth
+        
+        if not self.token:
+            self.log_test("Reset Settings Non-owner", False, "- No authentication token")
+            return False
+            
+        # Test without authentication first
+        original_token = self.token
+        self.token = None
+        
+        success, response = self.make_request('POST', 'settings/reset-defaults', expected_status=403)
+        
+        # Restore token
+        self.token = original_token
+        
+        self.log_test("Reset Settings Non-owner", success, "- Expected 403 without authentication")
+        return success
+
+    def test_settings_data_types_validation(self):
+        """Test that settings maintain their data types correctly"""
+        test_cases = [
+            ('business', 'studio_name', 'string', "Test Studio"),
+            ('system', 'timezone', 'string', "America/Los_Angeles"),
+            ('program', 'default_lesson_duration', 'integer', 45),
+            ('program', 'max_students_per_class', 'integer', 25),
+            ('notification', 'email_notifications_enabled', 'boolean', True),
+            ('notification', 'sms_notifications_enabled', 'boolean', False),
+            ('business', 'operating_hours', 'array', ["Mon-Fri: 9AM-9PM", "Sat: 9AM-5PM"])
+        ]
+        
+        successful_validations = 0
+        
+        for category, key, expected_type, test_value in test_cases:
+            if not self.token:
+                continue
+                
+            # Update the setting
+            update_data = {
+                "value": test_value,
+                "updated_by": self.user_id
+            }
+            
+            success, response = self.make_request('PUT', f'settings/{category}/{key}', update_data, 200)
+            
+            if success:
+                returned_value = response.get('value')
+                returned_type = response.get('data_type')
+                
+                # Check data type and value
+                type_correct = returned_type == expected_type
+                value_correct = returned_value == test_value
+                
+                if type_correct and value_correct:
+                    successful_validations += 1
+                    print(f"   ✅ {category}/{key}: {expected_type} = {test_value}")
+                else:
+                    print(f"   ❌ {category}/{key}: Expected {expected_type}, got {returned_type}")
+            else:
+                print(f"   ❌ {category}/{key}: Update failed")
+        
+        success = successful_validations == len(test_cases)
+        self.log_test("Settings Data Types Validation", success, 
+                     f"- {successful_validations}/{len(test_cases)} data type validations passed")
+        return success
+
+    def test_settings_system_comprehensive(self):
+        """Comprehensive test of the entire settings management system"""
+        print("\n⚙️ COMPREHENSIVE SETTINGS MANAGEMENT SYSTEM TEST")
+        print("=" * 60)
+        
+        # Test data setup
+        test_results = {
+            "get_all_settings": False,
+            "get_by_category": False,
+            "get_by_key": False,
+            "update_string": False,
+            "update_integer": False,
+            "update_boolean": False,
+            "update_array": False,
+            "categories_comprehensive": False,
+            "data_types_validation": False,
+            "error_handling": False,
+            "authentication": False,
+            "reset_functionality": False
+        }
+        
+        # Run all settings tests
+        test_results["get_all_settings"] = self.test_get_all_settings()
+        test_results["get_by_category"] = self.test_get_settings_by_category()
+        test_results["get_by_key"] = self.test_get_setting_by_key()
+        test_results["update_string"] = self.test_update_setting_string()
+        test_results["update_integer"] = self.test_update_setting_integer()
+        test_results["update_boolean"] = self.test_update_setting_boolean()
+        test_results["update_array"] = self.test_update_setting_array()
+        test_results["categories_comprehensive"] = self.test_settings_categories_comprehensive()
+        test_results["data_types_validation"] = self.test_settings_data_types_validation()
+        test_results["error_handling"] = self.test_update_nonexistent_setting()
+        test_results["authentication"] = self.test_update_setting_without_auth()
+        test_results["reset_functionality"] = self.test_reset_settings_to_defaults()
+        
+        # Calculate overall success
+        passed_tests = sum(1 for result in test_results.values() if result)
+        total_tests = len(test_results)
+        overall_success = passed_tests == total_tests
+        
+        print(f"\n📊 SETTINGS MANAGEMENT SYSTEM TEST SUMMARY:")
+        print(f"   ✅ Passed: {passed_tests}/{total_tests} tests")
+        print(f"   📋 Get all settings: {'✅' if test_results['get_all_settings'] else '❌'}")
+        print(f"   📂 Get by category: {'✅' if test_results['get_by_category'] else '❌'}")
+        print(f"   🔑 Get by key: {'✅' if test_results['get_by_key'] else '❌'}")
+        print(f"   📝 Update string: {'✅' if test_results['update_string'] else '❌'}")
+        print(f"   🔢 Update integer: {'✅' if test_results['update_integer'] else '❌'}")
+        print(f"   ✅ Update boolean: {'✅' if test_results['update_boolean'] else '❌'}")
+        print(f"   📋 Update array: {'✅' if test_results['update_array'] else '❌'}")
+        print(f"   🏢 Categories comprehensive: {'✅' if test_results['categories_comprehensive'] else '❌'}")
+        print(f"   🔍 Data types validation: {'✅' if test_results['data_types_validation'] else '❌'}")
+        print(f"   ⚠️ Error handling: {'✅' if test_results['error_handling'] else '❌'}")
+        print(f"   🔐 Authentication: {'✅' if test_results['authentication'] else '❌'}")
+        print(f"   🔄 Reset functionality: {'✅' if test_results['reset_functionality'] else '❌'}")
+        
+        self.log_test("Settings Management System Comprehensive", overall_success, 
+                     f"- {passed_tests}/{total_tests} comprehensive tests passed")
+        return overall_success
+
+    def run_settings_tests_only(self):
+        """Run only the settings management tests"""
+        print("🚀 Starting Settings Management System Tests")
+        print(f"🌐 Testing against: {self.base_url}")
+        print("="*80)
+        
+        # Setup: Register and login
+        if not self.test_user_registration():
+            print("❌ Failed to register user - cannot continue")
+            return 1
+            
+        if not self.test_user_login():
+            print("❌ Failed to login - cannot continue")
+            return 1
+        
+        # Run comprehensive settings tests
+        self.test_settings_system_comprehensive()
+        
+        # Print summary
+        print("\n" + "="*80)
+        print("📊 SETTINGS MANAGEMENT TEST SUMMARY")
+        print("="*80)
+        print(f"Total tests run: {self.tests_run}")
+        print(f"Tests passed: {self.tests_passed}")
+        print(f"Tests failed: {self.tests_run - self.tests_passed}")
+        print(f"Success rate: {(self.tests_passed/self.tests_run*100):.1f}%" if self.tests_run > 0 else "No tests run")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 ALL SETTINGS MANAGEMENT TESTS PASSED!")
+            return 0
+        else:
+            print("❌ Some settings tests failed")
+            return 1
+
 def main():
     print("🎯 DANCE STUDIO CRM - LESSON DELETION FUNCTIONALITY TESTING")
     print("=" * 80)
