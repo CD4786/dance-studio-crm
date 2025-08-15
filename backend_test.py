@@ -16,6 +16,8 @@ class DanceStudioAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.created_teacher_id = None
+        self.created_teacher_id_2 = None  # For multiple instructor testing
+        self.created_teacher_id_3 = None  # For multiple instructor testing
         self.created_class_id = None
         self.created_student_id = None
         self.created_lesson_id = None
