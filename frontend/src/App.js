@@ -620,11 +620,22 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
 
   const handleEditLesson = (lesson) => {
     setEditingLesson(lesson);
+    
+    // Handle both old (teacher_id) and new (teacher_ids) format
+    let teacher_ids = [];
+    if (lesson.teacher_ids && Array.isArray(lesson.teacher_ids)) {
+      teacher_ids = lesson.teacher_ids;
+    } else if (lesson.teacher_id) {
+      teacher_ids = [lesson.teacher_id];
+    }
+    
     setNewLessonData({
       student_id: lesson.student_id,
-      teacher_id: lesson.teacher_id,
+      teacher_ids: teacher_ids,
+      booking_type: lesson.booking_type || 'private_lesson',
       notes: lesson.notes || '',
-      enrollment_id: lesson.enrollment_id || ''
+      enrollment_id: lesson.enrollment_id || '',
+      selected_date: new Date(lesson.start_datetime)
     });
     setShowEditModal(true);
   };
