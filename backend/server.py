@@ -1733,6 +1733,11 @@ async def create_default_programs():
         for program in default_programs:
             await db.programs.insert_one(program.dict())
         print(f"✅ Created {len(default_programs)} default dance programs")
+    
+    # Check if settings already exist
+    existing_settings = await db.settings.count_documents({})
+    if existing_settings == 0:
+        await create_default_settings()
 
 # Initialize default settings
 async def create_default_settings():
