@@ -2163,6 +2163,146 @@ async def reset_settings_to_defaults(current_user: User = Depends(get_current_us
     
     return {"message": "Settings reset to defaults successfully"}
 
+# User Management Routes
+@api_router.get("/users", response_model=List[UserResponse])
+async def get_all_users(current_user: User = Depends(get_current_user)):
+    """Get all users (only owners and managers can access this)"""
+    if current_user.role not in ["owner", "manager"]:
+        raise HTTPException(status_code=403, detail="Only owners and managers can view users")
+    
+    users = await db.users.find().to_list(1000)
+    return [UserResponse(**user) for user in users]
+
+@api_router.post("/users", response_model=UserResponse)
+async def create_user(user_data: UserCreate, current_user: User = Depends(get_current_user)):
+    """Create a new user (only owners can create users)"""
+    if current_user.role != "owner":
+        raise HTTPException(status_code=403, detail="Only owners can create new users")
+    
+    # Check if user with email already exists
+    existing_user = await db.users.find_one({"email": user_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User with this email already exists")
+    
+    # Hash password
+    hashed_password = bcrypt.hashpw(user_data.password.encode('utf-8'), bcrypt.gensalt())
+    
+    # Create user
+    new_user = User(
+        id=str(uuid.uuid4()),
+        name=user_data.name,
+        email=user_data.email,
+        hashed_password=hashed_password.decode('utf-8'),
+        role=user_data.role,
+        is_active=True,
+        created_at=datetime.utcnow()
+    )
+    
+    await db.users.insert_one(new_user.dict())
+    return UserResponse(**new_user.dict())
+
+@api_router.put("/users/{user_id}", response_model=UserResponse)
+async def update_user(user_id: str, user_update: UserUpdate, current_user: User = Depends(get_current_user)):
+    """Update user details (only owners can update any user, users can update themselves)"""
+    # Check if user exists
+    target_user = await db.users.find_one({"id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Permission check
+    if current_user.role != "owner" and current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="You can only update your own profile")
+    
+    # If not owner, restrict what can be updated
+    if current_user.role != "owner":
+        if user_update.role is not None or user_update.is_active is not None:
+            raise HTTPException(status_code=403, detail="Only owners can change roles or account status")
+    
+    # Check email uniqueness if email is being updated
+    if user_update.email and user_update.email != target_user["email"]:
+        existing_user = await db.users.find_one({"email": user_update.email})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="User with this email already exists")
+    
+    # Build update data
+    update_data = {}
+    if user_update.name is not None:
+        update_data["name"] = user_update.name
+    if user_update.email is not None:
+        update_data["email"] = user_update.email
+    if user_update.role is not None:
+        update_data["role"] = user_update.role
+    if user_update.is_active is not None:
+        update_data["is_active"] = user_update.is_active
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    
+    # Update user
+    update_data["updated_at"] = datetime.utcnow()
+    result = await db.users.update_one({"id": user_id}, {"$set": update_data})
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="User not found or no changes made")
+    
+    # Get updated user
+    updated_user = await db.users.find_one({"id": user_id})
+    return UserResponse(**updated_user)
+
+@api_router.put("/users/{user_id}/password")
+async def change_password(user_id: str, password_update: PasswordUpdate, current_user: User = Depends(get_current_user)):
+    """Change user password"""
+    # Check if user exists
+    target_user = await db.users.find_one({"id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Permission check
+    if current_user.role != "owner" and current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="You can only change your own password")
+    
+    # If changing own password, verify old password
+    if current_user.id == user_id and password_update.old_password:
+        if not bcrypt.checkpw(password_update.old_password.encode('utf-8'), target_user["hashed_password"].encode('utf-8')):
+            raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    # Hash new password
+    new_hashed_password = bcrypt.hashpw(password_update.new_password.encode('utf-8'), bcrypt.gensalt())
+    
+    # Update password
+    result = await db.users.update_one(
+        {"id": user_id}, 
+        {"$set": {"hashed_password": new_hashed_password.decode('utf-8'), "updated_at": datetime.utcnow()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "Password changed successfully"}
+
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str, current_user: User = Depends(get_current_user)):
+    """Delete a user (only owners can delete users)"""
+    if current_user.role != "owner":
+        raise HTTPException(status_code=403, detail="Only owners can delete users")
+    
+    # Prevent deleting own account
+    if current_user.id == user_id:
+        raise HTTPException(status_code=400, detail="You cannot delete your own account")
+    
+    # Check if user exists
+    target_user = await db.users.find_one({"id": user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Delete user
+    result = await db.users.delete_one({"id": user_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "User deleted successfully"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
