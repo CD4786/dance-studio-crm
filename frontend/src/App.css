@@ -2075,20 +2075,112 @@ body {
 
 /* Theme Preview Styles */
 .theme-preview {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   padding: 1rem;
   border-radius: 0.5rem;
-  background: rgba(15, 23, 42, 0.3);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
 }
 
-.theme-color-dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+.theme-preview-text {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Cards and Modals */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.modal {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  box-shadow: 0 25px 50px var(--shadow-color);
+}
+
+/* Buttons */
+.btn {
+  background: var(--accent-primary);
+  color: white;
+  border: 1px solid var(--accent-primary);
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+}
+
+.btn-outline:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+/* Form Elements */
+.input {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.1);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Dashboard Stats */
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px var(--shadow-color);
+}
+
+.stat-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px var(--shadow-color);
+}
+
+/* Calendar */
+.daily-calendar {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
+}
+
+.calendar-header {
+  background: var(--gradient-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.calendar-title {
+  color: var(--text-primary);
+}
+
+.nav-btn {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 /* Enhanced Settings Grid */
