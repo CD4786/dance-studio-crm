@@ -1827,7 +1827,220 @@ async def create_default_settings():
             description="Time format (12h or 24h)"
         ),
         
-        # Program Settings
+        # Theme Settings
+        Settings(
+            category="theme",
+            key="selected_theme",
+            value="dark",
+            data_type="string",
+            description="Selected UI theme (dark, light, ocean, sunset, forest, royal)"
+        ),
+        Settings(
+            category="theme",
+            key="font_size",
+            value="medium",
+            data_type="string",
+            description="Font size preference (small, medium, large)"
+        ),
+        Settings(
+            category="theme",
+            key="animations_enabled",
+            value=True,
+            data_type="boolean",
+            description="Enable UI animations and transitions"
+        ),
+        Settings(
+            category="theme",
+            key="glassmorphism_enabled",
+            value=True,
+            data_type="boolean",
+            description="Enable glassmorphism effects"
+        ),
+        Settings(
+            category="theme",
+            key="custom_primary_color",
+            value="#a855f7",
+            data_type="string",
+            description="Custom primary color (hex code)"
+        ),
+        Settings(
+            category="theme",
+            key="custom_secondary_color",
+            value="#ec4899",
+            data_type="string",
+            description="Custom secondary color (hex code)"
+        ),
+        
+        # Booking Settings  
+        Settings(
+            category="booking",
+            key="private_lesson_color",
+            value="#3b82f6",
+            data_type="string",
+            description="Color for private lesson bookings (hex code)"
+        ),
+        Settings(
+            category="booking",
+            key="meeting_color",
+            value="#22c55e",
+            data_type="string",
+            description="Color for meeting bookings (hex code)"
+        ),
+        Settings(
+            category="booking",
+            key="training_color",
+            value="#f59e0b",
+            data_type="string",
+            description="Color for training bookings (hex code)"
+        ),
+        Settings(
+            category="booking",
+            key="party_color",
+            value="#a855f7",
+            data_type="string",
+            description="Color for party bookings (hex code)"
+        ),
+        Settings(
+            category="booking",
+            key="confirmed_status_color",
+            value="#22c55e",
+            data_type="string",
+            description="Color for confirmed bookings (hex code)"
+        ),
+        Settings(
+            category="booking",
+            key="pending_status_color",
+            value="#f59e0b",
+            data_type="string",
+            description="Color for pending bookings (hex code)"
+        ),
+        Settings(
+            category="booking",
+            key="cancelled_status_color",
+            value="#ef4444",
+            data_type="string",
+            description="Color for cancelled bookings (hex code)"
+        ),
+        Settings(
+            category="booking",
+            key="teacher_color_coding_enabled",
+            value=True,
+            data_type="boolean",
+            description="Enable individual teacher color coding"
+        ),
+        
+        # Calendar Settings
+        Settings(
+            category="calendar",
+            key="default_view",
+            value="daily",
+            data_type="string",
+            description="Default calendar view (daily, weekly)"
+        ),
+        Settings(
+            category="calendar",
+            key="start_hour",
+            value=9,
+            data_type="integer",
+            description="Calendar start hour (24-hour format)"
+        ),
+        Settings(
+            category="calendar",
+            key="end_hour",
+            value=21,
+            data_type="integer",
+            description="Calendar end hour (24-hour format)"
+        ),
+        Settings(
+            category="calendar",
+            key="time_slot_minutes",
+            value=60,
+            data_type="integer",
+            description="Time slot duration in minutes"
+        ),
+        Settings(
+            category="calendar",
+            key="weekend_enabled",
+            value=True,
+            data_type="boolean",
+            description="Show weekends in calendar"
+        ),
+        Settings(
+            category="calendar",
+            key="instructor_stats_enabled",
+            value=True,
+            data_type="boolean",
+            description="Show instructor statistics on calendar"
+        ),
+        
+        # Display Settings
+        Settings(
+            category="display",
+            key="compact_mode",
+            value=False,
+            data_type="boolean",
+            description="Enable compact display mode"
+        ),
+        Settings(
+            category="display",
+            key="show_lesson_notes",
+            value=True,
+            data_type="boolean",
+            description="Show lesson notes in calendar view"
+        ),
+        Settings(
+            category="display",
+            key="currency_symbol",
+            value="$",
+            data_type="string",
+            description="Currency symbol to display"
+        ),
+        Settings(
+            category="display",
+            key="language",
+            value="en",
+            data_type="string",
+            description="System language (en, es, fr, de)"
+        ),
+        
+        # Business Rules Settings
+        Settings(
+            category="business_rules",
+            key="cancellation_policy_hours",
+            value=24,
+            data_type="integer",
+            description="Hours before lesson that cancellation is allowed"
+        ),
+        Settings(
+            category="business_rules",
+            key="max_advance_booking_days",
+            value=90,
+            data_type="integer",
+            description="Maximum days in advance lessons can be booked"
+        ),
+        Settings(
+            category="business_rules",
+            key="auto_confirm_bookings",
+            value=True,
+            data_type="boolean",
+            description="Automatically confirm new bookings"
+        ),
+        Settings(
+            category="business_rules",
+            key="require_payment_before_booking",
+            value=False,
+            data_type="boolean",
+            description="Require payment before allowing bookings"
+        ),
+        Settings(
+            category="business_rules",
+            key="late_cancellation_fee",
+            value=50.0,
+            data_type="float",
+            description="Fee for late cancellations"
+        ),
+        
+        # Program Settings (Enhanced)
         Settings(
             category="program",
             key="default_lesson_duration",
@@ -1844,13 +2057,13 @@ async def create_default_settings():
         ),
         Settings(
             category="program",
-            key="cancellation_policy_hours",
-            value=24,
-            data_type="integer",
-            description="Hours before lesson that cancellation is allowed"
+            key="available_dance_styles",
+            value=["Ballet", "Jazz", "Contemporary", "Hip Hop", "Ballroom", "Latin", "Tap", "Modern", "Salsa", "Bachata"],
+            data_type="array",
+            description="Available dance styles for programs"
         ),
         
-        # Notification Settings
+        # Notification Settings (Enhanced)
         Settings(
             category="notification",
             key="reminder_hours_before",
@@ -1871,6 +2084,20 @@ async def create_default_settings():
             value=False,
             data_type="boolean",
             description="Enable SMS notifications"
+        ),
+        Settings(
+            category="notification",
+            key="booking_confirmation_email",
+            value=True,
+            data_type="boolean",
+            description="Send email confirmation for new bookings"
+        ),
+        Settings(
+            category="notification",
+            key="payment_reminder_enabled",
+            value=True,
+            data_type="boolean",
+            description="Send payment reminders"
         )
     ]
     
