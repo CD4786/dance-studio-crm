@@ -1234,6 +1234,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Lesson Deletion Functionality"
     - "Authentication System with Admin Credentials"
     - "Lesson Creation with Multiple Instructors"
     - "Booking Type System"
