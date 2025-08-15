@@ -536,28 +536,43 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   const handleCreateLesson = async (e) => {
     e.preventDefault();
     try {
-      // Use currentDate directly to avoid any timezone conversion issues
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
+      // Use selected_date from form if available, otherwise use currentDate
+      const dateToUse = newLessonData.selected_date || currentDate;
+      const year = dateToUse.getFullYear();
+      const month = String(dateToUse.getMonth() + 1).padStart(2, '0');
+      const day = String(dateToUse.getDate()).padStart(2, '0');
       const hour = String(selectedTimeSlot.hour).padStart(2, '0');
       const localISOString = `${year}-${month}-${day}T${hour}:00:00`;
       
-      console.log('Creating lesson for currentDate:', currentDate);
+      console.log('Creating lesson for date:', dateToUse);
       console.log('Creating lesson for datetime string:', localISOString);
+      console.log('Booking type:', newLessonData.booking_type);
+      console.log('Teacher IDs:', newLessonData.teacher_ids);
       
       await axios.post(`${API}/lessons`, {
-        ...newLessonData,
+        student_id: newLessonData.student_id,
+        teacher_ids: newLessonData.teacher_ids,
+        booking_type: newLessonData.booking_type,
+        notes: newLessonData.notes,
+        enrollment_id: newLessonData.enrollment_id,
         start_datetime: localISOString,
         duration_minutes: 60
       });
 
       setShowAddModal(false);
+      setNewLessonData({
+        student_id: '',
+        teacher_ids: [],
+        booking_type: 'private_lesson',
+        notes: '',
+        enrollment_id: '',
+        selected_date: null
+      });
       fetchDailyData();
       onRefresh();
     } catch (error) {
       console.error('Failed to create lesson:', error);
-      alert('Failed to create lesson');
+      alert('Failed to create lesson: ' + (error.response?.data?.detail || error.message));
     }
   };
 
