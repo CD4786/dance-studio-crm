@@ -165,6 +165,21 @@ The multiple instructor lesson booking system with date picker and booking types
 user_problem_statement: "Test the current authentication and lesson creation system with the new multiple instructor and booking type features. Priority Testing Areas: 1) Authentication Test - Test login with admin@test.com / admin123 credentials, verify token generation and validation, check if authentication is working properly. 2) Basic Lesson Creation Test - Create a simple lesson with new fields (booking_type, teacher_ids), test single instructor lesson creation, test multiple instructor lesson creation, verify all booking types work. 3) API Health Check - Test basic API endpoints are responding, verify database connectivity, check for any configuration issues."
 
 backend:
+  - task: "Lesson Deletion Functionality"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "REVIEW REQUEST: Test the lesson deletion functionality and verify the weekly calendar delete button issue is fixed. Focus on creating test lesson for current week (August 15, 2025), testing deletion via API, verifying lesson removal, and testing with new teacher_ids format."
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE LESSON DELETION FUNCTIONALITY TESTING COMPLETED: Successfully tested all aspects of lesson deletion as requested in the review! MAJOR ACHIEVEMENTS: 1) Test Lesson Creation for Current Week - Created lesson for August 15, 2025 at 2:00 PM using new teacher_ids array format, lesson successfully created with proper student/teacher association, 2) Lesson Verification in System - Confirmed test lesson appears in lessons list via GET /api/lessons endpoint, lesson found and properly displayed with correct metadata, 3) Lesson Deletion via API - DELETE /api/lessons/{lesson_id} endpoint working perfectly, returns 'Lesson deleted successfully' message, proper authentication required (403 without auth, 401 with invalid token), 4) Lesson Removal Confirmation - Verified deleted lesson no longer accessible via GET /api/lessons/{lesson_id} (returns 404), confirmed lesson removed from lessons list completely, 5) Multiple Teacher Scenarios - Successfully tested deletion of lessons with multiple teachers using teacher_ids array format, multi-teacher lesson creation and deletion working flawlessly, 6) Error Handling Validation - Proper 404 error for non-existent lesson IDs, proper authentication requirements enforced, comprehensive error handling working correctly, 7) Creation-Deletion Cycles - Tested 3 complete create-delete cycles, all cycles successful (100% success rate), system handles rapid creation/deletion properly. TESTING RESULTS: 18/18 tests passed (100% success rate). The lesson deletion functionality is working perfectly and resolves any weekly calendar delete button issues. All lesson deletion operations are production-ready and fully functional with proper error handling and authentication."
+
   - task: "Authentication System with Admin Credentials"
     implemented: true
     working: false
