@@ -580,12 +580,16 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   const handleTimeSlotRightClick = (e, hour, teacherId) => {
     e.preventDefault(); // Prevent context menu
     console.log('Right-click detected on time slot:', hour, teacherId);
+    console.log('Current date for right-click:', currentDate);
     
-    // Prepare recurring lesson modal with pre-filled data
-    const startDateTime = new Date(currentDate);
-    startDateTime.setHours(hour, 0, 0, 0);
+    // Prepare recurring lesson modal with pre-filled data using currentDate
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const hourStr = String(hour).padStart(2, '0');
+    const localISOString = `${year}-${month}-${day}T${hourStr}:00`;
     
-    const localISOString = startDateTime.toISOString().slice(0, 16); // Format for datetime-local input
+    console.log('Setting recurring lesson datetime to:', localISOString);
     
     setSelectedTimeSlot({ 
       hour, 
