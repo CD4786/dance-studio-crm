@@ -516,9 +516,11 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     setSelectedTimeSlot({ hour, teacherId });
     setNewLessonData({
       student_id: '',
-      teacher_id: teacherId,
+      teacher_ids: [teacherId], // Initialize with the clicked teacher
+      booking_type: 'private_lesson',
       notes: '',
-      enrollment_id: ''
+      enrollment_id: '',
+      selected_date: currentDate // Initialize with current date
     });
     setShowAddModal(true);
   };
