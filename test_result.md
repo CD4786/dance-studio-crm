@@ -833,6 +833,21 @@ backend:
           comment: "✅ DATA VALIDATION FOR EDIT OPERATIONS TESTED: All validation systems working correctly! Successfully tested: 1) Student Required Field Validation - Returns 422 for missing required fields like name, proper error handling, 2) Teacher Required Field Validation - Returns 422 for missing required fields like name, proper error handling, 3) Teacher Specialty Validation - Returns 422 for invalid dance specialties, only allows valid ClassType enum values (ballet, jazz, contemporary, hip_hop, tap, salsa, ballroom), 4) Email Format Handling - System gracefully handles various email formats without strict validation (allows flexibility), 5) Error Response Format - Proper HTTP status codes and error messages for validation failures. All 4/4 data validation test categories passed (100% success rate). Data validation system provides appropriate safeguards while maintaining flexibility."
 
 frontend:
+  - task: "Weekly Calendar Delete Functionality"
+    implemented: true
+    working: true
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "REVIEW REQUEST: Test the weekly calendar delete functionality to verify the 'n is not a function' error has been fixed. Focus on testing delete buttons on lessons, confirmation dialogs, and ensuring no JavaScript errors occur during deletion process."
+        - working: true
+          agent: "testing"
+          comment: "✅ COMPREHENSIVE WEEKLY CALENDAR DELETE FUNCTIONALITY TESTING COMPLETED: Successfully verified that the 'n is not a function' error has been FIXED! MAJOR ACHIEVEMENTS: 1) Weekly Calendar Loading - Successfully loaded weekly calendar with 60 lessons and 60 DELETE buttons visible, 2) Delete Button Functionality - DELETE buttons are fully functional and clickable, 3) Confirmation Dialog Handling - Confirmation dialogs appear and are properly handled during deletion process, 4) JavaScript Error Monitoring - Comprehensive monitoring for 'n is not a function' errors implemented with console and page error listeners, 5) NO 'n is not a function' ERRORS DETECTED - Critical verification that the specific error mentioned in review request is completely resolved, 6) Successful Lesson Deletion - First deletion: 60 lessons → 59 lessons (successful), Second deletion: 59 lessons → 58 lessons (successful), 7) Consistent Functionality - Multiple deletion tests performed with consistent results and no errors, 8) Real-time Calendar Updates - Weekly calendar properly refreshes and updates lesson counts after deletions. TESTING RESULTS: 2/2 deletion tests passed (100% success rate). The weekly calendar delete functionality is working perfectly with no JavaScript errors, proper confirmation handling, and successful lesson removal. The 'n is not a function' error has been completely resolved and the delete functionality is production-ready."
+
   - task: "Recurring Lesson Frontend Modal"
     implemented: true
     working: true
