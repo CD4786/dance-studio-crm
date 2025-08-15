@@ -4985,7 +4985,127 @@ class DanceStudioAPITester:
             print("❌ Some settings tests failed")
             return 1
 
+    def run_enhanced_settings_tests(self):
+        """Run comprehensive enhanced settings system tests"""
+        print("\n🎯 ENHANCED SETTINGS SYSTEM COMPREHENSIVE TESTING")
+        print("=" * 80)
+        print("Testing Areas:")
+        print("• Enhanced Settings System with 38+ settings across 6 categories")
+        print("• Theme Settings (selection, font size, UI preferences, custom colors)")
+        print("• Booking Color Settings (booking types, status colors, teacher coding)")
+        print("• Teacher Color Management API (GET/PUT/POST endpoints)")
+        print("• Calendar & Display Settings (hours, views, time slots, language)")
+        print("• Business Rules with Float Data Type")
+        print("• Data Integrity and Hex Color Validation")
+        print("=" * 80)
+        
+        # Authentication setup
+        if not self.test_user_registration():
+            return 1
+        if not self.test_user_login():
+            return 1
+        
+        # Create teachers for color management testing
+        if not self.test_create_multiple_teachers():
+            return 1
+        
+        # Enhanced Settings System Tests
+        print("\n📋 ENHANCED SETTINGS SYSTEM TESTS")
+        print("-" * 50)
+        
+        self.test_enhanced_settings_system_creation()
+        self.test_settings_by_category_retrieval()
+        self.test_individual_setting_retrieval()
+        self.test_settings_data_integrity()
+        
+        # Theme Settings Tests
+        print("\n🎨 THEME SETTINGS TESTS")
+        print("-" * 50)
+        
+        self.test_theme_settings_functionality()
+        
+        # Booking Color Settings Tests
+        print("\n📅 BOOKING COLOR SETTINGS TESTS")
+        print("-" * 50)
+        
+        self.test_booking_color_settings()
+        
+        # Teacher Color Management Tests
+        print("\n👨‍🏫 TEACHER COLOR MANAGEMENT TESTS")
+        print("-" * 50)
+        
+        self.test_teacher_color_management_get()
+        self.test_teacher_color_management_put()
+        self.test_teacher_color_validation()
+        self.test_teacher_color_auto_assign()
+        self.test_hex_color_format_validation()
+        
+        # Calendar & Display Settings Tests
+        print("\n📊 CALENDAR & DISPLAY SETTINGS TESTS")
+        print("-" * 50)
+        
+        self.test_calendar_display_settings()
+        
+        # Business Rules Tests
+        print("\n💼 BUSINESS RULES TESTS")
+        print("-" * 50)
+        
+        self.test_business_rules_with_float_data_type()
+        
+        # Settings Reset Tests
+        print("\n🔄 SETTINGS RESET TESTS")
+        print("-" * 50)
+        
+        self.test_settings_reset_to_defaults()
+        
+        # Final Results
+        print("\n" + "=" * 80)
+        print(f"📊 ENHANCED SETTINGS SYSTEM TEST RESULTS")
+        print(f"Total Tests: {self.tests_run}")
+        print(f"Passed: {self.tests_passed}")
+        print(f"Failed: {self.tests_run - self.tests_passed}")
+        print(f"Success Rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        print("=" * 80)
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 ALL ENHANCED SETTINGS SYSTEM TESTS PASSED!")
+            return 0
+        else:
+            print("❌ Some enhanced settings tests failed")
+            return 1
+
 def main():
+    print("🎯 DANCE STUDIO CRM - ENHANCED SETTINGS SYSTEM TESTING")
+    print("=" * 80)
+    print("Focus Areas:")
+    print("• Enhanced Settings System with new categories (theme, booking, calendar, display, business_rules)")
+    print("• 38+ new default settings creation and management")
+    print("• Color settings with hex values and validation")
+    print("• New data types including float for business rules")
+    print("• Theme Settings (selection, font size, UI preferences, custom colors, animations)")
+    print("• Booking Color Settings (booking type colors, status colors, teacher color coding)")
+    print("• Teacher Color Management API (GET/PUT/POST endpoints with validation)")
+    print("• Calendar & Display Settings (hours, views, time slots, language, currency)")
+    print("• Data integrity and comprehensive validation testing")
+    print("=" * 80)
+    
+    tester = DanceStudioAPITester()
+    
+    try:
+        # Run comprehensive enhanced settings system tests
+        result = tester.run_enhanced_settings_tests()
+        return result
+            
+    except KeyboardInterrupt:
+        print("\n\n⏹️  Testing interrupted by user")
+        return 1
+    except Exception as e:
+        print(f"\n\n💥 Testing failed with error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return 1
+
+def main_lesson_deletion():
     print("🎯 DANCE STUDIO CRM - LESSON DELETION FUNCTIONALITY TESTING")
     print("=" * 80)
     print("Focus Areas:")
