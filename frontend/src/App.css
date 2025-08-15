@@ -160,8 +160,10 @@ body {
 /* Main App Layout */
 .main-app {
   display: flex;
+  background: var(--primary-bg);
+  color: var(--text-primary);
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+  transition: all 0.3s ease;
 }
 
 /* Sidebar */
