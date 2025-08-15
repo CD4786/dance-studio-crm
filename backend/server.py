@@ -1140,10 +1140,13 @@ async def create_private_lesson(lesson_data: PrivateLessonCreate):
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
-    # Verify teacher exists
-    teacher = await db.teachers.find_one({"id": lesson_data.teacher_id})
-    if not teacher:
-        raise HTTPException(status_code=404, detail="Teacher not found")
+    # Verify all teachers exist and collect teacher info
+    teacher_names = []
+    for teacher_id in lesson_data.teacher_ids:
+        teacher = await db.teachers.find_one({"id": teacher_id})
+        if not teacher:
+            raise HTTPException(status_code=404, detail=f"Teacher with id {teacher_id} not found")
+        teacher_names.append(teacher["name"])
     
     # Parse the datetime - handle both formats
     if isinstance(lesson_data.start_datetime, str):
@@ -1158,14 +1161,15 @@ async def create_private_lesson(lesson_data: PrivateLessonCreate):
     # Calculate end time
     end_datetime = start_datetime + timedelta(minutes=lesson_data.duration_minutes)
     
-    print(f"Creating lesson at: {start_datetime} (local time)")
+    print(f"Creating lesson at: {start_datetime} (local time) with booking type: {lesson_data.booking_type}")
     
     # Create lesson
     lesson = PrivateLesson(
         student_id=lesson_data.student_id,
-        teacher_id=lesson_data.teacher_id,
+        teacher_ids=lesson_data.teacher_ids,
         start_datetime=start_datetime,
         end_datetime=end_datetime,
+        booking_type=lesson_data.booking_type,
         notes=lesson_data.notes,
         enrollment_id=lesson_data.enrollment_id
     )
@@ -1175,7 +1179,7 @@ async def create_private_lesson(lesson_data: PrivateLessonCreate):
     return PrivateLessonResponse(
         **lesson.dict(),
         student_name=student["name"],
-        teacher_name=teacher["name"]
+        teacher_names=teacher_names
     )
 
 @api_router.get("/lessons", response_model=List[PrivateLessonResponse])
