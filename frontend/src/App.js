@@ -770,6 +770,16 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
             minute: '2-digit' 
           })}
         </div>
+        {lesson.booking_type && lesson.booking_type !== 'private_lesson' && (
+          <div className="lesson-type">
+            {lesson.booking_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          </div>
+        )}
+        {lesson.teacher_names && lesson.teacher_names.length > 1 && (
+          <div className="lesson-teachers">
+            👥 {lesson.teacher_names.join(', ')}
+          </div>
+        )}
         {lesson.notes && <div className="lesson-notes">{lesson.notes}</div>}
       </div>
       <div className="lesson-actions">
