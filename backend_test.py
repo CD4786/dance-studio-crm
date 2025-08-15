@@ -1900,23 +1900,24 @@ class DanceStudioAPITester:
         
         self.make_request('POST', 'notifications/preferences', pref_data, 200)
         
-        # Send email reminder
+        # Send email reminder (without custom message to use default with teacher names)
         reminder_data = {
             "lesson_id": notification_lesson_id,
-            "notification_type": "email",
-            "message": "Test reminder for multiple teacher lesson"
+            "notification_type": "email"
+            # No custom message - use default message that includes teacher names
         }
         
         success, response = self.make_request('POST', 'notifications/send-reminder', reminder_data, 200)
         
         if success:
-            message = response.get('message', '')
+            message_status = response.get('message', '')
             recipient = response.get('recipient', '')
+            actual_content = response.get('content', '')  # This contains the actual message sent
             
-            # Check if message contains multiple teacher names
+            # Check if the actual message content contains multiple teacher names
             contains_multiple_teachers = len(teacher_names) > 1
             for teacher_name in teacher_names:
-                if teacher_name not in message:
+                if teacher_name not in actual_content:
                     contains_multiple_teachers = False
                     break
             
@@ -1925,6 +1926,7 @@ class DanceStudioAPITester:
             print(f"   📧 Reminder sent to: {recipient}")
             print(f"   💬 Message contains all teachers: {contains_multiple_teachers}")
             print(f"   👨‍🏫 Expected teachers: {teacher_names}")
+            print(f"   📝 Actual message: {actual_content[:100]}...")  # Show first 100 chars
         
         # Clean up
         if notification_lesson_id:
