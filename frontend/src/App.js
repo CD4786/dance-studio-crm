@@ -643,13 +643,29 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   const handleUpdateLesson = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${API}/lessons/${editingLesson.id}`, newLessonData);
+      const updateData = {
+        student_id: newLessonData.student_id,
+        teacher_ids: newLessonData.teacher_ids,
+        booking_type: newLessonData.booking_type,
+        notes: newLessonData.notes,
+        enrollment_id: newLessonData.enrollment_id
+      };
+      
+      await axios.put(`${API}/lessons/${editingLesson.id}`, updateData);
       setShowEditModal(false);
+      setNewLessonData({
+        student_id: '',
+        teacher_ids: [],
+        booking_type: 'private_lesson',
+        notes: '',
+        enrollment_id: '',
+        selected_date: null
+      });
       fetchDailyData();
       onRefresh();
     } catch (error) {
       console.error('Failed to update lesson:', error);
-      alert('Failed to update lesson');
+      alert('Failed to update lesson: ' + (error.response?.data?.detail || error.message));
     }
   };
 
