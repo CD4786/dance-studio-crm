@@ -4046,4 +4046,10 @@ def main_all():
     return tester.run_all_tests()
 
 if __name__ == "__main__":
-    sys.exit(main())
+    import sys
+    
+    if len(sys.argv) > 1 and sys.argv[1] == "settings":
+        tester = DanceStudioAPITester()
+        sys.exit(tester.run_settings_tests_only())
+    else:
+        sys.exit(main())
