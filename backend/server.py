@@ -436,6 +436,9 @@ class UserResponse(BaseModel):
     name: str
     role: UserRole
     studio_name: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime
+    updated_at: Optional[datetime] = None
 
 class Teacher(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
