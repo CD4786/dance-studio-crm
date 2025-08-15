@@ -3567,27 +3567,23 @@ class DanceStudioAPITester:
             return 1
 
 def main():
-    print("🎯 DANCE STUDIO CRM - AUTHENTICATION & LESSON CREATION TESTING")
+    print("🎯 DANCE STUDIO CRM - LESSON DELETION FUNCTIONALITY TESTING")
     print("=" * 80)
     print("Focus Areas:")
-    print("• Authentication with admin@test.com / admin123")
-    print("• Lesson creation with multiple instructors (teacher_ids array)")
-    print("• All booking types (private_lesson, meeting, training, party)")
-    print("• API health and configuration validation")
+    print("• Create test lesson for current week (August 15, 2025)")
+    print("• Verify lesson shows up in lessons list")
+    print("• Delete lesson via API")
+    print("• Confirm lesson is removed from system")
+    print("• Test with lessons that have new teacher_ids format")
+    print("• Test error handling for invalid delete requests")
     print("=" * 80)
     
     tester = DanceStudioAPITester()
     
     try:
-        # Run focused tests for the review request
-        success = tester.run_authentication_and_lesson_tests()
-        
-        if success:
-            print("\n🎉 ALL TESTS PASSED - System is working correctly!")
-            return 0
-        else:
-            print("\n⚠️  SOME TESTS FAILED - Check the details above")
-            return 1
+        # Run focused tests for lesson deletion functionality
+        result = tester.run_lesson_deletion_tests()
+        return result
             
     except KeyboardInterrupt:
         print("\n\n⏹️  Testing interrupted by user")
