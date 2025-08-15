@@ -2481,7 +2481,22 @@ async def get_all_users(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Only owners and managers can view users")
     
     users = await db.users.find().to_list(1000)
-    return [UserResponse(**user) for user in users]
+    
+    # Convert users to UserResponse, handling missing created_at field
+    user_responses = []
+    for user in users:
+        # Ensure created_at field exists, use current time as default if missing
+        if 'created_at' not in user:
+            user['created_at'] = datetime.utcnow()
+        
+        # Convert MongoDB ObjectId to string for id field
+        if '_id' in user:
+            user['id'] = str(user['_id'])
+            del user['_id']
+        
+        user_responses.append(UserResponse(**user))
+    
+    return user_responses
 
 @api_router.post("/users", response_model=UserResponse)
 async def create_user(user_data: UserCreate, current_user: User = Depends(get_current_user)):
