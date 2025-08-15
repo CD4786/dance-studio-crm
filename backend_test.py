@@ -2980,7 +2980,7 @@ class DanceStudioAPITester:
 
 def main():
     tester = DanceStudioAPITester()
-    return tester.run_timezone_fix_tests_only()
+    return tester.run_multiple_instructor_tests_only()
 
 def main_all():
     tester = DanceStudioAPITester()
