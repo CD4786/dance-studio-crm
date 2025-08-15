@@ -1205,6 +1205,15 @@ async def get_private_lessons():
     for lesson_doc in lessons:
         student = await db.students.find_one({"id": lesson_doc["student_id"]})
         
+        # Handle migration from old teacher_id to new teacher_ids array
+        if "teacher_id" in lesson_doc and "teacher_ids" not in lesson_doc:
+            # Migrate old single teacher_id to teacher_ids array
+            lesson_doc["teacher_ids"] = [lesson_doc["teacher_id"]]
+            lesson_doc.pop("teacher_id", None)
+        elif "teacher_ids" not in lesson_doc:
+            # Fallback if neither field exists
+            lesson_doc["teacher_ids"] = []
+        
         # Get all teachers for this lesson
         teacher_names = []
         for teacher_id in lesson_doc.get("teacher_ids", []):
