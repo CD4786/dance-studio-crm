@@ -373,7 +373,14 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
 
   const fetchDailyData = async () => {
     try {
-      const dateStr = currentDate.toISOString().split('T')[0];
+      // Use local date string to avoid timezone conversion issues
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      console.log('Fetching daily data for date:', dateStr, 'from currentDate:', currentDate);
+      
       const response = await axios.get(`${API}/calendar/daily/${dateStr}`);
       setCalendarData(response.data);
     } catch (error) {
