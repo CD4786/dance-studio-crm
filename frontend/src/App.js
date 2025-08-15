@@ -394,7 +394,11 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     try {
       // Get all lessons for the instructor
       const response = await axios.get(`${API}/lessons`);
-      const allLessons = response.data.filter(lesson => lesson.teacher_id === teacherId);
+      // Filter lessons that include this teacher in teacher_ids array or old teacher_id field
+      const allLessons = response.data.filter(lesson => 
+        (lesson.teacher_ids && lesson.teacher_ids.includes(teacherId)) ||
+        lesson.teacher_id === teacherId
+      );
       
       const today = new Date(currentDate);
       const todayStart = new Date(today);
