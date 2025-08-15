@@ -673,18 +673,15 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     if (!draggedLesson) return;
 
     try {
-      // Create date in local timezone
-      const startDateTime = new Date(currentDate);
-      startDateTime.setHours(hour, 0, 0, 0);
-      
-      // Convert to local ISO string (without timezone conversion)
-      const year = startDateTime.getFullYear();
-      const month = String(startDateTime.getMonth() + 1).padStart(2, '0');
-      const day = String(startDateTime.getDate()).padStart(2, '0');
+      // Use currentDate directly to avoid timezone conversion issues
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
       const hourStr = String(hour).padStart(2, '0');
       const localISOString = `${year}-${month}-${day}T${hourStr}:00:00`;
       
-      console.log('Moving lesson to:', localISOString);
+      console.log('Moving lesson to currentDate:', currentDate);
+      console.log('Moving lesson to datetime string:', localISOString);
       
       await axios.put(`${API}/lessons/${draggedLesson.id}`, {
         teacher_id: teacherId,
