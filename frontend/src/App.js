@@ -399,23 +399,6 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     fetchTeachers();
   }, [currentDate, onRefresh]);
 
-  const fetchDailyData = async () => {
-    try {
-      // Use local date string to avoid timezone conversion issues
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-      
-      console.log('Fetching daily data for date:', dateStr, 'from currentDate:', currentDate);
-      
-      const response = await axios.get(`${API}/calendar/daily/${dateStr}`);
-      setCalendarData(response.data);
-    } catch (error) {
-      console.error('Failed to fetch daily data:', error);
-    }
-  };
-
   // Optimized data fetching with caching and error handling
   const [dataCache, setDataCache] = useState(new Map());
   const [isLoading, setIsLoading] = useState(false);
@@ -456,12 +439,17 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     }
   }, [dataCache]);
 
-  // Optimized daily data fetching
   const fetchDailyData = useCallback(async (forceRefresh = false) => {
-    const dateStr = currentDate.toISOString().split('T')[0];
-    const cacheKey = `daily-${dateStr}`;
-    
     try {
+      // Use local date string to avoid timezone conversion issues
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      
+      console.log('Fetching daily data for date:', dateStr, 'from currentDate:', currentDate);
+      
+      const cacheKey = `daily-${dateStr}`;
       const data = await fetchWithCache(`${API}/calendar/daily/${dateStr}`, cacheKey, forceRefresh);
       setCalendarData(data);
       
@@ -482,55 +470,6 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
       // Don't throw, just log the error
     }
   }, [currentDate, fetchWithCache]);
-
-  // Memoized instructor stats calculation  
-  const calculateInstructorStats = useCallback(async (teacherId) => {
-    const cacheKey = `stats-${teacherId}`;
-    
-    try {
-      const cached = dataCache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < 60000) { // 1 minute cache
-        return cached.data;
-      }
-
-      const response = await axios.get(`${API}/lessons`);
-      const allLessons = response.data.filter(lesson => 
-        (lesson.teacher_ids && lesson.teacher_ids.includes(teacherId)) ||
-        lesson.teacher_id === teacherId
-      );
-
-      const today = new Date();
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - today.getDay());
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-      const stats = {
-        daily: allLessons.filter(lesson => {
-          const lessonDate = new Date(lesson.start_datetime);
-          return lessonDate.toDateString() === today.toDateString();
-        }).length,
-        weekly: allLessons.filter(lesson => {
-          const lessonDate = new Date(lesson.start_datetime);
-          return lessonDate >= startOfWeek && lessonDate <= today;
-        }).length,
-        monthly: allLessons.filter(lesson => {
-          const lessonDate = new Date(lesson.start_datetime);
-          return lessonDate >= startOfMonth && lessonDate <= today;
-        }).length
-      };
-
-      // Cache the stats
-      setDataCache(prev => new Map(prev).set(cacheKey, {
-        data: stats,
-        timestamp: Date.now()
-      }));
-
-      return stats;
-    } catch (error) {
-      console.error('Failed to calculate instructor stats:', error);
-      return { daily: 0, weekly: 0, monthly: 0 };
-    }
-  }, [dataCache]);
       
       const today = new Date(currentDate);
       const todayStart = new Date(today);
