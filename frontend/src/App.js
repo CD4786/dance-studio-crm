@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import "./App.css";
 import axios from "axios";
 import wsManager from "./websocket";
@@ -9,6 +9,30 @@ import UserManagement from "./UserManagement";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API = `${BACKEND_URL}/api`;
+
+// Optimized loading component
+const LoadingSpinner = ({ message = "Loading..." }) => (
+  <div className="loading-container">
+    <div className="spinner"></div>
+    <p className="loading-message">{message}</p>
+  </div>
+);
+
+// Optimized error boundary component
+const ErrorBoundary = ({ children, error, onRetry }) => {
+  if (error) {
+    return (
+      <div className="error-container">
+        <h3>⚠️ Something went wrong</h3>
+        <p className="error-message">{error}</p>
+        <button onClick={onRetry} className="btn btn-primary">
+          Try Again
+        </button>
+      </div>
+    );
+  }
+  return children;
+};
 
 // Auth Context
 const AuthContext = React.createContext(null);
