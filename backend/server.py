@@ -1734,6 +1734,128 @@ async def create_default_programs():
             await db.programs.insert_one(program.dict())
         print(f"✅ Created {len(default_programs)} default dance programs")
 
+# Initialize default settings
+async def create_default_settings():
+    """Create default application settings"""
+    default_settings = [
+        # Business Settings
+        Settings(
+            category="business",
+            key="studio_name",
+            value="Dance Studio",
+            data_type="string",
+            description="Name of the dance studio"
+        ),
+        Settings(
+            category="business",
+            key="contact_email",
+            value="info@dancestudio.com",
+            data_type="string",
+            description="Main contact email for the studio"
+        ),
+        Settings(
+            category="business",
+            key="contact_phone",
+            value="(555) 123-4567",
+            data_type="string",
+            description="Main contact phone number"
+        ),
+        Settings(
+            category="business",
+            key="address",
+            value="123 Dance Street, City, State 12345",
+            data_type="string",
+            description="Studio address"
+        ),
+        Settings(
+            category="business",
+            key="operating_hours",
+            value=["Monday-Friday: 9AM-9PM", "Saturday: 9AM-6PM", "Sunday: 12PM-6PM"],
+            data_type="array",
+            description="Studio operating hours"
+        ),
+        
+        # System Settings
+        Settings(
+            category="system",
+            key="timezone",
+            value="America/New_York",
+            data_type="string",
+            description="Default timezone for the studio"
+        ),
+        Settings(
+            category="system",
+            key="currency",
+            value="USD",
+            data_type="string",
+            description="Default currency for payments"
+        ),
+        Settings(
+            category="system",
+            key="date_format",
+            value="MM/DD/YYYY",
+            data_type="string",
+            description="Default date format"
+        ),
+        Settings(
+            category="system",
+            key="time_format",
+            value="12h",
+            data_type="string",
+            description="Time format (12h or 24h)"
+        ),
+        
+        # Program Settings
+        Settings(
+            category="program",
+            key="default_lesson_duration",
+            value=60,
+            data_type="integer",
+            description="Default lesson duration in minutes"
+        ),
+        Settings(
+            category="program",
+            key="max_students_per_class",
+            value=20,
+            data_type="integer",
+            description="Maximum students per group class"
+        ),
+        Settings(
+            category="program",
+            key="cancellation_policy_hours",
+            value=24,
+            data_type="integer",
+            description="Hours before lesson that cancellation is allowed"
+        ),
+        
+        # Notification Settings
+        Settings(
+            category="notification",
+            key="reminder_hours_before",
+            value=24,
+            data_type="integer",
+            description="Default hours before lesson to send reminders"
+        ),
+        Settings(
+            category="notification",
+            key="email_notifications_enabled",
+            value=True,
+            data_type="boolean",
+            description="Enable email notifications"
+        ),
+        Settings(
+            category="notification",
+            key="sms_notifications_enabled",
+            value=False,
+            data_type="boolean",
+            description="Enable SMS notifications"
+        )
+    ]
+    
+    for setting in default_settings:
+        await db.settings.insert_one(setting.dict())
+    print(f"✅ Created {len(default_settings)} default settings")
+
 # Notification Preferences Routes
 @api_router.post("/notifications/preferences", response_model=NotificationPreference)
 async def create_notification_preference(pref_data: NotificationPreferenceCreate):
