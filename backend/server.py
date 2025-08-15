@@ -989,11 +989,18 @@ async def get_student_ledger(student_id: str):
     lesson_history = []
     for lesson in lesson_history_data:
         student_doc = await db.students.find_one({"id": lesson["student_id"]})
-        teacher_doc = await db.teachers.find_one({"id": lesson["teacher_id"]})
+        
+        # Get all teachers for this lesson
+        teacher_names = []
+        for teacher_id in lesson.get("teacher_ids", []):
+            teacher_doc = await db.teachers.find_one({"id": teacher_id})
+            if teacher_doc:
+                teacher_names.append(teacher_doc["name"])
+        
         lesson_history.append(PrivateLessonResponse(
             **lesson,
             student_name=student_doc["name"] if student_doc else "Unknown",
-            teacher_name=teacher_doc["name"] if teacher_doc else "Unknown"
+            teacher_names=teacher_names
         ))
     
     # Calculate totals
