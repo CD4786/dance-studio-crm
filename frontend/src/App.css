@@ -2034,3 +2034,142 @@ body {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(234, 179, 8, 0.05) 100%);
   border-color: rgba(245, 158, 11, 0.2);
 }
+
+/* Teacher Color Manager Styles */
+.teacher-color-manager {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(15, 23, 42, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 1rem;
+}
+
+.manager-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.manager-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.teacher-color-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.teacher-color-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.teacher-color-item:hover {
+  border-color: rgba(168, 85, 247, 0.3);
+  transform: translateY(-1px);
+}
+
+.teacher-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.teacher-color-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.teacher-details h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0 0 0.25rem 0;
+}
+
+.teacher-details p {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.color-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.teacher-color-picker {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background: none;
+}
+
+.teacher-color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.teacher-color-picker::-webkit-color-swatch {
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  border-radius: 0.5rem;
+}
+
+.teacher-color-text {
+  width: 80px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  color: #e2e8f0;
+  font-family: monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.teacher-color-text:focus {
+  outline: none;
+  border-color: rgba(168, 85, 247, 0.5);
+}
+
+.no-teachers {
+  text-align: center;
+  padding: 2rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .teacher-color-item {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .teacher-info {
+    justify-content: center;
+  }
+  
+  .color-controls {
+    justify-content: center;
+  }
+}
