@@ -173,22 +173,55 @@ class DanceStudioAPITester:
         self.log_test("Dashboard Stats", success, f"- Stats: {response if success else 'Missing fields'}")
         return success
 
-    def test_create_teacher(self):
-        """Test creating a teacher"""
-        teacher_data = {
-            "name": "Jane Smith",
-            "email": "jane.smith@example.com",
-            "phone": "+1234567890",
-            "specialties": ["ballet", "contemporary"],
-            "bio": "Experienced ballet instructor with 10+ years of teaching."
-        }
+    def test_create_multiple_teachers(self):
+        """Test creating multiple teachers for multiple instructor testing"""
+        teachers_data = [
+            {
+                "name": "Jane Smith",
+                "email": "jane.smith@example.com",
+                "phone": "+1234567890",
+                "specialties": ["ballet", "contemporary"],
+                "bio": "Experienced ballet instructor with 10+ years of teaching."
+            },
+            {
+                "name": "Carlos Rodriguez",
+                "email": "carlos.rodriguez@example.com",
+                "phone": "+1234567891",
+                "specialties": ["salsa", "ballroom"],
+                "bio": "Professional ballroom dance instructor and competitor."
+            },
+            {
+                "name": "Lisa Chen",
+                "email": "lisa.chen@example.com",
+                "phone": "+1234567892",
+                "specialties": ["jazz", "hip_hop"],
+                "bio": "Contemporary jazz and hip hop specialist."
+            }
+        ]
         
-        success, response = self.make_request('POST', 'teachers', teacher_data, 200)
+        created_teachers = []
         
-        if success:
-            self.created_teacher_id = response.get('id')
+        for i, teacher_data in enumerate(teachers_data):
+            success, response = self.make_request('POST', 'teachers', teacher_data, 200)
             
-        self.log_test("Create Teacher", success, f"- Teacher ID: {self.created_teacher_id}")
+            if success:
+                teacher_id = response.get('id')
+                created_teachers.append(teacher_id)
+                
+                # Store teacher IDs for later use
+                if i == 0:
+                    self.created_teacher_id = teacher_id
+                elif i == 1:
+                    self.created_teacher_id_2 = teacher_id
+                elif i == 2:
+                    self.created_teacher_id_3 = teacher_id
+                    
+                print(f"   ✅ Created teacher: {teacher_data['name']} (ID: {teacher_id})")
+            else:
+                print(f"   ❌ Failed to create teacher: {teacher_data['name']}")
+        
+        success = len(created_teachers) == len(teachers_data)
+        self.log_test("Create Multiple Teachers", success, f"- Created {len(created_teachers)}/{len(teachers_data)} teachers")
         return success
 
     def test_get_teachers(self):
