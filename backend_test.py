@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 class DanceStudioAPITester:
-    def __init__(self, base_url="https://289f28fc-e8d9-451e-a1ca-a56433f8acd9.preview.emergentagent.com"):
+    def __init__(self, base_url="https://studio-scheduler-3.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None

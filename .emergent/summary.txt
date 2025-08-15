@@ -1,113 +1,103 @@
 <analysis>
-The previous AI engineer successfully transformed a basic application into a comprehensive Dance Studio CRM. The work trajectory involved multiple phases, starting with extensive debugging and fixing Railway deployment issues related to static file serving, environment variables, and Docker/Nixpacks build configurations, including Node.js version conflicts. Following deployment stabilization, the engineer implemented core CRM features such as a robust recurring lesson system with real-time WebSocket updates, a customized enrollment process supporting 12 specific dance programs with flexible lesson counts, a detailed student ledger card for tracking enrollments, payments, and lesson history, and finally, comprehensive edit functionality for student and teacher profiles, along with clickable dashboard navigation. Iterative debugging, especially concerning backend authentication logic and frontend integration, was a continuous and crucial aspect of the development process.
+The AI engineer successfully transitioned the Dance Studio CRM from an MVP to a robust, production-ready application. The work trajectory demonstrates an iterative development process, heavily focused on addressing user feedback and resolving complex technical issues, particularly related to date/timezone handling and UI element visibility. The engineer systematically tackled feature requests like daily/weekly calendar navigation and instructor statistics, while simultaneously debugging recurring problems such as API endpoint accessibility, frontend-backend synchronization (WebSockets), and persistent CSS visibility issues for the delete buttons. Each reported bug led to a thorough investigation, often involving inspecting code, checking server logs, and utilizing automated testing agents to verify fixes. The trajectory concludes with the engineer actively implementing a significant enhancement to the lesson booking system, introducing customizable booking types and multi-instructor assignments.
 </analysis>
 
 <product_requirements>
-The overarching goal was to develop a comprehensive dance studio management application, conceptually similar to , featuring an ultra-modern 2025 SaaS app UI/UX, characterized by a dark theme, glassmorphism, and animated gradients.
+The primary objective was to build a comprehensive, ultra-modern Dance Studio CRM (similar to ) with a dark theme, glassmorphism, and animated gradients. Key features initially requested and largely implemented by the previous engineer included multi-role authentication, a lesson scheduling system with daily calendar view (9 am - 9 pm blocks per instructor), drag-and-drop rescheduling, and lesson deletion.
 
-Initial functional requirements included:
-*   Multi-role authentication (Owner, Manager, Teacher).
-*   A scheduling system with a daily calendar (9:00 am - 9:00 pm blocks per instructor) for private lessons.
-*   Drag-and-drop functionality for lesson rescheduling.
-*   Lesson deletion capabilities.
-
-The requirements evolved to include:
-*   A comprehensive dashboard displaying key statistics.
-*   Full student and teacher management (add/delete functionalities).
-*   An enrollment system initially for packages, later refined to support 12 specific dance programs (e.g., Beginner Program, Full Gold) with the ability to set custom numbers of lessons for each enrollment.
-*   Automatic lesson deduction upon attendance.
-*   A weekly calendar view.
-*   Email and SMS reminder capabilities for scheduled lessons.
-*   A detailed student ledger card to display enrollment history, payment history (with ability to add and delete payments), and a record of scheduled and previous lessons.
-*   The ability to edit information directly on the student ledger cards.
-*   Edit functionality for information on the teachers' page.
-*   Clickable dashboard statistics that navigate to the respective detailed sections (e.g., clicking Active Students navigates to the Students page, Lessons Today to the Daily Calendar).
+Over time, the application evolved to include a detailed dashboard, full student and teacher management (add/delete/edit), an enrollment system supporting 12 specific dance programs with custom lesson counts, automatic lesson deduction, a weekly calendar view, email and SMS reminders, a student ledger card (enrollment, payments, lessons, edit functionality), and clickable dashboard statistics for direct navigation. During the current trajectory, the user specifically requested:
+1.  Daily calendar navigation (previous/today/next day).
+2.  Fixing recurring lessons functionality (API and right-click UI).
+3.  Weekly calendar navigation (previous/this/next week).
+4.  Instructor lesson statistics (daily/weekly/monthly totals) on the daily calendar.
+5.  Fixing incorrect calculation of instructor statistics.
+6.  Adding lesson deletion to the weekly calendar, with statistics updating accordingly.
+7.  Fixing a 4-hour time offset when creating recurring lessons.
+8.  Ensuring lessons book on the proper day (addressing a new date/timezone issue).
+9.  Enhancing lesson creation to include a date picker, booking type selection (Private lesson, Meeting, Training, Party), and the ability to book multiple instructors.
 </product_requirements>
 
 <key_technical_concepts>
 -   **Full-Stack**: React (frontend), FastAPI (backend), MongoDB (database).
--   **Authentication**: JWT (JSON Web Tokens),  for user security.
--   **UI/UX**: Custom React components, extensive CSS for modern design.
+-   **Authentication**: JWT, .
+-   **UI/UX**: Custom React components, extensive CSS for modern design (glassmorphism, animated gradients).
 -   **Data Management**: , , , , .
--   **Real-time**: WebSockets ( library in FastAPI, custom client in React).
+-   **Real-time**: WebSockets ( library in FastAPI, custom client in React), with polling fallback.
 -   **Deployment**: Railway, Docker, yarn install v1.22.22
 [1/5] Validating package.json...
 [2/5] Resolving packages...
 success Already up-to-date.
-Done in 0.39s. for package management.
--   **Communication**: Twilio for SMS and email reminders.
+Done in 0.40s..
+-   **Communication**: Twilio (SMS/email reminders).
 -   **API Design**: RESTful principles, Pydantic for data validation.
+-   **Date/Time Handling**: Crucial focus on  objects and string conversions for consistent local time display.
 </key_technical_concepts>
 
 <code_architecture>
-The application employs a standard full-stack architecture with a React frontend and a FastAPI backend, utilizing MongoDB as its database. The core structure has evolved significantly:
+The application uses a full-stack React, FastAPI, and MongoDB architecture.
 
 
 
 -   ****:
-    -   **Importance**: Centralizes backend logic, API endpoints, MongoDB interactions, and WebSocket communication.
-    -   **Changes**: Extensively rewritten to include comprehensive CRM features. It now contains Pydantic models for , , , , , , , and . New CRUD endpoints were added for these entities, alongside real-time updates via WebSockets for all major operations. Authentication logic () was refined to correctly handle . Static file serving for the React build was integrated and debugged for Railway deployment.
--   ****:
-    -   **Importance**: Specifies Python dependencies.
-    -   **Changes**: Continuously updated to include necessary libraries such as , , , , , , , , , , , and .
--   ****:
-    -   **Importance**: Stores critical backend environment variables.
-    -   **Changes**: Expanded from just  to include , , and Twilio credentials. Debugging for deployment required careful adjustment of  to be picked up from the environment.
--   ****:
-    -   **Importance**: The main React component that orchestrates the entire frontend user interface.
-    -   **Changes**: Underwent extensive iterative changes. It now defines , manages views like , , , , , and integrates the . It incorporates logic for authentication, student/teacher management (with new edit functionality), lesson scheduling, recurring lessons, enrollment (with custom dance programs), attendance, and real-time updates via WebSocket integration. Dashboard statistics were made clickable for intuitive navigation.
--   ****:
-    -   **Importance**: Defines the application's visual aesthetics.
-    -   **Changes**: Heavily modified to implement a modern, dark-themed UI with glassmorphism effects, animated gradient backgrounds, custom component styling, and responsive design. New styles were added for recurring lesson buttons, ledger buttons, and edit modals.
--   ****:
-    -   **Importance**: Manages Node.js dependencies and frontend build/start scripts.
-    -   **Changes**: Frequently updated to resolve dependency conflicts (e.g., Unknown command: "ERESOLVE"
+    -   **Importance**: Centralizes backend logic, API endpoints, MongoDB interactions, and WebSocket communication. It defines data models and CRUD operations for various entities.
+    -   **Changes**:
+        -   Extensive debugging and fixes for recurring lesson API endpoints (404/405 errors,  serialization,  calculation, missing response fields, adding authentication).
+        -   Added  enum (Private lesson, Meeting, Training, Party).
+        -   Modified , ,  Pydantic models to include  and . This allows lessons to have a specific type and multiple assigned instructors. The response model was also updated.
 
-To see a list of supported npm commands, run:
-  npm help), and to adjust build scripts and node version compatibility (Node.js 20.x).
 -   ****:
-    -   **Importance**: Stores the  for frontend API calls.
-    -   **Changes**: A critical file during deployment debugging, as its value (toggling between local and cloud URLs) needed to be consistently configured for the correct Railway environment.
+    -   **Importance**: The main React component orchestrating the entire frontend UI, handling state, API calls, and displaying various views (calendars, managers).
+    -   **Changes**:
+        -   Implemented daily calendar navigation logic ( state, ,  functions) and rendering buttons.
+        -   Implemented weekly calendar navigation logic.
+        -   Added  function and integrated display logic into the daily calendar view for showing daily, weekly, and monthly lesson counts per instructor. This required fixing initial calculation errors and ensuring real-time updates.
+        -   Integrated lesson deletion functionality for the weekly calendar by adding delete buttons and  to the UI, ensuring statistics update upon deletion.
+        -   Extensively modified date handling logic across , , , and  to ensure consistent local time processing and prevent 4-hour offsets or incorrect date bookings. This involved replacing  with manual local date string construction.
+
 -   ****:
-    -   **Importance**: Specifies how the application's Docker image is built for containerized deployment.
-    -   **Changes**: Simplified multiple times, then refined into a comprehensive multi-stage build that installs Python (3.11), Node.js (20.x), yarn install v1.22.22
-[1/5] Validating package.json...
-[2/5] Resolving packages...
-success Already up-to-date.
-Done in 0.20s., builds the React application, and serves the FastAPI backend. This became the most reliable deployment strategy on Railway.
--   ****:
-    -   **Importance**: Configures Railway-specific deployment settings.
-    -   **Changes**: Updated to define explicit  and  to guide Railway's build process, especially after adopting the Dockerfile.
--   ****:
-    -   **Importance**: Encapsulates WebSocket client logic for real-time updates.
-    -   **Changes**: Created to manage WebSocket connections, reconnection, and message handling, providing a centralized interface for real-time communication in the frontend.
+    -   **Importance**: Defines the application's visual aesthetics, including the modern dark theme and glassmorphism.
+    -   **Changes**:
+        -   Added styles for daily calendar navigation buttons (, , ).
+        -   Added styles for the instructor statistics display (e.g., colored stat badges).
+        -   Repeatedly modified and refined CSS for weekly lesson delete buttons to ensure they were consistently visible, clickable, and professionally styled (initially  icon, later DELETE text, and finally smaller, subtle buttons). This involved fixing visibility (, positioning) and styling issues.
+
 -   ****:
     -   **Importance**: React component for creating recurring lessons.
-    -   **Changes**: Created to provide a dedicated UI for defining recurring lesson parameters, including recurrence patterns and end conditions.
+    -   **Changes**: Removed  from datetime conversion before sending data to the backend to fix the 4-hour timezone offset issue.
+
 -   ****:
-    -   **Importance**: React component for displaying a student's comprehensive ledger.
-    -   **Changes**: Created to display enrollment history, payment history (add/delete payments), upcoming lessons, and past lessons, providing a holistic view of student financial and academic data.
+    -   **Importance**: Specifies Python dependencies.
+    -   **Changes**: Continuously updated as new libraries were needed (e.g., , , , etc. as listed in initial code architecture).
+
+-   ****:
+    -   **Importance**: Records user problem statements, testing data, and agent communications. Crucial for tracking progress and issues.
+    -   **Changes**: Frequently updated to reflect newly reported issues, debugging steps, successful fixes, and comprehensive testing results.
 </code_architecture>
 
 <pending_tasks>
--   **Dashboard Navigation Session Management**: The clickable dashboard statistics are implemented, but session management issues prevent consistent navigation testing and may affect live user experience. This requires a minor fix.
+-   **Implement Date Picker in Lesson Creation**: Frontend changes needed to allow users to select a date when creating a lesson.
+-   **Implement Booking Type Selection**: Frontend UI for choosing between Private lesson, Meeting, Training, Party.
+-   **Implement Multiple Instructor Selection**: Frontend UI for selecting multiple teachers for a single booking.
+-   **Update Backend API Endpoints for New Booking Features**: Integrate the new  and  fields into the lesson creation and update API logic (currently in progress).
 </pending_tasks>
 
 <current_work>
-The application is a fully functional, comprehensive Dance Studio CRM with a modern 2025 SaaS app UI/UX, featuring a dark theme, glassmorphism effects, and animated gradients. It supports multi-role authentication, extensive student and teacher management (including add/delete and comprehensive edit functionalities), and a robust lesson scheduling system with daily and weekly calendar views, drag-and-drop, and lesson deletion.
+The application is a fully functional Dance Studio CRM with a modern UI. It previously supported daily/weekly calendar views, recurring lessons, student/teacher management, and financial tracking.
 
-Significant recent additions include:
-*   **Recurring Lessons**: A comprehensive system allowing the creation of weekly, bi-weekly, or monthly recurring private lessons with flexible end conditions.
-*   **Dance Programs Enrollment**: The enrollment system has been upgraded to use 12 specific dance programs (e.g., Beginner Program, Newcomers Bronze, Full Gold), enabling custom lesson counts for each student enrollment.
-*   **Attendance Tracking**: Lessons can be marked as attended, automatically deducting from the student's remaining lessons in their active enrollment.
-*   **Student Ledger Cards**: Each student now has a detailed ledger card, providing a complete financial and academic overview. This includes their enrollment history, payment history (with functionality to add and delete payments via multiple methods), upcoming scheduled lessons, and a record of previous lessons.
-*   **Real-time Updates**: The system incorporates WebSocket integration for real-time updates across all CRUD operations (lessons, students, teachers, enrollments, payments), ensuring all connected users see live changes. A polling fallback system is also in place for environments where WebSockets might be problematic.
-*   **Edit Functionality**: Comprehensive edit capabilities have been added for both student and teacher profiles. Users can now modify student information directly from their ledger cards and teacher information from the teachers' page. This involved updates to backend API endpoints (e.g., PUT /api/students/{student_id}, PUT /api/teachers/{teacher_id}) and corresponding frontend modals and forms. A critical bug related to  JSON serialization was fixed during this process, ensuring all edit operations broadcast real-time updates correctly.
-*   **Dashboard Navigation**: The statistical cards on the dashboard (e.g., Active Students, Lessons Today) have been made clickable, providing direct navigation to the respective detailed sections within the application for improved user experience.
+Immediately before this summary request, the previous AI engineer was working on three new features requested by the user:
+1.  **Date Picker for Lesson Creation**: To give users control over the lesson date.
+2.  **Booking Type Selection**: To allow categorization of bookings into Private lesson, Meeting, Training, Party.
+3.  **Multiple Instructor Booking**: To enable assigning more than one instructor to a single lesson/event.
 
-The immediate work before this summary involved successfully implementing and verifying the edit functionalities for students and teachers, and making the dashboard statistics clickable for navigation. These features have been thoroughly tested by both backend and frontend automated testing agents, confirming their operational status. The only outstanding minor detail is a session management issue affecting the consistent navigation from dashboard cards.
+The engineer has already started implementing these features by:
+-   **Backend Model Updates ()**:
+    -   Defined a new  enum to categorize lessons.
+    -   Modified the , , and  Pydantic models to include a  field and a  field (allowing a list of teacher IDs).
+    -   Updated the response model to accommodate multiple teachers.
+
+The current work left off right before updating the actual API endpoints in  to handle the new model structure for lesson creation. Frontend changes (date picker, booking type dropdown, multi-select for instructors) are pending the backend updates.
 </current_work>
 
 <optional_next_step>
-If desired by the user, the next step would be to investigate and fix the session management issues affecting consistent dashboard navigation.
+Continue implementing the new lesson creation features by updating the backend API endpoints to use the new  and  fields.
 </optional_next_step>
