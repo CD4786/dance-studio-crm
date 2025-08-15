@@ -1029,6 +1029,30 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         title="Edit Private Lesson"
       >
         <form onSubmit={handleUpdateLesson}>
+          {/* Date and Time Fields */}
+          <div className="form-row">
+            <div className="form-group">
+              <label>Date</label>
+              <input
+                type="date"
+                value={newLessonData.lesson_date || ''}
+                onChange={(e) => setNewLessonData({...newLessonData, lesson_date: e.target.value})}
+                className="input"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>Time</label>
+              <input
+                type="time"
+                value={newLessonData.lesson_time || ''}
+                onChange={(e) => setNewLessonData({...newLessonData, lesson_time: e.target.value})}
+                className="input"
+                required
+              />
+            </div>
+          </div>
+
           {/* Student Selection */}
           <div className="form-group">
             <label>Student</label>
