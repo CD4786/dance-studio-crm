@@ -77,6 +77,11 @@ const SettingsPage = () => {
         value: value
       });
       
+      // Apply theme immediately if it's a theme setting
+      if (category === 'theme' && key === 'selected_theme') {
+        applyTheme(value);
+      }
+      
       setMessage('Setting saved successfully!');
       setTimeout(() => setMessage(''), 3000);
       
@@ -90,6 +95,31 @@ const SettingsPage = () => {
       setSaving(false);
     }
   };
+
+  const applyTheme = (themeName) => {
+    const validThemes = ['dark', 'light', 'ocean'];
+    if (!validThemes.includes(themeName)) {
+      themeName = 'dark'; // Default fallback
+    }
+    
+    // Remove existing theme attributes
+    document.documentElement.removeAttribute('data-theme');
+    
+    // Apply new theme (dark is the default, so no attribute needed)
+    if (themeName !== 'dark') {
+      document.documentElement.setAttribute('data-theme', themeName);
+    }
+    
+    console.log(`Applied theme: ${themeName}`);
+  };
+
+  // Apply theme on component mount
+  useEffect(() => {
+    const themeSettings = settings.filter(s => s.category === 'theme' && s.key === 'selected_theme');
+    if (themeSettings.length > 0) {
+      applyTheme(themeSettings[0].value);
+    }
+  }, [settings]);
 
   const handleResetDefaults = async () => {
     if (!window.confirm('Are you sure you want to reset all settings to defaults? This action cannot be undone.')) {
