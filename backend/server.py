@@ -2078,6 +2078,69 @@ async def get_upcoming_lessons_for_reminders():
     
     return enriched_lessons
 
+# Settings Routes
+@api_router.get("/settings", response_model=List[SettingsResponse])
+async def get_all_settings():
+    """Get all application settings"""
+    settings = await db.settings.find().to_list(1000)
+    return [SettingsResponse(**setting) for setting in settings]
+
+@api_router.get("/settings/{category}", response_model=List[SettingsResponse])
+async def get_settings_by_category(category: str):
+    """Get settings by category (business, system, program, notification)"""
+    settings = await db.settings.find({"category": category}).to_list(1000)
+    return [SettingsResponse(**setting) for setting in settings]
+
+@api_router.get("/settings/{category}/{key}", response_model=SettingsResponse)
+async def get_setting_by_key(category: str, key: str):
+    """Get a specific setting by category and key"""
+    setting = await db.settings.find_one({"category": category, "key": key})
+    if not setting:
+        raise HTTPException(status_code=404, detail="Setting not found")
+    return SettingsResponse(**setting)
+
+@api_router.put("/settings/{category}/{key}", response_model=SettingsResponse)
+async def update_setting(category: str, key: str, setting_update: SettingsUpdate, current_user: User = Depends(get_current_user)):
+    """Update a specific setting"""
+    # Check if setting exists
+    existing_setting = await db.settings.find_one({"category": category, "key": key})
+    if not existing_setting:
+        raise HTTPException(status_code=404, detail="Setting not found")
+    
+    # Update the setting
+    update_data = {
+        "value": setting_update.value,
+        "updated_at": datetime.utcnow(),
+        "updated_by": current_user.id
+    }
+    
+    result = await db.settings.update_one(
+        {"category": category, "key": key},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Setting not found")
+    
+    # Get updated setting
+    updated_setting = await db.settings.find_one({"category": category, "key": key})
+    return SettingsResponse(**updated_setting)
+
+@api_router.post("/settings/reset-defaults")
+async def reset_settings_to_defaults(current_user: User = Depends(get_current_user)):
+    """Reset all settings to default values"""
+    # Only allow owners to reset settings
+    if current_user.role != "owner":
+        raise HTTPException(status_code=403, detail="Only owners can reset settings")
+    
+    # Delete all existing settings
+    await db.settings.delete_many({})
+    
+    # Create default settings
+    await create_default_settings()
+    
+    return {"message": "Settings reset to defaults successfully"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
