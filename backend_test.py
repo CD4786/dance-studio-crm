@@ -1312,6 +1312,7 @@ class DanceStudioAPITester:
         # Restore original token
         self.token = original_token
         
+        users_count = 0
         if success:
             users_count = len(response) if isinstance(response, list) else 0
             
