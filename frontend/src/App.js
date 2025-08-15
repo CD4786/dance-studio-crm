@@ -656,12 +656,21 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   const handleUpdateLesson = async (e) => {
     e.preventDefault();
     try {
+      // Build the datetime string from date and time inputs
+      let start_datetime = editingLesson.start_datetime; // Keep original if not changed
+      
+      if (newLessonData.lesson_date && newLessonData.lesson_time) {
+        start_datetime = `${newLessonData.lesson_date}T${newLessonData.lesson_time}:00`;
+      }
+      
       const updateData = {
         student_id: newLessonData.student_id,
         teacher_ids: newLessonData.teacher_ids,
         booking_type: newLessonData.booking_type,
         notes: newLessonData.notes,
-        enrollment_id: newLessonData.enrollment_id
+        enrollment_id: newLessonData.enrollment_id,
+        start_datetime: start_datetime,
+        duration_minutes: 60 // Keep standard duration
       };
       
       await axios.put(`${API}/lessons/${editingLesson.id}`, updateData);
@@ -672,7 +681,9 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         booking_type: 'private_lesson',
         notes: '',
         enrollment_id: '',
-        selected_date: null
+        selected_date: null,
+        lesson_date: '',
+        lesson_time: ''
       });
       fetchDailyData();
       onRefresh();
