@@ -146,37 +146,7 @@ const SettingsPage = () => {
     const key = setting.key;
     const value = formData[category]?.[key] || setting.value;
 
-    // Special handling for different setting types
-    if (key.includes('color')) {
-      return (
-        <div className="setting-input-group">
-          <label>{setting.description || key}</label>
-          <div className="color-input-group">
-            <input
-              type="color"
-              value={value || '#3b82f6'}
-              onChange={(e) => handleInputChange(category, key, e.target.value)}
-              className="color-picker"
-            />
-            <input
-              type="text"
-              value={value || '#3b82f6'}
-              onChange={(e) => handleInputChange(category, key, e.target.value)}
-              className="color-text-input"
-              placeholder="#3b82f6"
-            />
-            <button 
-              onClick={() => handleSaveSetting(category, key)}
-              className="btn btn-outline btn-sm"
-              disabled={saving}
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      );
-    }
-
+    // Special handling for theme settings first (before color check)
     if (key === 'selected_theme') {
       return (
         <div className="setting-input-group">
@@ -205,6 +175,37 @@ const SettingsPage = () => {
           </div>
           <div className="theme-preview">
             <div className="theme-preview-text">Preview: Current theme applied</div>
+          </div>
+        </div>
+      );
+    }
+
+    // Special handling for different setting types
+    if (key.includes('color')) {
+      return (
+        <div className="setting-input-group">
+          <label>{setting.description || key}</label>
+          <div className="color-input-group">
+            <input
+              type="color"
+              value={value || '#3b82f6'}
+              onChange={(e) => handleInputChange(category, key, e.target.value)}
+              className="color-picker"
+            />
+            <input
+              type="text"
+              value={value || '#3b82f6'}
+              onChange={(e) => handleInputChange(category, key, e.target.value)}
+              className="color-text-input"
+              placeholder="#3b82f6"
+            />
+            <button 
+              onClick={() => handleSaveSetting(category, key)}
+              className="btn btn-outline btn-sm"
+              disabled={saving}
+            >
+              Save
+            </button>
           </div>
         </div>
       );
