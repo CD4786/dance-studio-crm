@@ -326,10 +326,11 @@ class PrivateLessonCreate(BaseModel):
 class PrivateLessonUpdate(BaseModel):
     student_id: Optional[str] = None
     teacher_ids: Optional[List[str]] = None  # Changed from teacher_id to support multiple teachers
+    booking_type: Optional[BookingType] = None
     start_datetime: Optional[datetime] = None
     duration_minutes: Optional[int] = None
-    booking_type: Optional[BookingType] = None  # Added booking type
     notes: Optional[str] = None
+    enrollment_id: Optional[str] = None
 
 class PrivateLessonResponse(BaseModel):
     id: str
