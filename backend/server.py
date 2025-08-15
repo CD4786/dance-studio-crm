@@ -1529,6 +1529,15 @@ async def get_daily_calendar(date: str):
         # Enrich lessons with student and teacher names
         enriched_lessons = []
         for lesson_doc in lessons:
+            # Handle migration from old teacher_id to new teacher_ids array
+            if "teacher_id" in lesson_doc and "teacher_ids" not in lesson_doc:
+                # Migrate old single teacher_id to teacher_ids array
+                lesson_doc["teacher_ids"] = [lesson_doc["teacher_id"]]
+                lesson_doc.pop("teacher_id", None)
+            elif "teacher_ids" not in lesson_doc:
+                # Fallback if neither field exists
+                lesson_doc["teacher_ids"] = []
+            
             student = await db.students.find_one({"id": lesson_doc["student_id"]})
             
             # Get all teachers for this lesson
