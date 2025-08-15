@@ -663,11 +663,10 @@ class DanceStudioAPITester:
         self.log_test("Get Student Enrollments", success, f"- Found {enrollments_count} enrollments for student")
         return success
 
-    # Private Lesson Tests
-    def test_create_private_lesson(self):
-        """Test creating a private lesson"""
+    def test_create_lesson_single_instructor(self):
+        """Test creating a lesson with single instructor using new teacher_ids array"""
         if not self.created_student_id or not self.created_teacher_id:
-            self.log_test("Create Private Lesson", False, "- No student or teacher ID available")
+            self.log_test("Create Lesson Single Instructor", False, "- No student or teacher ID available")
             return False
             
         # Create lesson for tomorrow
@@ -676,10 +675,11 @@ class DanceStudioAPITester:
         
         lesson_data = {
             "student_id": self.created_student_id,
-            "teacher_id": self.created_teacher_id,
+            "teacher_ids": [self.created_teacher_id],  # Single teacher in array
             "start_datetime": start_time.isoformat(),
             "duration_minutes": 60,
-            "notes": "Private ballet lesson focusing on technique",
+            "booking_type": "private_lesson",
+            "notes": "Single instructor private lesson",
             "enrollment_id": self.created_enrollment_id
         }
         
@@ -687,8 +687,139 @@ class DanceStudioAPITester:
         
         if success:
             self.created_lesson_id = response.get('id')
+            teacher_names = response.get('teacher_names', [])
+            booking_type = response.get('booking_type')
             
-        self.log_test("Create Private Lesson", success, f"- Lesson ID: {self.created_lesson_id}")
+            # Verify single teacher
+            success = success and len(teacher_names) == 1
+            
+        self.log_test("Create Lesson Single Instructor", success, 
+                     f"- Lesson ID: {self.created_lesson_id}, Teachers: {teacher_names}, Type: {booking_type}")
+        return success
+
+    def test_create_lesson_multiple_instructors(self):
+        """Test creating a lesson with multiple instructors"""
+        if not self.created_student_id or not self.created_teacher_id_2 or not self.created_teacher_id_3:
+            self.log_test("Create Lesson Multiple Instructors", False, "- Not enough teachers available")
+            return False
+            
+        # Create lesson for day after tomorrow
+        day_after_tomorrow = datetime.now() + timedelta(days=2)
+        start_time = day_after_tomorrow.replace(hour=15, minute=30, second=0, microsecond=0)
+        
+        lesson_data = {
+            "student_id": self.created_student_id,
+            "teacher_ids": [self.created_teacher_id_2, self.created_teacher_id_3],  # Multiple teachers
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 90,
+            "booking_type": "training",
+            "notes": "Multiple instructor training session",
+            "enrollment_id": self.created_enrollment_id
+        }
+        
+        success, response = self.make_request('POST', 'lessons', lesson_data, 200)
+        
+        if success:
+            lesson_id = response.get('id')
+            teacher_names = response.get('teacher_names', [])
+            booking_type = response.get('booking_type')
+            
+            # Verify multiple teachers
+            success = success and len(teacher_names) == 2
+            
+            print(f"   👥 Multiple instructors: {', '.join(teacher_names)}")
+            
+        self.log_test("Create Lesson Multiple Instructors", success, 
+                     f"- Teachers: {len(teacher_names)}, Type: {booking_type}")
+        return success
+
+    def test_all_booking_types(self):
+        """Test creating lessons with all booking types"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("All Booking Types", False, "- No student or teacher ID available")
+            return False
+            
+        booking_types = ["private_lesson", "meeting", "training", "party"]
+        successful_bookings = 0
+        
+        for i, booking_type in enumerate(booking_types):
+            # Create lesson for different days
+            future_date = datetime.now() + timedelta(days=3 + i)
+            start_time = future_date.replace(hour=10 + i, minute=0, second=0, microsecond=0)
+            
+            lesson_data = {
+                "student_id": self.created_student_id,
+                "teacher_ids": [self.created_teacher_id],
+                "start_datetime": start_time.isoformat(),
+                "duration_minutes": 60,
+                "booking_type": booking_type,
+                "notes": f"Testing {booking_type} booking type"
+            }
+            
+            success, response = self.make_request('POST', 'lessons', lesson_data, 200)
+            
+            if success:
+                returned_booking_type = response.get('booking_type')
+                if returned_booking_type == booking_type:
+                    successful_bookings += 1
+                    print(f"   ✅ {booking_type}: Created successfully")
+                else:
+                    print(f"   ❌ {booking_type}: Type mismatch - got {returned_booking_type}")
+            else:
+                print(f"   ❌ {booking_type}: Failed to create")
+        
+        success = successful_bookings == len(booking_types)
+        self.log_test("All Booking Types", success, 
+                     f"- {successful_bookings}/{len(booking_types)} booking types working")
+        return success
+
+    def test_lesson_with_invalid_teacher(self):
+        """Test creating lesson with non-existent teacher ID"""
+        if not self.created_student_id:
+            self.log_test("Lesson with Invalid Teacher", False, "- No student ID available")
+            return False
+            
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=16, minute=0, second=0, microsecond=0)
+        
+        lesson_data = {
+            "student_id": self.created_student_id,
+            "teacher_ids": ["nonexistent-teacher-id"],
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 60,
+            "booking_type": "private_lesson",
+            "notes": "Test with invalid teacher"
+        }
+        
+        success, response = self.make_request('POST', 'lessons', lesson_data, 404)
+        
+        self.log_test("Lesson with Invalid Teacher", success, "- Expected 404 error")
+        return success
+
+    def test_update_lesson_multiple_instructors(self):
+        """Test updating a lesson to have multiple instructors"""
+        if not self.created_lesson_id or not self.created_teacher_id_2:
+            self.log_test("Update Lesson Multiple Instructors", False, "- No lesson or additional teacher available")
+            return False
+            
+        # Update lesson to have multiple teachers
+        update_data = {
+            "teacher_ids": [self.created_teacher_id, self.created_teacher_id_2],
+            "booking_type": "training",
+            "notes": "Updated to multiple instructor training session"
+        }
+        
+        success, response = self.make_request('PUT', f'lessons/{self.created_lesson_id}', update_data, 200)
+        
+        if success:
+            teacher_names = response.get('teacher_names', [])
+            booking_type = response.get('booking_type')
+            
+            # Verify multiple teachers
+            success = success and len(teacher_names) == 2
+            
+        self.log_test("Update Lesson Multiple Instructors", success, 
+                     f"- Updated to {len(teacher_names)} teachers, Type: {booking_type}")
         return success
 
     def test_get_private_lessons(self):
