@@ -270,15 +270,17 @@ class LessonUpdate(BaseModel):
 class PrivateLesson(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     student_id: str
-    teacher_id: str
+    teacher_ids: List[str]  # Changed from teacher_id to support multiple teachers
     start_datetime: datetime
     end_datetime: datetime
+    booking_type: BookingType = BookingType.PRIVATE_LESSON  # Added booking type
     notes: Optional[str] = None
     is_attended: bool = False
     enrollment_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     # Recurring lesson support
     recurring_series_id: Optional[str] = None
+    # Cancellation support
     is_cancelled: bool = False
     cancellation_reason: Optional[str] = None
     modified_at: datetime = Field(default_factory=datetime.utcnow)
