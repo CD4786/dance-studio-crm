@@ -1486,7 +1486,204 @@ body {
   cursor: grabbing;
 }
 
-/* Instructor Selection Styles */
+/* Settings Page Styles */
+.settings-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.settings-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.message.success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.message.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.settings-content {
+  display: flex;
+  gap: 2rem;
+  min-height: 600px;
+}
+
+.settings-tabs {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-tab {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #cbd5e1;
+  text-align: left;
+}
+
+.settings-tab:hover {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: #a855f7;
+}
+
+.settings-tab.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #a855f7;
+}
+
+.tab-icon {
+  font-size: 1.5rem;
+}
+
+.tab-name {
+  font-weight: 500;
+}
+
+.settings-panel {
+  flex: 1;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 1rem;
+  padding: 2rem;
+}
+
+.settings-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0 0 1.5rem 0;
+}
+
+.settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.setting-item {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.setting-info h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0 0 0.5rem 0;
+}
+
+.setting-description {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin: 0 0 1rem 0;
+}
+
+.setting-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.setting-input-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.input-with-button {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.input-with-button .input {
+  flex: 1;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  min-width: 80px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  color: #e2e8f0;
+  font-size: 0.875rem;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #a855f7;
+}
+
+@media (max-width: 768px) {
+  .settings-content {
+    flex-direction: column;
+  }
+  
+  .settings-tabs {
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .input-with-button {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
 .instructor-selection {
   display: flex;
   flex-direction: column;
