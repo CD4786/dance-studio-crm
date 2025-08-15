@@ -2987,7 +2987,119 @@ class DanceStudioAPITester:
                 print(f"❌ {test.__name__} - EXCEPTION: {str(e)}")
                 self.tests_run += 1
 
-    def run_all_tests(self):
+    def run_authentication_and_lesson_tests(self):
+        """Run comprehensive tests for authentication and lesson creation with multiple instructors"""
+        print("🚀 STARTING AUTHENTICATION AND LESSON CREATION TESTS")
+        print("=" * 80)
+        
+        # Phase 1: Authentication Tests
+        print("\n📋 PHASE 1: AUTHENTICATION TESTING")
+        print("-" * 50)
+        
+        auth_tests = [
+            self.test_user_registration,
+            self.test_user_login,
+            self.test_admin_login,
+            self.test_token_validation,
+            self.test_invalid_token
+        ]
+        
+        auth_passed = 0
+        for test in auth_tests:
+            if test():
+                auth_passed += 1
+        
+        print(f"\n📊 Authentication Tests: {auth_passed}/{len(auth_tests)} passed")
+        
+        # Phase 2: Basic API Health Check
+        print("\n📋 PHASE 2: API HEALTH CHECK")
+        print("-" * 50)
+        
+        health_tests = [
+            self.test_dashboard_stats,
+            self.test_get_teachers,
+            self.test_get_students,
+            self.test_get_programs
+        ]
+        
+        health_passed = 0
+        for test in health_tests:
+            if test():
+                health_passed += 1
+        
+        print(f"\n📊 API Health Tests: {health_passed}/{len(health_tests)} passed")
+        
+        # Phase 3: Setup for Lesson Tests
+        print("\n📋 PHASE 3: SETUP FOR LESSON TESTING")
+        print("-" * 50)
+        
+        setup_tests = [
+            self.test_create_multiple_teachers,
+            self.test_create_student,
+            self.test_create_enrollment_with_program
+        ]
+        
+        setup_passed = 0
+        for test in setup_tests:
+            if test():
+                setup_passed += 1
+        
+        print(f"\n📊 Setup Tests: {setup_passed}/{len(setup_tests)} passed")
+        
+        # Phase 4: Lesson Creation with Multiple Instructors and Booking Types
+        print("\n📋 PHASE 4: LESSON CREATION TESTING")
+        print("-" * 50)
+        
+        lesson_tests = [
+            self.test_create_lesson_single_instructor,
+            self.test_create_lesson_multiple_instructors,
+            self.test_all_booking_types,
+            self.test_lesson_with_invalid_teacher,
+            self.test_update_lesson_multiple_instructors,
+            self.test_get_private_lessons,
+            self.test_daily_calendar
+        ]
+        
+        lesson_passed = 0
+        for test in lesson_tests:
+            if test():
+                lesson_passed += 1
+        
+        print(f"\n📊 Lesson Creation Tests: {lesson_passed}/{len(lesson_tests)} passed")
+        
+        # Summary
+        total_tests = len(auth_tests) + len(health_tests) + len(setup_tests) + len(lesson_tests)
+        total_passed = auth_passed + health_passed + setup_passed + lesson_passed
+        
+        print("\n" + "=" * 80)
+        print("🎯 COMPREHENSIVE TEST SUMMARY")
+        print("=" * 80)
+        print(f"📊 Overall Results: {total_passed}/{total_tests} tests passed ({(total_passed/total_tests)*100:.1f}%)")
+        print(f"🔐 Authentication: {auth_passed}/{len(auth_tests)} passed")
+        print(f"🏥 API Health: {health_passed}/{len(health_tests)} passed")
+        print(f"⚙️  Setup: {setup_passed}/{len(setup_tests)} passed")
+        print(f"📚 Lesson Creation: {lesson_passed}/{len(lesson_tests)} passed")
+        
+        # Identify critical issues
+        critical_issues = []
+        
+        if auth_passed < len(auth_tests):
+            critical_issues.append("Authentication system has issues")
+        
+        if lesson_passed < len(lesson_tests) * 0.7:  # Less than 70% passed
+            critical_issues.append("Lesson creation system has significant issues")
+        
+        if health_passed < len(health_tests) * 0.8:  # Less than 80% passed
+            critical_issues.append("Basic API endpoints have issues")
+        
+        if critical_issues:
+            print("\n❌ CRITICAL ISSUES IDENTIFIED:")
+            for issue in critical_issues:
+                print(f"   • {issue}")
+        else:
+            print("\n✅ NO CRITICAL ISSUES IDENTIFIED")
+        
+        return total_passed == total_tests
         """Run all API tests"""
         print("🚀 Starting Comprehensive Dance Studio CRM API Tests")
         print(f"🌐 Testing against: {self.base_url}")
