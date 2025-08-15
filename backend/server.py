@@ -1445,7 +1445,13 @@ async def mark_lesson_attended(lesson_id: str, current_user: User = Depends(get_
     
     # Get enriched lesson data for broadcast
     student = await db.students.find_one({"id": lesson["student_id"]})
-    teacher = await db.teachers.find_one({"id": lesson["teacher_id"]})
+    
+    # Get all teachers for this lesson
+    teacher_names = []
+    for teacher_id in lesson.get("teacher_ids", []):
+        teacher = await db.teachers.find_one({"id": teacher_id})
+        if teacher:
+            teacher_names.append(teacher["name"])
     
     # Broadcast real-time update
     await manager.broadcast_update(
@@ -1453,7 +1459,7 @@ async def mark_lesson_attended(lesson_id: str, current_user: User = Depends(get_
         {
             "lesson_id": lesson_id,
             "student_name": student["name"] if student else "Unknown",
-            "teacher_name": teacher["name"] if teacher else "Unknown",
+            "teacher_names": teacher_names,
             "start_datetime": lesson["start_datetime"]
         },
         current_user.id,
