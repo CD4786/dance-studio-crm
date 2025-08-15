@@ -15,6 +15,11 @@ const SettingsPage = () => {
   const tabs = [
     { id: 'business', name: 'Business Settings', icon: '🏢' },
     { id: 'system', name: 'System Settings', icon: '⚙️' },
+    { id: 'theme', name: 'Theme & Appearance', icon: '🎨' },
+    { id: 'booking', name: 'Booking Colors', icon: '🎯' },
+    { id: 'calendar', name: 'Calendar Settings', icon: '📅' },
+    { id: 'display', name: 'Display Settings', icon: '🖥️' },
+    { id: 'business_rules', name: 'Business Rules', icon: '📋' },
     { id: 'program', name: 'Program Settings', icon: '📚' },
     { id: 'notification', name: 'Notifications', icon: '🔔' }
   ];
