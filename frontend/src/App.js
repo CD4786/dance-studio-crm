@@ -351,9 +351,11 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   const [teachers, setTeachers] = useState([]);
   const [newLessonData, setNewLessonData] = useState({
     student_id: '',
-    teacher_id: '',
+    teacher_ids: [], // Changed from teacher_id to teacher_ids array
+    booking_type: 'private_lesson', // New field with default value
     notes: '',
-    enrollment_id: ''
+    enrollment_id: '',
+    selected_date: null // New field for custom date selection
   });
 
   const hours = [];
