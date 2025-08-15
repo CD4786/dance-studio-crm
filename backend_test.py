@@ -2929,6 +2929,55 @@ class DanceStudioAPITester:
             print(f"⚠️  {self.tests_run - self.tests_passed} tests failed")
             return 1
 
+    def run_multiple_instructor_tests_only(self):
+        """Run only the multiple instructor and booking type tests"""
+        print("🚀 Starting Multiple Instructor & Booking Type Tests")
+        print(f"🌐 Testing against: {self.base_url}")
+        print("=" * 60)
+        
+        # Authentication tests (required for other tests)
+        print("\n📝 Authentication Tests:")
+        if not self.test_user_registration():
+            print("❌ Authentication failed - cannot continue")
+            return 1
+        if not self.test_user_login():
+            print("❌ Login failed - cannot continue")
+            return 1
+        
+        # Create basic test data
+        print("\n🏗️ Setting up test data:")
+        if not self.test_create_teacher():
+            print("❌ Failed to create primary teacher - cannot continue")
+            return 1
+        if not self.test_create_student():
+            print("❌ Failed to create student - cannot continue")
+            return 1
+        
+        # MULTIPLE INSTRUCTOR AND BOOKING TYPE TESTS
+        print("\n👥 Multiple Instructor & Booking Type Tests:")
+        self.test_create_additional_teachers()
+        self.test_create_lesson_single_instructor()
+        self.test_create_lesson_multiple_instructors()
+        self.test_all_booking_types()
+        self.test_invalid_teacher_ids_error_handling()
+        self.test_lesson_retrieval_teacher_names_array()
+        self.test_single_lesson_retrieval_teacher_names_array()
+        self.test_daily_calendar_teacher_names_array()
+        self.test_student_ledger_teacher_names_array()
+        self.test_notification_system_multiple_teachers()
+        self.test_multiple_instructor_system_comprehensive()
+        
+        # Final results
+        print("\n" + "=" * 60)
+        print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} tests passed")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 All multiple instructor tests passed!")
+            return 0
+        else:
+            print(f"⚠️  {self.tests_run - self.tests_passed} tests failed")
+            return 1
+
 def main():
     tester = DanceStudioAPITester()
     return tester.run_timezone_fix_tests_only()
