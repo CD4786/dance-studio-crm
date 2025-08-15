@@ -1898,6 +1898,9 @@ const WeeklyCalendar = ({ selectedDate, onRefresh }) => {
   };
 
   const getLessonsForDay = (day) => {
+    if (!lessons || !Array.isArray(lessons)) {
+      return [];
+    }
     return lessons.filter(lesson => {
       const lessonDate = new Date(lesson.start_datetime);
       return lessonDate.toDateString() === day.toDateString();
