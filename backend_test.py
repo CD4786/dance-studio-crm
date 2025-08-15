@@ -1263,6 +1263,7 @@ class DanceStudioAPITester:
             
         success, response = self.make_request('GET', 'users', expected_status=200)
         
+        users_count = 0
         if success:
             users_count = len(response) if isinstance(response, list) else 0
             # Check if response contains user objects with expected fields
