@@ -756,7 +756,10 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     if (!calendarData?.lessons) return null;
     return calendarData.lessons.find(lesson => {
       const lessonHour = new Date(lesson.start_datetime).getHours();
-      return lessonHour === hour && lesson.teacher_id === teacherId;
+      // Check if lesson includes this teacher in teacher_ids array or old teacher_id field
+      const teacherMatch = (lesson.teacher_ids && lesson.teacher_ids.includes(teacherId)) ||
+                          lesson.teacher_id === teacherId;
+      return lessonHour === hour && teacherMatch;
     });
   };
 
