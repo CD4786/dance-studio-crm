@@ -307,10 +307,11 @@ class PrivateLessonResponse(BaseModel):
     id: str
     student_id: str
     student_name: str
-    teacher_id: str
-    teacher_name: str
+    teacher_ids: List[str]  # Changed from teacher_id to support multiple teachers
+    teacher_names: List[str]  # Changed from teacher_name to support multiple teachers
     start_datetime: datetime
     end_datetime: datetime
+    booking_type: BookingType = BookingType.PRIVATE_LESSON  # Added booking type
     notes: Optional[str] = None
     is_attended: bool = False
     enrollment_id: Optional[str] = None
