@@ -219,7 +219,7 @@ body {
 .nav-item {
   background: none;
   border: none;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   padding: 1rem 1.5rem;
   border-radius: 0.75rem;
   cursor: pointer;
