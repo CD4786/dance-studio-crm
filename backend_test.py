@@ -3303,8 +3303,36 @@ class DanceStudioAPITester:
             return 1
 
 def main():
+    print("🎯 DANCE STUDIO CRM - AUTHENTICATION & LESSON CREATION TESTING")
+    print("=" * 80)
+    print("Focus Areas:")
+    print("• Authentication with admin@test.com / admin123")
+    print("• Lesson creation with multiple instructors (teacher_ids array)")
+    print("• All booking types (private_lesson, meeting, training, party)")
+    print("• API health and configuration validation")
+    print("=" * 80)
+    
     tester = DanceStudioAPITester()
-    return tester.run_multiple_instructor_tests_only()
+    
+    try:
+        # Run focused tests for the review request
+        success = tester.run_authentication_and_lesson_tests()
+        
+        if success:
+            print("\n🎉 ALL TESTS PASSED - System is working correctly!")
+            return 0
+        else:
+            print("\n⚠️  SOME TESTS FAILED - Check the details above")
+            return 1
+            
+    except KeyboardInterrupt:
+        print("\n\n⏹️  Testing interrupted by user")
+        return 1
+    except Exception as e:
+        print(f"\n\n💥 Testing failed with error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return 1
 
 def main_all():
     tester = DanceStudioAPITester()
