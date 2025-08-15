@@ -5143,5 +5143,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "settings":
         tester = DanceStudioAPITester()
         sys.exit(tester.run_settings_tests_only())
+    elif len(sys.argv) > 1 and sys.argv[1] == "lesson_deletion":
+        sys.exit(main_lesson_deletion())
     else:
+        # Default to enhanced settings system testing
         sys.exit(main())
