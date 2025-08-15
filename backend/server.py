@@ -965,6 +965,15 @@ async def get_student_ledger(student_id: str):
     
     upcoming_lessons = []
     for lesson in upcoming_lessons_data:
+        # Handle migration from old teacher_id to new teacher_ids array
+        if "teacher_id" in lesson and "teacher_ids" not in lesson:
+            # Migrate old single teacher_id to teacher_ids array
+            lesson["teacher_ids"] = [lesson["teacher_id"]]
+            lesson.pop("teacher_id", None)
+        elif "teacher_ids" not in lesson:
+            # Fallback if neither field exists
+            lesson["teacher_ids"] = []
+            
         student_doc = await db.students.find_one({"id": lesson["student_id"]})
         
         # Get all teachers for this lesson
