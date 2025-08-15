@@ -1942,7 +1942,12 @@ const WeeklyCalendar = ({ selectedDate, onRefresh }) => {
                         })}
                       </div>
                       <div className="lesson-student">{lesson.student_name}</div>
-                      <div className="lesson-teacher">{lesson.teacher_name}</div>
+                      <div className="lesson-teacher">
+                        {lesson.teacher_names && lesson.teacher_names.length > 0 
+                          ? lesson.teacher_names.join(', ')
+                          : lesson.teacher_name || 'Unknown'
+                        }
+                      </div>
                     </div>
                     <button 
                       onClick={() => handleDeleteLesson(lesson.id)} 
