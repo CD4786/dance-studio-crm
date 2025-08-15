@@ -208,6 +208,31 @@ class LessonPackage(BaseModel):
     description: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+class Settings(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    category: str  # "business", "system", "program", "notification"
+    key: str  # Setting key name
+    value: Union[str, int, float, bool, List[str]]  # Setting value
+    data_type: str  # "string", "integer", "float", "boolean", "array"
+    description: Optional[str] = None
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_by: Optional[str] = None
+
+class SettingsUpdate(BaseModel):
+    value: Union[str, int, float, bool, List[str]]
+    updated_by: Optional[str] = None
+
+# Settings response models
+class SettingsResponse(BaseModel):
+    id: str
+    category: str
+    key: str
+    value: Union[str, int, float, bool, List[str]]
+    data_type: str
+    description: Optional[str] = None
+    updated_at: datetime
+    updated_by: Optional[str] = None
+
 class Enrollment(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     student_id: str
