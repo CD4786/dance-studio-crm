@@ -1481,12 +1481,18 @@ async def get_daily_calendar(date: str):
         enriched_lessons = []
         for lesson_doc in lessons:
             student = await db.students.find_one({"id": lesson_doc["student_id"]})
-            teacher = await db.teachers.find_one({"id": lesson_doc["teacher_id"]})
+            
+            # Get all teachers for this lesson
+            teacher_names = []
+            for teacher_id in lesson_doc.get("teacher_ids", []):
+                teacher = await db.teachers.find_one({"id": teacher_id})
+                if teacher:
+                    teacher_names.append(teacher["name"])
             
             enriched_lessons.append(PrivateLessonResponse(
                 **lesson_doc,
                 student_name=student["name"] if student else "Unknown",
-                teacher_name=teacher["name"] if teacher else "Unknown"
+                teacher_names=teacher_names
             ))
         
         return {
