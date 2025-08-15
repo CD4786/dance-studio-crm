@@ -2263,6 +2263,10 @@ const MainApp = () => {
         {currentView === 'settings' && (
           <SettingsPage />
         )}
+
+        {currentView === 'users' && (
+          <UserManagement />
+        )}
       </main>
     </div>
   );
