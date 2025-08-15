@@ -1689,9 +1689,14 @@ async def send_lesson_reminder(reminder_request: ReminderRequest):
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
-    # Get teacher details
-    teacher = await db.teachers.find_one({"id": lesson["teacher_id"]})
-    teacher_name = teacher["name"] if teacher else "Unknown"
+    # Get teacher details - handle multiple teachers
+    teacher_names = []
+    for teacher_id in lesson.get("teacher_ids", []):
+        teacher = await db.teachers.find_one({"id": teacher_id})
+        if teacher:
+            teacher_names.append(teacher["name"])
+    
+    teachers_text = ", ".join(teacher_names) if teacher_names else "Unknown"
     
     # Get notification preferences
     pref = await db.notification_preferences.find_one({"student_id": lesson["student_id"]})
@@ -1699,7 +1704,7 @@ async def send_lesson_reminder(reminder_request: ReminderRequest):
     lesson_datetime = lesson["start_datetime"]
     formatted_datetime = lesson_datetime.strftime("%B %d, %Y at %I:%M %p")
     
-    default_message = f"Hi {student['name']}, this is a reminder that you have a dance lesson scheduled for {formatted_datetime} with {teacher_name}. See you there!"
+    default_message = f"Hi {student['name']}, this is a reminder that you have a dance lesson scheduled for {formatted_datetime} with {teachers_text}. See you there!"
     message = reminder_request.message or default_message
     
     if reminder_request.notification_type == "email":
