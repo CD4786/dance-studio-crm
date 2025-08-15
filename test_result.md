@@ -1377,6 +1377,8 @@ agent_communication:
       message: "Starting implementation of comprehensive dance studio CRM features including students, private lessons, enrollment system, and daily calendar with drag-drop functionality"
     - agent: "main"
       message: "Backend implementation completed with all 27/27 tests passing. Implemented comprehensive CRM with Student Management, Private Lessons, Enrollment System, Daily Calendar API, and Enhanced Dashboard"
+    - agent: "testing"
+      message: "🔍 THEME DROPDOWN INVESTIGATION COMPLETED: Conducted comprehensive investigation into why theme dropdown is not showing in Settings page. FINDINGS: Backend theme settings are FULLY FUNCTIONAL and working perfectly. All 6 theme settings exist (selected_theme, font_size, custom colors, animations, glassmorphism), API endpoints working correctly (/api/settings/theme), theme dropdown data structure is 100% compatible with frontend, all theme options (dark/light/ocean) update and persist correctly. DIAGNOSIS: The issue is NOT in the backend - it's in the FRONTEND RENDERING. Backend provides all necessary data for theme dropdown to work. If dropdown still not visible, check: 1) Browser console for JavaScript errors, 2) React component rendering in SettingsPage.js, 3) CSS styling potentially hiding dropdown, 4) Network tab for failed API requests. Backend theme system is production-ready."
     - agent: "main"
       message: "Frontend implementation completed with modern 2025 SaaS design. Implemented complete UI including login, dashboard, daily calendar with drag-drop, weekly calendar, student/teacher management, and enrollment system. Ready for frontend testing."
     - agent: "testing"
