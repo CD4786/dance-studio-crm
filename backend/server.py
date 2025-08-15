@@ -2417,6 +2417,11 @@ async def update_teacher_color(teacher_id: str, color_data: Dict[str, str], curr
     if not color.startswith("#") or len(color) != 7:
         raise HTTPException(status_code=400, detail="Invalid color format. Use hex format like #3b82f6")
     
+    # Additional validation: check if all characters after # are valid hex
+    hex_chars = color[1:]
+    if not all(c in '0123456789abcdefABCDEF' for c in hex_chars):
+        raise HTTPException(status_code=400, detail="Invalid hex color. Use valid hex characters (0-9, A-F)")
+    
     await db.teachers.update_one(
         {"id": teacher_id},
         {"$set": {"assigned_color": color, "updated_at": datetime.utcnow()}}
