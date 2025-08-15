@@ -183,7 +183,7 @@ body {
 
 .sidebar-header {
   padding: 2rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .sidebar-header h1 {
