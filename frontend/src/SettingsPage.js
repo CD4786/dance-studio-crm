@@ -184,15 +184,16 @@ const SettingsPage = () => {
           <div className="input-with-button">
             <select
               value={value || 'dark'}
-              onChange={(e) => handleInputChange(category, key, e.target.value)}
+              onChange={(e) => {
+                handleInputChange(category, key, e.target.value);
+                // Apply theme immediately for preview
+                applyTheme(e.target.value);
+              }}
               className="input"
             >
               <option value="dark">🌙 Dark Theme</option>
               <option value="light">☀️ Light Theme</option>
               <option value="ocean">🌊 Ocean Theme</option>
-              <option value="sunset">🌅 Sunset Theme</option>
-              <option value="forest">🌲 Forest Theme</option>
-              <option value="royal">👑 Royal Theme</option>
             </select>
             <button 
               onClick={() => handleSaveSetting(category, key)}
@@ -201,6 +202,9 @@ const SettingsPage = () => {
             >
               Save
             </button>
+          </div>
+          <div className="theme-preview">
+            <div className="theme-preview-text">Preview: Current theme applied</div>
           </div>
         </div>
       );
