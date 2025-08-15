@@ -1519,6 +1519,468 @@ class DanceStudioAPITester:
                      f"- All {len(recurring_lessons)} occurrences at {expected_hour}:{expected_minute:02d}")
         return success
 
+    # MULTIPLE INSTRUCTOR AND BOOKING TYPE TESTS
+    def test_create_additional_teachers(self):
+        """Create additional teachers for multiple instructor testing"""
+        teachers_data = [
+            {
+                "name": "Maria Garcia",
+                "email": "maria.garcia@example.com",
+                "phone": "+1555234567",
+                "specialties": ["salsa", "ballroom"],
+                "bio": "Professional salsa and ballroom instructor with 8+ years experience."
+            },
+            {
+                "name": "David Chen",
+                "email": "david.chen@example.com", 
+                "phone": "+1555345678",
+                "specialties": ["contemporary", "jazz"],
+                "bio": "Contemporary and jazz dance specialist."
+            }
+        ]
+        
+        success_count = 0
+        for i, teacher_data in enumerate(teachers_data):
+            success, response = self.make_request('POST', 'teachers', teacher_data, 200)
+            
+            if success:
+                teacher_id = response.get('id')
+                if i == 0:
+                    self.created_teacher_id_2 = teacher_id
+                elif i == 1:
+                    self.created_teacher_id_3 = teacher_id
+                success_count += 1
+                print(f"   ✅ Created teacher: {teacher_data['name']} (ID: {teacher_id})")
+            else:
+                print(f"   ❌ Failed to create teacher: {teacher_data['name']}")
+        
+        success = success_count == len(teachers_data)
+        self.log_test("Create Additional Teachers", success, f"- Created {success_count}/{len(teachers_data)} teachers")
+        return success
+
+    def test_create_lesson_single_instructor(self):
+        """Test creating lesson with single instructor (teacher_ids as array with one item)"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Create Lesson Single Instructor", False, "- No student or teacher ID available")
+            return False
+            
+        # Create lesson for tomorrow with single instructor
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
+        
+        lesson_data = {
+            "student_id": self.created_student_id,
+            "teacher_ids": [self.created_teacher_id],  # Array with single teacher
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 60,
+            "booking_type": "private_lesson",
+            "notes": "Single instructor private lesson"
+        }
+        
+        success, response = self.make_request('POST', 'lessons', lesson_data, 200)
+        
+        if success:
+            lesson_id = response.get('id')
+            teacher_names = response.get('teacher_names', [])
+            teacher_ids = response.get('teacher_ids', [])
+            booking_type = response.get('booking_type')
+            
+            # Verify response structure
+            has_teacher_names_array = isinstance(teacher_names, list) and len(teacher_names) == 1
+            has_teacher_ids_array = isinstance(teacher_ids, list) and len(teacher_ids) == 1
+            correct_booking_type = booking_type == "private_lesson"
+            
+            success = has_teacher_names_array and has_teacher_ids_array and correct_booking_type
+            
+            print(f"   📋 Lesson ID: {lesson_id}")
+            print(f"   👨‍🏫 Teacher Names: {teacher_names}")
+            print(f"   🆔 Teacher IDs: {teacher_ids}")
+            print(f"   📝 Booking Type: {booking_type}")
+            
+        self.log_test("Create Lesson Single Instructor", success, 
+                     f"- Teacher names array: {teacher_names if success else 'Failed'}")
+        return success
+
+    def test_create_lesson_multiple_instructors(self):
+        """Test creating lesson with multiple instructors (teacher_ids as array with multiple items)"""
+        if not self.created_student_id or not self.created_teacher_id or not self.created_teacher_id_2:
+            self.log_test("Create Lesson Multiple Instructors", False, "- Missing required teacher IDs")
+            return False
+            
+        # Create lesson for tomorrow with multiple instructors
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0)
+        
+        lesson_data = {
+            "student_id": self.created_student_id,
+            "teacher_ids": [self.created_teacher_id, self.created_teacher_id_2],  # Array with multiple teachers
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 90,
+            "booking_type": "training",
+            "notes": "Multiple instructor training session"
+        }
+        
+        success, response = self.make_request('POST', 'lessons', lesson_data, 200)
+        
+        if success:
+            lesson_id = response.get('id')
+            teacher_names = response.get('teacher_names', [])
+            teacher_ids = response.get('teacher_ids', [])
+            booking_type = response.get('booking_type')
+            
+            # Verify response structure
+            has_multiple_teacher_names = isinstance(teacher_names, list) and len(teacher_names) == 2
+            has_multiple_teacher_ids = isinstance(teacher_ids, list) and len(teacher_ids) == 2
+            correct_booking_type = booking_type == "training"
+            
+            success = has_multiple_teacher_names and has_multiple_teacher_ids and correct_booking_type
+            
+            print(f"   📋 Lesson ID: {lesson_id}")
+            print(f"   👨‍🏫 Teacher Names: {teacher_names}")
+            print(f"   🆔 Teacher IDs: {teacher_ids}")
+            print(f"   📝 Booking Type: {booking_type}")
+            
+        self.log_test("Create Lesson Multiple Instructors", success, 
+                     f"- {len(teacher_names) if success else 0} teachers: {teacher_names if success else 'Failed'}")
+        return success
+
+    def test_all_booking_types(self):
+        """Test creating lessons with all booking types: private_lesson, meeting, training, party"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Test All Booking Types", False, "- No student or teacher ID available")
+            return False
+            
+        booking_types = ["private_lesson", "meeting", "training", "party"]
+        tomorrow = datetime.now() + timedelta(days=1)
+        
+        successful_bookings = 0
+        created_lesson_ids = []
+        
+        for i, booking_type in enumerate(booking_types):
+            start_time = tomorrow.replace(hour=9 + i, minute=0, second=0, microsecond=0)
+            
+            lesson_data = {
+                "student_id": self.created_student_id,
+                "teacher_ids": [self.created_teacher_id],
+                "start_datetime": start_time.isoformat(),
+                "duration_minutes": 60,
+                "booking_type": booking_type,
+                "notes": f"Test {booking_type} booking"
+            }
+            
+            success, response = self.make_request('POST', 'lessons', lesson_data, 200)
+            
+            if success:
+                lesson_id = response.get('id')
+                returned_booking_type = response.get('booking_type')
+                
+                if returned_booking_type == booking_type:
+                    successful_bookings += 1
+                    created_lesson_ids.append(lesson_id)
+                    print(f"   ✅ {booking_type}: Created lesson {lesson_id}")
+                else:
+                    print(f"   ❌ {booking_type}: Booking type mismatch - expected {booking_type}, got {returned_booking_type}")
+            else:
+                print(f"   ❌ {booking_type}: Failed to create lesson")
+        
+        success = successful_bookings == len(booking_types)
+        
+        # Store one lesson ID for further testing
+        if created_lesson_ids:
+            self.created_lesson_id = created_lesson_ids[0]
+        
+        self.log_test("Test All Booking Types", success, 
+                     f"- {successful_bookings}/{len(booking_types)} booking types created successfully")
+        return success
+
+    def test_invalid_teacher_ids_error_handling(self):
+        """Test proper error handling for invalid teacher_ids"""
+        if not self.created_student_id:
+            self.log_test("Invalid Teacher IDs Error Handling", False, "- No student ID available")
+            return False
+            
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=16, minute=0, second=0, microsecond=0)
+        
+        # Test with non-existent teacher ID
+        lesson_data = {
+            "student_id": self.created_student_id,
+            "teacher_ids": ["nonexistent-teacher-id"],
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 60,
+            "booking_type": "private_lesson",
+            "notes": "Test with invalid teacher ID"
+        }
+        
+        success, response = self.make_request('POST', 'lessons', lesson_data, 404)
+        
+        if success:
+            error_detail = response.get('detail', '')
+            contains_teacher_error = 'teacher' in error_detail.lower() or 'not found' in error_detail.lower()
+            success = contains_teacher_error
+            
+        self.log_test("Invalid Teacher IDs Error Handling", success, 
+                     f"- Proper 404 error for invalid teacher ID")
+        return success
+
+    def test_lesson_retrieval_teacher_names_array(self):
+        """Test that lesson retrieval endpoints return teacher_names as array"""
+        # Test GET /api/lessons
+        success, response = self.make_request('GET', 'lessons', expected_status=200)
+        
+        if success and isinstance(response, list) and len(response) > 0:
+            # Check first lesson for teacher_names array
+            first_lesson = response[0]
+            teacher_names = first_lesson.get('teacher_names')
+            teacher_ids = first_lesson.get('teacher_ids')
+            
+            has_teacher_names_array = isinstance(teacher_names, list)
+            has_teacher_ids_array = isinstance(teacher_ids, list)
+            
+            success = has_teacher_names_array and has_teacher_ids_array
+            
+            print(f"   📋 First lesson teacher_names: {teacher_names}")
+            print(f"   🆔 First lesson teacher_ids: {teacher_ids}")
+            print(f"   ✅ teacher_names is array: {has_teacher_names_array}")
+            print(f"   ✅ teacher_ids is array: {has_teacher_ids_array}")
+        
+        self.log_test("Lesson Retrieval Teacher Names Array", success, 
+                     f"- GET /api/lessons returns teacher_names as array")
+        return success
+
+    def test_single_lesson_retrieval_teacher_names_array(self):
+        """Test that GET /api/lessons/{id} returns teacher_names as array"""
+        if not self.created_lesson_id:
+            self.log_test("Single Lesson Retrieval Teacher Names Array", False, "- No lesson ID available")
+            return False
+            
+        success, response = self.make_request('GET', f'lessons/{self.created_lesson_id}', expected_status=200)
+        
+        if success:
+            teacher_names = response.get('teacher_names')
+            teacher_ids = response.get('teacher_ids')
+            booking_type = response.get('booking_type')
+            
+            has_teacher_names_array = isinstance(teacher_names, list)
+            has_teacher_ids_array = isinstance(teacher_ids, list)
+            has_booking_type = booking_type is not None
+            
+            success = has_teacher_names_array and has_teacher_ids_array and has_booking_type
+            
+            print(f"   📋 Lesson teacher_names: {teacher_names}")
+            print(f"   🆔 Lesson teacher_ids: {teacher_ids}")
+            print(f"   📝 Booking type: {booking_type}")
+        
+        self.log_test("Single Lesson Retrieval Teacher Names Array", success, 
+                     f"- GET /api/lessons/{{id}} returns teacher_names as array")
+        return success
+
+    def test_daily_calendar_teacher_names_array(self):
+        """Test that daily calendar includes teacher_names arrays for lessons"""
+        # Get calendar for tomorrow (when we scheduled lessons)
+        tomorrow = datetime.now() + timedelta(days=1)
+        date_str = tomorrow.strftime('%Y-%m-%d')
+        
+        success, response = self.make_request('GET', f'calendar/daily/{date_str}', expected_status=200)
+        
+        if success and isinstance(response, dict):
+            lessons = response.get('lessons', [])
+            teachers = response.get('teachers', [])
+            
+            if len(lessons) > 0:
+                # Check first lesson for teacher_names array
+                first_lesson = lessons[0]
+                teacher_names = first_lesson.get('teacher_names')
+                teacher_ids = first_lesson.get('teacher_ids')
+                
+                has_teacher_names_array = isinstance(teacher_names, list)
+                has_teacher_ids_array = isinstance(teacher_ids, list)
+                
+                success = has_teacher_names_array and has_teacher_ids_array
+                
+                print(f"   📅 Daily calendar lessons: {len(lessons)}")
+                print(f"   👨‍🏫 Teachers available: {len(teachers)}")
+                print(f"   📋 First lesson teacher_names: {teacher_names}")
+                print(f"   🆔 First lesson teacher_ids: {teacher_ids}")
+            else:
+                print(f"   ⚠️ No lessons found in daily calendar for {date_str}")
+                success = True  # Not a failure if no lessons exist
+        
+        self.log_test("Daily Calendar Teacher Names Array", success, 
+                     f"- Daily calendar lessons include teacher_names arrays")
+        return success
+
+    def test_student_ledger_teacher_names_array(self):
+        """Test that student ledger shows teacher_names arrays in upcoming and historical lessons"""
+        if not self.created_student_id:
+            self.log_test("Student Ledger Teacher Names Array", False, "- No student ID available")
+            return False
+            
+        success, response = self.make_request('GET', f'students/{self.created_student_id}/ledger', expected_status=200)
+        
+        if success:
+            upcoming_lessons = response.get('upcoming_lessons', [])
+            lesson_history = response.get('lesson_history', [])
+            
+            # Check upcoming lessons
+            upcoming_valid = True
+            if len(upcoming_lessons) > 0:
+                for lesson in upcoming_lessons:
+                    teacher_names = lesson.get('teacher_names')
+                    teacher_ids = lesson.get('teacher_ids')
+                    
+                    if not isinstance(teacher_names, list) or not isinstance(teacher_ids, list):
+                        upcoming_valid = False
+                        break
+                        
+                print(f"   📅 Upcoming lessons: {len(upcoming_lessons)}")
+                if len(upcoming_lessons) > 0:
+                    print(f"   👨‍🏫 First upcoming lesson teachers: {upcoming_lessons[0].get('teacher_names')}")
+            
+            # Check lesson history
+            history_valid = True
+            if len(lesson_history) > 0:
+                for lesson in lesson_history:
+                    teacher_names = lesson.get('teacher_names')
+                    teacher_ids = lesson.get('teacher_ids')
+                    
+                    if not isinstance(teacher_names, list) or not isinstance(teacher_ids, list):
+                        history_valid = False
+                        break
+                        
+                print(f"   📚 Lesson history: {len(lesson_history)}")
+                if len(lesson_history) > 0:
+                    print(f"   👨‍🏫 First history lesson teachers: {lesson_history[0].get('teacher_names')}")
+            
+            success = upcoming_valid and history_valid
+        
+        self.log_test("Student Ledger Teacher Names Array", success, 
+                     f"- Student ledger lessons include teacher_names arrays")
+        return success
+
+    def test_notification_system_multiple_teachers(self):
+        """Test reminder sending with multiple teachers - verify message includes all teacher names"""
+        if not self.created_student_id or not self.created_teacher_id or not self.created_teacher_id_2:
+            self.log_test("Notification System Multiple Teachers", False, "- Missing required IDs")
+            return False
+            
+        # Create lesson with multiple teachers for tomorrow
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=18, minute=0, second=0, microsecond=0)
+        
+        lesson_data = {
+            "student_id": self.created_student_id,
+            "teacher_ids": [self.created_teacher_id, self.created_teacher_id_2],
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 60,
+            "booking_type": "meeting",
+            "notes": "Multiple teacher meeting for notification testing"
+        }
+        
+        success, lesson_response = self.make_request('POST', 'lessons', lesson_data, 200)
+        
+        if not success:
+            self.log_test("Notification System Multiple Teachers", False, "- Failed to create test lesson")
+            return False
+            
+        notification_lesson_id = lesson_response.get('id')
+        teacher_names = lesson_response.get('teacher_names', [])
+        
+        print(f"   📋 Created lesson with teachers: {teacher_names}")
+        
+        # Set up notification preferences
+        pref_data = {
+            "student_id": self.created_student_id,
+            "email_enabled": True,
+            "sms_enabled": True,
+            "reminder_hours": 24,
+            "email_address": "test@example.com",
+            "phone_number": "+1555000000"
+        }
+        
+        self.make_request('POST', 'notifications/preferences', pref_data, 200)
+        
+        # Send email reminder
+        reminder_data = {
+            "lesson_id": notification_lesson_id,
+            "notification_type": "email",
+            "message": "Test reminder for multiple teacher lesson"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/send-reminder', reminder_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            recipient = response.get('recipient', '')
+            
+            # Check if message contains multiple teacher names
+            contains_multiple_teachers = len(teacher_names) > 1
+            for teacher_name in teacher_names:
+                if teacher_name not in message:
+                    contains_multiple_teachers = False
+                    break
+            
+            success = contains_multiple_teachers
+            
+            print(f"   📧 Reminder sent to: {recipient}")
+            print(f"   💬 Message contains all teachers: {contains_multiple_teachers}")
+            print(f"   👨‍🏫 Expected teachers: {teacher_names}")
+        
+        # Clean up
+        if notification_lesson_id:
+            self.make_request('DELETE', f'lessons/{notification_lesson_id}', expected_status=200)
+        
+        self.log_test("Notification System Multiple Teachers", success, 
+                     f"- Reminder includes all {len(teacher_names)} teacher names")
+        return success
+
+    def test_multiple_instructor_system_comprehensive(self):
+        """Comprehensive test of the entire multiple instructor system"""
+        print("\n🔍 COMPREHENSIVE MULTIPLE INSTRUCTOR SYSTEM TEST")
+        print("=" * 60)
+        
+        # Test data setup
+        test_results = {
+            "lesson_creation_single": False,
+            "lesson_creation_multiple": False,
+            "booking_types": False,
+            "error_handling": False,
+            "retrieval_endpoints": False,
+            "daily_calendar": False,
+            "student_ledger": False,
+            "notifications": False
+        }
+        
+        # Run all multiple instructor tests
+        test_results["lesson_creation_single"] = self.test_create_lesson_single_instructor()
+        test_results["lesson_creation_multiple"] = self.test_create_lesson_multiple_instructors()
+        test_results["booking_types"] = self.test_all_booking_types()
+        test_results["error_handling"] = self.test_invalid_teacher_ids_error_handling()
+        test_results["retrieval_endpoints"] = self.test_lesson_retrieval_teacher_names_array()
+        test_results["daily_calendar"] = self.test_daily_calendar_teacher_names_array()
+        test_results["student_ledger"] = self.test_student_ledger_teacher_names_array()
+        test_results["notifications"] = self.test_notification_system_multiple_teachers()
+        
+        # Calculate overall success
+        passed_tests = sum(1 for result in test_results.values() if result)
+        total_tests = len(test_results)
+        overall_success = passed_tests == total_tests
+        
+        print(f"\n📊 MULTIPLE INSTRUCTOR SYSTEM TEST SUMMARY:")
+        print(f"   ✅ Passed: {passed_tests}/{total_tests} tests")
+        print(f"   📋 Single instructor lessons: {'✅' if test_results['lesson_creation_single'] else '❌'}")
+        print(f"   👥 Multiple instructor lessons: {'✅' if test_results['lesson_creation_multiple'] else '❌'}")
+        print(f"   📝 All booking types: {'✅' if test_results['booking_types'] else '❌'}")
+        print(f"   🚫 Error handling: {'✅' if test_results['error_handling'] else '❌'}")
+        print(f"   📡 Retrieval endpoints: {'✅' if test_results['retrieval_endpoints'] else '❌'}")
+        print(f"   📅 Daily calendar: {'✅' if test_results['daily_calendar'] else '❌'}")
+        print(f"   📚 Student ledger: {'✅' if test_results['student_ledger'] else '❌'}")
+        print(f"   📧 Notifications: {'✅' if test_results['notifications'] else '❌'}")
+        
+        self.log_test("Multiple Instructor System Comprehensive", overall_success, 
+                     f"- {passed_tests}/{total_tests} comprehensive tests passed")
+        return overall_success
+
     # RECURRING LESSON TESTS
     def test_create_recurring_lesson_weekly(self):
         """Test creating a weekly recurring lesson series"""
