@@ -351,7 +351,12 @@ const StudentLedger = ({ student, onClose }) => {
                 {ledgerData.lesson_history.slice(0, 10).map(lesson => (
                   <div key={lesson.id} className={`lesson-card ${lesson.is_attended ? 'attended' : 'missed'}`}>
                     <div className="lesson-datetime">{formatDateTime(lesson.start_datetime)}</div>
-                    <div className="lesson-teacher">👨‍🏫 {lesson.teacher_name}</div>
+                    <div className="lesson-teacher">
+                      👨‍🏫 {lesson.teacher_names && lesson.teacher_names.length > 0 
+                        ? lesson.teacher_names.join(', ')
+                        : lesson.teacher_name || 'Unknown'
+                      }
+                    </div>
                     <div className="lesson-status">
                       {lesson.is_attended ? '✅ Attended' : lesson.is_cancelled ? '❌ Cancelled' : '❓ Not Marked'}
                     </div>
