@@ -3176,6 +3176,81 @@ class DanceStudioAPITester:
         
         return True
 
+    def run_lesson_deletion_tests(self):
+        """Run focused tests for lesson deletion functionality as requested in review"""
+        print("🚀 STARTING LESSON DELETION FUNCTIONALITY TESTS")
+        print("=" * 80)
+        
+        # Phase 1: Authentication Setup
+        print("\n📋 PHASE 1: AUTHENTICATION SETUP")
+        print("-" * 50)
+        
+        if not self.test_user_registration():
+            print("❌ Failed to register user - cannot continue")
+            return 1
+            
+        if not self.test_user_login():
+            print("❌ Failed to login - cannot continue")
+            return 1
+        
+        # Phase 2: Create Test Data
+        print("\n📋 PHASE 2: CREATING TEST DATA")
+        print("-" * 50)
+        
+        if not self.test_create_multiple_teachers():
+            print("❌ Failed to create teachers - cannot continue")
+            return 1
+            
+        if not self.test_create_student():
+            print("❌ Failed to create student - cannot continue")
+            return 1
+            
+        if not self.test_create_enrollment_with_program():
+            print("❌ Failed to create enrollment - cannot continue")
+            return 1
+        
+        # Phase 3: Main Lesson Deletion Tests
+        print("\n📋 PHASE 3: LESSON DELETION FUNCTIONALITY TESTS")
+        print("-" * 50)
+        
+        deletion_success = self.test_lesson_deletion_functionality()
+        
+        # Phase 4: Additional Lesson Tests
+        print("\n📋 PHASE 4: ADDITIONAL LESSON TESTS")
+        print("-" * 50)
+        
+        additional_tests = [
+            self.test_create_lesson_single_instructor,
+            self.test_create_lesson_multiple_instructors,
+            self.test_all_booking_types,
+            self.test_get_private_lessons,
+            self.test_daily_calendar
+        ]
+        
+        additional_passed = 0
+        for test in additional_tests:
+            if test():
+                additional_passed += 1
+        
+        # Final Summary
+        print("\n" + "=" * 80)
+        print("📊 LESSON DELETION TEST SUMMARY")
+        print("=" * 80)
+        print(f"Total tests run: {self.tests_run}")
+        print(f"Tests passed: {self.tests_passed}")
+        print(f"Tests failed: {self.tests_run - self.tests_passed}")
+        print(f"Success rate: {(self.tests_passed/self.tests_run*100):.1f}%" if self.tests_run > 0 else "No tests run")
+        
+        print(f"\n🎯 MAIN FOCUS - LESSON DELETION: {'✅ PASSED' if deletion_success else '❌ FAILED'}")
+        print(f"📋 Additional lesson tests: {additional_passed}/{len(additional_tests)} passed")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 ALL LESSON DELETION TESTS PASSED!")
+            return 0
+        else:
+            print("❌ Some tests failed - see details above")
+            return 1
+
     def run_authentication_and_lesson_tests(self):
         """Run comprehensive tests for authentication and lesson creation with multiple instructors"""
         print("🚀 STARTING AUTHENTICATION AND LESSON CREATION TESTS")
