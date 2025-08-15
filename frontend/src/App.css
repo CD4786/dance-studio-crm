@@ -181,6 +181,17 @@ body {
   z-index: 100;
 }
 
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--gradient-secondary);
+  z-index: -1;
+}
+
 .sidebar-header {
   padding: 2rem;
   border-bottom: 1px solid var(--glass-border);
