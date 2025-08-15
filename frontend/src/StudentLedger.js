@@ -328,7 +328,12 @@ const StudentLedger = ({ student, onClose }) => {
                 {ledgerData.upcoming_lessons.slice(0, 5).map(lesson => (
                   <div key={lesson.id} className="lesson-card">
                     <div className="lesson-datetime">{formatDateTime(lesson.start_datetime)}</div>
-                    <div className="lesson-teacher">👨‍🏫 {lesson.teacher_name}</div>
+                    <div className="lesson-teacher">
+                      👨‍🏫 {lesson.teacher_names && lesson.teacher_names.length > 0 
+                        ? lesson.teacher_names.join(', ')
+                        : lesson.teacher_name || 'Unknown'
+                      }
+                    </div>
                     {lesson.notes && <div className="lesson-notes">📝 {lesson.notes}</div>}
                   </div>
                 ))}
