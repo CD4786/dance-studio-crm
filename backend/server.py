@@ -452,6 +452,17 @@ class TeacherCreate(BaseModel):
     specialties: List[ClassType]
     bio: Optional[str] = None
 
+class TeacherResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    phone: Optional[str] = None
+    specialties: List[ClassType]
+    bio: Optional[str] = None
+    user_id: Optional[str] = None
+    created_at: datetime
+    is_active: bool = True
+
 class DanceClass(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str
