@@ -155,6 +155,12 @@ class ClassType(str, Enum):
     SALSA = "salsa"
     BALLROOM = "ballroom"
 
+class BookingType(str, Enum):
+    PRIVATE_LESSON = "private_lesson"
+    MEETING = "meeting"
+    TRAINING = "training"
+    PARTY = "party"
+
 # Models
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
