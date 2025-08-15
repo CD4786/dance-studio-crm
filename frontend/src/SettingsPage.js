@@ -412,7 +412,7 @@ const SettingsPage = () => {
         </div>
 
         <div className="settings-panel">
-          <div className="settings-section">
+          <div className="settings-section" data-category={activeTab}>
             <h2>{tabs.find(tab => tab.id === activeTab)?.name}</h2>
             <div className="settings-grid">
               {getSettingsByCategory(activeTab).map(setting => (
@@ -427,6 +427,9 @@ const SettingsPage = () => {
                 </div>
               ))}
             </div>
+            
+            {/* Add Teacher Color Manager to booking settings */}
+            {activeTab === 'booking' && <TeacherColorManager />}
           </div>
         </div>
       </div>
