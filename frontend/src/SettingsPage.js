@@ -597,7 +597,16 @@ const SettingsPage = () => {
 
         <div className="settings-panel">
           <div className="settings-section" data-category={activeTab}>
-            <h2>{tabs.find(tab => tab.id === activeTab)?.name}</h2>
+            <div className="settings-section-header">
+              <h2>{tabs.find(tab => tab.id === activeTab)?.name}</h2>
+              <button 
+                onClick={handleSaveAllInCategory}
+                className="btn btn-primary btn-sm"
+                disabled={saving}
+              >
+                Save All in Category
+              </button>
+            </div>
             <div className="settings-grid">
               {getSettingsByCategory(activeTab).map(setting => (
                 <div key={setting.id} className="setting-item">
