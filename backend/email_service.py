@@ -158,7 +158,7 @@ class EmailService:
         Please arrive 5-10 minutes early.
         
         See you soon!
-        Dance Studio CRM
+        Dancing on the Boulevard
         """
         
         return await self.send_email(student_email, subject, html_body, text_body)
