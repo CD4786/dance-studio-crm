@@ -19,7 +19,6 @@ import hashlib
 import json
 import asyncio
 import bcrypt
-from email_service import email_service
 
 # SMS Integration
 try:
@@ -34,6 +33,9 @@ import requests
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Import email service AFTER loading environment variables
+from email_service import email_service
 
 # MongoDB connection
 mongo_url = os.environ.get('DATABASE_URL') or os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
