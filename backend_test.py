@@ -4538,6 +4538,244 @@ class DanceStudioAPITester:
             print(f"⚠️  {self.tests_run - self.tests_passed} tests failed")
             return 1
 
+    # GMAIL SMTP EMAIL SERVICE TESTS
+    def test_environment_variable_loading(self):
+        """Test if Gmail credentials are properly loaded from .env file"""
+        success, response = self.make_request('GET', 'notifications/settings', expected_status=200)
+        
+        if success:
+            # Check if the response indicates email service is configured
+            email_configured = response.get('email_service_configured', False)
+            gmail_email = response.get('gmail_email', '')
+            smtp_server = response.get('smtp_server', '')
+            smtp_port = response.get('smtp_port', 0)
+            
+            # Verify configuration
+            success = (email_configured and 
+                      gmail_email == 'dancingnotifications@gmail.com' and
+                      smtp_server == 'smtp.gmail.com' and
+                      smtp_port == 587)
+            
+        self.log_test("Environment Variable Loading", success, 
+                     f"- Email configured: {email_configured}, SMTP: {smtp_server}:{smtp_port}")
+        return success
+
+    def test_email_service_initialization(self):
+        """Test EmailService class initialization"""
+        # This test checks if the email service initializes without errors by testing a simple endpoint
+        success, response = self.make_request('GET', 'notifications/settings', expected_status=200)
+        
+        if success:
+            # If we can access notification settings, the email service initialized properly
+            email_service_status = response.get('email_service_status', 'unknown')
+            
+        self.log_test("Email Service Initialization", success, 
+                     f"- Service status: {email_service_status}")
+        return success
+
+    def test_direct_email_service_test_endpoint(self):
+        """Test POST /api/notifications/test-email endpoint directly"""
+        test_email_data = {
+            "test_email": "dancingnotifications@gmail.com"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/test-email', test_email_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            email_sent = response.get('email_sent', False)
+            recipient = response.get('recipient', '')
+            
+            # Verify the test email was processed
+            success = success and email_sent and recipient == "dancingnotifications@gmail.com"
+            
+        self.log_test("Direct Email Service Test", success, 
+                     f"- Email sent: {email_sent}, Recipient: {recipient}")
+        return success
+
+    def test_gmail_smtp_connection(self):
+        """Test SMTP connection to smtp.gmail.com:587"""
+        # Test by sending a test email which will verify SMTP connection
+        test_email_data = {
+            "test_email": "dancingnotifications@gmail.com"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/test-email', test_email_data, 200)
+        
+        if success:
+            smtp_connection_successful = response.get('smtp_connection_successful', False)
+            connection_details = response.get('connection_details', {})
+            
+        self.log_test("Gmail SMTP Connection", success, 
+                     f"- SMTP connection: {smtp_connection_successful}")
+        return success
+
+    def test_lesson_reminder_email(self):
+        """Test lesson reminder email functionality"""
+        if not self.created_lesson_id:
+            self.log_test("Lesson Reminder Email", False, "- No lesson ID available")
+            return False
+            
+        reminder_data = {
+            "lesson_id": self.created_lesson_id,
+            "send_to_parent": True
+        }
+        
+        success, response = self.make_request('POST', 'notifications/lesson-reminder', reminder_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            emails_sent = response.get('emails_sent', 0)
+            recipients = response.get('recipients', [])
+            
+        self.log_test("Lesson Reminder Email", success, 
+                     f"- Emails sent: {emails_sent}, Recipients: {len(recipients)}")
+        return success
+
+    def test_payment_reminder_email(self):
+        """Test payment reminder email functionality"""
+        if not self.created_student_id:
+            self.log_test("Payment Reminder Email", False, "- No student ID available")
+            return False
+            
+        from datetime import datetime, timedelta
+        due_date = datetime.now() + timedelta(days=7)
+        
+        payment_reminder_data = {
+            "student_id": self.created_student_id,
+            "amount_due": 150.00,
+            "due_date": due_date.isoformat()
+        }
+        
+        success, response = self.make_request('POST', 'notifications/payment-reminder', payment_reminder_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            email_sent = response.get('email_sent', False)
+            recipient = response.get('recipient', '')
+            
+        self.log_test("Payment Reminder Email", success, 
+                     f"- Email sent: {email_sent}, Recipient: {recipient}")
+        return success
+
+    def test_custom_email_notification(self):
+        """Test custom email notification functionality"""
+        custom_email_data = {
+            "recipient_email": "dancingnotifications@gmail.com",
+            "subject": "Test Custom Notification",
+            "message": "This is a test custom email notification from the Dance Studio CRM system.",
+            "notification_type": "general"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/custom-email', custom_email_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            email_sent = response.get('email_sent', False)
+            recipient = response.get('recipient', '')
+            
+        self.log_test("Custom Email Notification", success, 
+                     f"- Email sent: {email_sent}, Recipient: {recipient}")
+        return success
+
+    def test_email_authentication_requirements(self):
+        """Test that email endpoints require proper authentication"""
+        # Save current token
+        original_token = self.token
+        
+        # Remove token
+        self.token = None
+        
+        # Try to send test email without authentication
+        test_email_data = {
+            "test_email": "test@example.com"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/test-email', test_email_data, 403)
+        
+        # Restore token
+        self.token = original_token
+        
+        self.log_test("Email Authentication Requirements", success, "- Expected 403 Forbidden without auth")
+        return success
+
+    def test_email_service_error_handling(self):
+        """Test email service error handling with invalid email addresses"""
+        invalid_email_data = {
+            "test_email": "invalid-email-format"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/test-email', invalid_email_data, 400)
+        
+        self.log_test("Email Service Error Handling", success, "- Expected 400 for invalid email format")
+        return success
+
+    def test_gmail_app_password_authentication(self):
+        """Test Gmail app password authentication by sending actual email"""
+        # This test verifies that the Gmail app password works by sending a real test email
+        test_email_data = {
+            "test_email": "dancingnotifications@gmail.com"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/test-email', test_email_data, 200)
+        
+        if success:
+            authentication_successful = response.get('authentication_successful', False)
+            error_details = response.get('error_details', '')
+            
+            # Check if authentication was successful
+            success = success and authentication_successful
+            
+        self.log_test("Gmail App Password Authentication", success, 
+                     f"- Auth successful: {authentication_successful}")
+        return success
+
+    def test_email_template_rendering(self):
+        """Test HTML email template rendering for different notification types"""
+        if not self.created_lesson_id:
+            self.log_test("Email Template Rendering", False, "- No lesson ID available")
+            return False
+            
+        # Test lesson reminder template
+        reminder_data = {
+            "lesson_id": self.created_lesson_id,
+            "send_to_parent": False
+        }
+        
+        success, response = self.make_request('POST', 'notifications/lesson-reminder', reminder_data, 200)
+        
+        if success:
+            template_rendered = response.get('template_rendered', False)
+            html_content_length = response.get('html_content_length', 0)
+            
+            # Verify template was rendered with content
+            success = success and template_rendered and html_content_length > 0
+            
+        self.log_test("Email Template Rendering", success, 
+                     f"- Template rendered: {template_rendered}, Content length: {html_content_length}")
+        return success
+
+    def test_email_delivery_verification(self):
+        """Test actual email delivery to verify Gmail SMTP configuration"""
+        # Send test email and verify delivery
+        test_email_data = {
+            "test_email": "dancingnotifications@gmail.com"
+        }
+        
+        success, response = self.make_request('POST', 'notifications/test-email', test_email_data, 200)
+        
+        if success:
+            delivery_successful = response.get('delivery_successful', False)
+            delivery_time = response.get('delivery_time', '')
+            smtp_response = response.get('smtp_response', '')
+            
+            # Verify email was actually delivered
+            success = success and delivery_successful
+            
+        self.log_test("Email Delivery Verification", success, 
+                     f"- Delivery successful: {delivery_successful}, Time: {delivery_time}")
+        return success
+
     # SETTINGS MANAGEMENT SYSTEM TESTS
     def test_get_all_settings(self):
         """Test getting all application settings"""
