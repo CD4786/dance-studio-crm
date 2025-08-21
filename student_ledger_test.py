@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 class StudentLedgerTester:
-    def __init__(self, base_url="https://studio-scheduler-3.preview.emergentagent.com"):
+    def __init__(self, base_url="https://dance-studio-crm.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None

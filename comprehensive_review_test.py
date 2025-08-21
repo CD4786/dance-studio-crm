@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 class ComprehensiveReviewTester:
-    def __init__(self, base_url="https://43732cd3-b12c-465b-bead-d2fab026e53c.preview.emergentagent.com"):
+    def __init__(self, base_url="https://dance-studio-crm.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None
