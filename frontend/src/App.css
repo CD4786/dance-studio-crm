@@ -18,6 +18,11 @@
   --shadow-color: rgba(0, 0, 0, 0.3);
   --gradient-primary: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
   --gradient-secondary: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+  
+  /* Font Size Variables */
+  --base-font-size: 16px;
+  --heading-font-size: 1.5rem;
+  --small-font-size: 14px;
 }
 
 /* Light Theme */
