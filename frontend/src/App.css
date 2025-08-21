@@ -2041,6 +2041,24 @@ p, span, div, label, input, textarea, select {
   margin: 0 0 1.5rem 0;
 }
 
+.settings-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.settings-section-header h2 {
+  margin: 0;
+  flex: 1;
+}
+
+.settings-section-header .btn {
+  white-space: nowrap;
+}
+
 .settings-grid {
   display: flex;
   flex-direction: column;
