@@ -1655,14 +1655,10 @@ async def get_daily_data(date: str, current_user: User = Depends(get_current_use
             "teachers": active_teachers
         }
         
-    except ValueError as ve:
-        print(f"ValueError in date parsing: {ve}")
+    except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
     except Exception as e:
         print(f"Error fetching daily data: {e}")
-        print(f"Error type: {type(e)}")
-        import traceback
-        traceback.print_exc()
         raise HTTPException(status_code=500, detail="Failed to fetch daily calendar data")
 
 # Package Routes (for pre-defined lesson packages)
