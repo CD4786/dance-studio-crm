@@ -421,51 +421,187 @@ const NotificationManager = () => {
       </div>
 
       {/* Lesson Reminders Section */}
-      <div className="notification-section">
-        <h3>⏰ Upcoming Lesson Reminders</h3>
-        <p>Send reminders for lessons in the next 7 days.</p>
-        
-        {lessons.length === 0 ? (
-          <div className="empty-state">
-            <p>📅 No upcoming lessons in the next 7 days</p>
-          </div>
-        ) : (
-          <div className="lessons-list">
-            {lessons.slice(0, 10).map(lesson => (
-              <div key={lesson.id} className="lesson-reminder-card">
-                <div className="lesson-info">
-                  <h4>{lesson.student_name}</h4>
-                  <p><strong>Type:</strong> {lesson.booking_type?.replace('_', ' ')}</p>
-                  <p><strong>Time:</strong> {new Date(lesson.start_datetime).toLocaleString()}</p>
-                  <p><strong>Instructors:</strong> {lesson.teacher_names?.join(', ') || 'TBD'}</p>
-                </div>
-                <div className="lesson-actions">
-                  <button
-                    onClick={() => handleSendLessonReminder(lesson.id, true)}
-                    className="btn btn-outline btn-sm"
-                    disabled={sending}
-                  >
-                    📧 Parent
-                  </button>
-                  <button
-                    onClick={() => handleSendLessonReminder(lesson.id, false)}
-                    className="btn btn-outline btn-sm"
-                    disabled={sending}
-                  >
-                    📧 Student
-                  </button>
-                </div>
+      {notificationSettings.lesson_reminders_enabled && (
+        <div className="notification-section">
+          <h3>⏰ Lesson Reminders</h3>
+          <p>Filter and send reminders for upcoming lessons with full control over recipients.</p>
+          
+          {/* Lesson Filters */}
+          <div className="filter-controls-section">
+            <h4>📋 Filter Lessons</h4>
+            <div className="filter-grid">
+              <div className="filter-group">
+                <label>Date Range:</label>
+                <select
+                  value={lessonFilter.dateRange}
+                  onChange={(e) => setLessonFilter({...lessonFilter, dateRange: e.target.value})}
+                  className="input"
+                >
+                  <option value="today">Today Only</option>
+                  <option value="tomorrow">Tomorrow Only</option>
+                  <option value="next_7_days">Next 7 Days</option>
+                  <option value="next_30_days">Next 30 Days</option>
+                </select>
               </div>
-            ))}
-            {lessons.length > 10 && (
-              <p className="more-lessons">+ {lessons.length - 10} more lessons</p>
-            )}
+              
+              <div className="filter-group">
+                <label>Lesson Type:</label>
+                <select
+                  value={lessonFilter.lessonType}
+                  onChange={(e) => setLessonFilter({...lessonFilter, lessonType: e.target.value})}
+                  className="input"
+                >
+                  <option value="all">All Types</option>
+                  <option value="private_lesson">Private Lesson</option>
+                  <option value="meeting">Meeting</option>
+                  <option value="training">Training</option>
+                  <option value="party">Party</option>
+                </select>
+              </div>
+              
+              <div className="filter-group">
+                <label>Email Available:</label>
+                <select
+                  value={lessonFilter.hasEmail}
+                  onChange={(e) => setLessonFilter({...lessonFilter, hasEmail: e.target.value})}
+                  className="input"
+                >
+                  <option value="all">All Students</option>
+                  <option value="parent_email">Has Parent Email</option>
+                  <option value="student_email">Has Student Email</option>
+                  <option value="both_emails">Has Both Emails</option>
+                  <option value="no_email">No Email Available</option>
+                </select>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Bulk Actions */}
+          {filteredLessons.length > 0 && (
+            <div className="bulk-actions-section">
+              <div className="bulk-controls">
+                <label className="bulk-select-all">
+                  <input
+                    type="checkbox"
+                    checked={selectedLessons.length === filteredLessons.length && filteredLessons.length > 0}
+                    onChange={toggleAllLessons}
+                  />
+                  <span>Select All ({filteredLessons.length} lessons)</span>
+                </label>
+                
+                {selectedLessons.length > 0 && (
+                  <div className="bulk-action-buttons">
+                    <span className="selected-count">{selectedLessons.length} selected</span>
+                    <button
+                      onClick={() => handleBulkSendReminders('parent')}
+                      className="btn btn-outline btn-sm"
+                      disabled={sending}
+                    >
+                      📧 Send to Parents
+                    </button>
+                    <button
+                      onClick={() => handleBulkSendReminders('student')}
+                      className="btn btn-outline btn-sm"
+                      disabled={sending}
+                    >
+                      📧 Send to Students
+                    </button>
+                    <button
+                      onClick={() => setSelectedLessons([])}
+                      className="btn btn-outline btn-sm"
+                    >
+                      Clear Selection
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {filteredLessons.length === 0 ? (
+            <div className="empty-state">
+              <p>📅 No lessons found with current filters</p>
+              <p>Try adjusting your date range or filters above.</p>
+            </div>
+          ) : (
+            <div className="lessons-list">
+              <div className="lessons-header">
+                <h4>Found {filteredLessons.length} lessons</h4>
+              </div>
+              {filteredLessons.slice(0, 20).map(lesson => {
+                const recipientInfo = getRecipientInfo(lesson);
+                return (
+                  <div key={lesson.id} className={`lesson-reminder-card ${selectedLessons.includes(lesson.id) ? 'selected' : ''}`}>
+                    <div className="lesson-card-header">
+                      <label className="lesson-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={selectedLessons.includes(lesson.id)}
+                          onChange={() => toggleLessonSelection(lesson.id)}
+                        />
+                      </label>
+                      <div className="lesson-info">
+                        <h4>{lesson.student_name}</h4>
+                        <p><strong>Type:</strong> {lesson.booking_type?.replace('_', ' ')}</p>
+                        <p><strong>Time:</strong> {new Date(lesson.start_datetime).toLocaleString()}</p>
+                        <p><strong>Instructors:</strong> {lesson.teacher_names?.join(', ') || 'TBD'}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="recipient-info">
+                      <div className="available-recipients">
+                        {recipientInfo.hasParent && (
+                          <span className="recipient-tag parent">
+                            👨‍👩‍👧 {recipientInfo.parentName}: {recipientInfo.parentEmail}
+                          </span>
+                        )}
+                        {recipientInfo.hasStudent && (
+                          <span className="recipient-tag student">
+                            👤 {recipientInfo.studentName}: {recipientInfo.studentEmail}
+                          </span>
+                        )}
+                        {!recipientInfo.hasParent && !recipientInfo.hasStudent && (
+                          <span className="recipient-tag no-email">❌ No email available</span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="lesson-actions">
+                      {recipientInfo.hasParent && (
+                        <button
+                          onClick={() => handleSendLessonReminder(lesson.id, 'parent')}
+                          className="btn btn-outline btn-sm"
+                          disabled={sending}
+                        >
+                          📧 Parent
+                        </button>
+                      )}
+                      {recipientInfo.hasStudent && (
+                        <button
+                          onClick={() => handleSendLessonReminder(lesson.id, 'student')}
+                          className="btn btn-outline btn-sm"
+                          disabled={sending}
+                        >
+                          📧 Student
+                        </button>
+                      )}
+                      {!recipientInfo.hasParent && !recipientInfo.hasStudent && (
+                        <span className="no-action">No email to send to</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {filteredLessons.length > 20 && (
+                <p className="more-lessons">+ {filteredLessons.length - 20} more lessons (showing first 20)</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Payment Reminders Section */}
-      <div className="notification-section">
+      {notificationSettings.payment_reminders_enabled && (
         <h3>💳 Payment Reminders</h3>
         <p>Send payment due notices to students or parents.</p>
         <form onSubmit={handleSendPaymentReminder} className="notification-form">
