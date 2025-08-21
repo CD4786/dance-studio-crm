@@ -41,7 +41,7 @@ class EmailService:
             # Create message
             message = MIMEMultipart("alternative")
             message["Subject"] = subject
-            message["From"] = f"Dance Studio <{self.email}>"
+            message["From"] = f"Dancing on the Boulevard <{self.email}>"
             message["To"] = to_email
             
             # Add text part if provided
