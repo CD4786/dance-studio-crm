@@ -121,7 +121,7 @@ class EmailService:
                     <p>Need to reschedule? Please contact us as soon as possible.</p>
                 </div>
                 <div class="footer">
-                    <p>Dance Studio CRM | Keep Dancing! 🌟</p>
+                    <p>Dancing on the Boulevard | Keep Dancing! 🌟</p>
                     <p>This is an automated reminder. Please do not reply to this email.</p>
                 </div>
             </div>
