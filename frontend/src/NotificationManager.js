@@ -602,59 +602,61 @@ const NotificationManager = () => {
 
       {/* Payment Reminders Section */}
       {notificationSettings.payment_reminders_enabled && (
-        <h3>💳 Payment Reminders</h3>
-        <p>Send payment due notices to students or parents.</p>
-        <form onSubmit={handleSendPaymentReminder} className="notification-form">
-          <div className="form-row">
-            <div className="form-group">
-              <label>Student:</label>
-              <select
-                value={paymentReminder.student_id}
-                onChange={(e) => setPaymentReminder({...paymentReminder, student_id: e.target.value})}
-                className="input"
-                required
-              >
-                <option value="">Select Student</option>
-                {students.map(student => (
-                  <option key={student.id} value={student.id}>
-                    {student.name}
-                  </option>
-                ))}
-              </select>
+        <div className="notification-section">
+          <h3>💳 Payment Reminders</h3>
+          <p>Send payment due notices to students or parents.</p>
+          <form onSubmit={handleSendPaymentReminder} className="notification-form">
+            <div className="form-row">
+              <div className="form-group">
+                <label>Student:</label>
+                <select
+                  value={paymentReminder.student_id}
+                  onChange={(e) => setPaymentReminder({...paymentReminder, student_id: e.target.value})}
+                  className="input"
+                  required
+                >
+                  <option value="">Select Student</option>
+                  {students.map(student => (
+                    <option key={student.id} value={student.id}>
+                      {student.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Amount Due:</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={paymentReminder.amount_due}
+                  onChange={(e) => setPaymentReminder({...paymentReminder, amount_due: e.target.value})}
+                  placeholder="0.00"
+                  className="input"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Due Date:</label>
+                <input
+                  type="date"
+                  value={paymentReminder.due_date}
+                  onChange={(e) => setPaymentReminder({...paymentReminder, due_date: e.target.value})}
+                  className="input"
+                  required
+                />
+              </div>
             </div>
-            <div className="form-group">
-              <label>Amount Due:</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={paymentReminder.amount_due}
-                onChange={(e) => setPaymentReminder({...paymentReminder, amount_due: e.target.value})}
-                placeholder="0.00"
-                className="input"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Due Date:</label>
-              <input
-                type="date"
-                value={paymentReminder.due_date}
-                onChange={(e) => setPaymentReminder({...paymentReminder, due_date: e.target.value})}
-                className="input"
-                required
-              />
-            </div>
-          </div>
-          <button 
-            type="submit" 
-            className="btn btn-primary"
-            disabled={sending}
-          >
-            {sending ? '📤 Sending...' : '💳 Send Payment Reminder'}
-          </button>
-        </form>
-      </div>
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              disabled={sending}
+            >
+              {sending ? '📤 Sending...' : '💳 Send Payment Reminder'}
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Custom Email Section */}
       <div className="notification-section">
