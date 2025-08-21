@@ -2348,6 +2348,9 @@ const MainApp = () => {
     const viewMap = {
       'students': 'students',
       'teachers': 'teachers',
+      'enrollments': 'enrollments',
+      'daily': 'daily',
+      'weekly': 'weekly',
       'daily-calendar': 'daily'
     };
     
