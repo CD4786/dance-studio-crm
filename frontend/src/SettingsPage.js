@@ -228,7 +228,47 @@ const SettingsPage = () => {
     }
   }, [settings]);
 
-  const handleResetDefaults = async () => {
+  const handleSaveAllInCategory = async () => {
+    const categorySettings = getSettingsByCategory(activeTab);
+    if (categorySettings.length === 0) return;
+    
+    try {
+      setSaving(true);
+      setMessage('Saving all settings in category...');
+      
+      const savePromises = categorySettings.map(setting => {
+        const value = formData[setting.category]?.[setting.key];
+        return axios.put(`${API}/settings/${setting.category}/${setting.key}`, {
+          value: value
+        });
+      });
+      
+      await Promise.all(savePromises);
+      
+      // Apply all UI changes for the category
+      if (activeTab === 'theme') {
+        const themeData = formData.theme || {};
+        if (themeData.selected_theme) applyTheme(themeData.selected_theme);
+        if (themeData.font_size) applyFontSize(themeData.font_size);
+        applyCustomColors(themeData.custom_primary_color, themeData.custom_secondary_color);
+      } else if (activeTab === 'display') {
+        const displayData = formData.display || {};
+        if (displayData.compact_mode !== undefined) {
+          document.documentElement.classList.toggle('compact-mode', displayData.compact_mode);
+        }
+      }
+      
+      setMessage(`All ${activeTab} settings saved successfully!`);
+      setTimeout(() => setMessage(''), 3000);
+      fetchSettings();
+    } catch (error) {
+      console.error('Failed to save category settings:', error);
+      setMessage('Failed to save some settings: ' + (error.response?.data?.detail || error.message));
+      setTimeout(() => setMessage(''), 5000);
+    } finally {
+      setSaving(false);
+    }
+  };
     if (!window.confirm('Are you sure you want to reset all settings to defaults? This action cannot be undone.')) {
       return;
     }
