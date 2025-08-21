@@ -18,7 +18,21 @@ const NotificationManager = () => {
   });
   const [students, setStudents] = useState([]);
   const [lessons, setLessons] = useState([]);
-  const [sending, setSending] = useState(false);
+  const [filteredLessons, setFilteredLessons] = useState([]);
+  const [selectedLessons, setSelectedLessons] = useState([]);
+  const [notificationSettings, setNotificationSettings] = useState({
+    lesson_reminders_enabled: true,
+    payment_reminders_enabled: true,
+    custom_emails_enabled: true,
+    default_recipient: 'parent', // 'parent', 'student', 'both'
+    auto_send_reminders: false
+  });
+  const [lessonFilter, setLessonFilter] = useState({
+    dateRange: 'next_7_days', // 'today', 'tomorrow', 'next_7_days', 'next_30_days'
+    lessonType: 'all',
+    instructor: 'all',
+    hasEmail: 'all' // 'all', 'parent_email', 'student_email', 'both_emails', 'no_email'
+  });
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
 
