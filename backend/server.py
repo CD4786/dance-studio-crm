@@ -2386,6 +2386,152 @@ async def get_upcoming_lessons_for_reminders():
     
     return enriched_lessons
 
+# ===== EMAIL NOTIFICATION ENDPOINTS =====
+
+@api_router.post("/notifications/test-email")
+async def send_test_email(request: TestEmailRequest, current_user: User = Depends(get_current_user)):
+    """Send a test email to verify email functionality"""
+    try:
+        success = await email_service.send_test_email(request.test_email)
+        if success:
+            return {"message": "Test email sent successfully", "recipient": request.test_email}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to send test email")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send test email: {str(e)}")
+
+@api_router.post("/notifications/lesson-reminder")
+async def send_lesson_reminder(request: LessonReminderRequest, current_user: User = Depends(get_current_user)):
+    """Send lesson reminder email"""
+    try:
+        # Get lesson details
+        lesson = await db.lessons.find_one({"id": request.lesson_id})
+        if not lesson:
+            raise HTTPException(status_code=404, detail="Lesson not found")
+        
+        # Get student details
+        student = await db.students.find_one({"id": lesson["student_id"]})
+        if not student:
+            raise HTTPException(status_code=404, detail="Student not found")
+        
+        # Determine recipient email
+        recipient_email = student.get("parent_email") if request.send_to_parent and student.get("parent_email") else student.get("email")
+        recipient_name = student.get("parent_name") if request.send_to_parent and student.get("parent_name") else student.get("name")
+        
+        if not recipient_email:
+            raise HTTPException(status_code=400, detail="No email address available for notification")
+        
+        # Send lesson reminder
+        success = await email_service.send_lesson_reminder(
+            student_email=recipient_email,
+            student_name=recipient_name,
+            lesson_details=lesson
+        )
+        
+        if success:
+            return {"message": "Lesson reminder sent successfully", "recipient": recipient_email}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to send lesson reminder")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send lesson reminder: {str(e)}")
+
+@api_router.post("/notifications/payment-reminder")
+async def send_payment_reminder(request: PaymentReminderRequest, current_user: User = Depends(get_current_user)):
+    """Send payment reminder email"""
+    try:
+        # Get student details
+        student = await db.students.find_one({"id": request.student_id})
+        if not student:
+            raise HTTPException(status_code=404, detail="Student not found")
+        
+        # Determine recipient email (prefer parent email if available)
+        recipient_email = student.get("parent_email") if student.get("parent_email") else student.get("email")
+        recipient_name = student.get("parent_name") if student.get("parent_name") else student.get("name")
+        
+        if not recipient_email:
+            raise HTTPException(status_code=400, detail="No email address available for payment reminder")
+        
+        # Send payment reminder
+        success = await email_service.send_payment_reminder(
+            student_email=recipient_email,
+            student_name=recipient_name,
+            amount_due=request.amount_due,
+            due_date=request.due_date
+        )
+        
+        if success:
+            return {"message": "Payment reminder sent successfully", "recipient": recipient_email}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to send payment reminder")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send payment reminder: {str(e)}")
+
+@api_router.post("/notifications/custom-email")
+async def send_custom_email(request: EmailNotificationRequest, current_user: User = Depends(get_current_user)):
+    """Send custom email notification"""
+    try:
+        # Create simple HTML template for custom message
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }}
+                .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+                .header {{ background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: white; padding: 30px; text-align: center; }}
+                .content {{ padding: 30px; }}
+                .footer {{ background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🩰 Dance Studio CRM</h1>
+                </div>
+                <div class="content">
+                    {request.message.replace(chr(10), '<br>')}
+                </div>
+                <div class="footer">
+                    <p>Dance Studio CRM | Keep Dancing! 🌟</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        success = await email_service.send_email(
+            to_email=request.recipient_email,
+            subject=request.subject,
+            html_body=html_body,
+            text_body=request.message
+        )
+        
+        if success:
+            return {"message": "Email sent successfully", "recipient": request.recipient_email}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to send email")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+@api_router.get("/notifications/settings")
+async def get_notification_settings(current_user: User = Depends(get_current_user)):
+    """Get notification settings"""
+    try:
+        # Get notification-related settings
+        notification_settings = await db.settings.find({"category": "notification"}).to_list(100)
+        return notification_settings
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get notification settings: {str(e)}")
+
 # Settings Routes
 @api_router.get("/settings", response_model=List[SettingsResponse])
 async def get_all_settings():
