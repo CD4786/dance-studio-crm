@@ -1434,6 +1434,18 @@ frontend:
           agent: "testing"
           comment: "❌ STILL CANNOT TEST: Real-time update broadcasting still cannot be tested due to WebSocket connection failures. While existing endpoints work normally, the real-time broadcasting functionality remains unverifiable due to WebSocket handshake errors."
 
+  - task: "Enhanced Email Notification System with Advanced Recipient Selection"
+    implemented: true
+    working: "NA"
+    file: "NotificationManager.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "REVIEW REQUEST: Test the enhanced email notification system with advanced recipient selection and notification filtering capabilities. Testing Objectives: 1) Enhanced Notification Preferences - Login with admin@test.com / admin123, navigate to Settings → Email Center, test notification preferences section with lesson/payment reminder toggles and default recipient selection. 2) Advanced Lesson Filtering - Test filter lessons section with date range (Today, Tomorrow, Next 7 Days, Next 30 Days), lesson type (All Types, Private Lesson, Meeting, Training, Party), email availability (All Students, Has Parent Email, Has Student Email, Both Emails, No Email). 3) Bulk Selection and Actions - Test Select All checkbox, individual lesson selection, bulk action buttons (Send to Parents/Students, Clear Selection). 4) Enhanced Recipient Information - Verify lesson cards show recipient availability with parent/student email tags and no email available tags. 5) Conditional Section Display - Test that lesson/payment reminder sections hide when disabled in preferences."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
