@@ -113,6 +113,50 @@ const SettingsPage = () => {
     console.log(`Applied theme: ${themeName}`);
   };
 
+  // Apply font size changes to the UI
+  const applyFontSize = (fontSize) => {
+    const validSizes = ['small', 'medium', 'large'];
+    if (!validSizes.includes(fontSize)) {
+      fontSize = 'medium'; // Default fallback
+    }
+    
+    // Apply font size to CSS custom properties
+    const root = document.documentElement;
+    switch (fontSize) {
+      case 'small':
+        root.style.setProperty('--base-font-size', '14px');
+        root.style.setProperty('--heading-font-size', '1.25rem');
+        root.style.setProperty('--small-font-size', '12px');
+        break;
+      case 'large':
+        root.style.setProperty('--base-font-size', '18px');
+        root.style.setProperty('--heading-font-size', '1.75rem');
+        root.style.setProperty('--small-font-size', '16px');
+        break;
+      default: // medium
+        root.style.setProperty('--base-font-size', '16px');
+        root.style.setProperty('--heading-font-size', '1.5rem');
+        root.style.setProperty('--small-font-size', '14px');
+        break;
+    }
+    
+    console.log(`Applied font size: ${fontSize}`);
+  };
+
+  // Apply custom colors to CSS variables
+  const applyCustomColors = (primaryColor, secondaryColor) => {
+    const root = document.documentElement;
+    if (primaryColor) {
+      root.style.setProperty('--accent-primary', primaryColor);
+      root.style.setProperty('--gradient-primary', `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor || primaryColor} 100%)`);
+    }
+    if (secondaryColor) {
+      root.style.setProperty('--accent-secondary', secondaryColor);
+      root.style.setProperty('--gradient-secondary', `linear-gradient(135deg, ${primaryColor || secondaryColor} 0%, ${secondaryColor} 100%)`);
+    }
+    console.log(`Applied custom colors: primary=${primaryColor}, secondary=${secondaryColor}`);
+  };
+
   // Apply theme on component mount
   useEffect(() => {
     const themeSettings = settings.filter(s => s.category === 'theme' && s.key === 'selected_theme');
