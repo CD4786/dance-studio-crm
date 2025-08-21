@@ -343,6 +343,57 @@ const NotificationManager = () => {
         </div>
       )}
 
+      {/* Notification Settings Section */}
+      <div className="notification-section">
+        <h3>⚙️ Notification Preferences</h3>
+        <p>Control which notifications are enabled and set default recipients.</p>
+        
+        <div className="settings-grid">
+          <div className="setting-group">
+            <label className="setting-checkbox">
+              <input
+                type="checkbox"
+                checked={notificationSettings.lesson_reminders_enabled}
+                onChange={(e) => saveNotificationSettings({
+                  ...notificationSettings,
+                  lesson_reminders_enabled: e.target.checked
+                })}
+              />
+              <span>Enable Lesson Reminders</span>
+            </label>
+          </div>
+          
+          <div className="setting-group">
+            <label className="setting-checkbox">
+              <input
+                type="checkbox"
+                checked={notificationSettings.payment_reminders_enabled}
+                onChange={(e) => saveNotificationSettings({
+                  ...notificationSettings,
+                  payment_reminders_enabled: e.target.checked
+                })}
+              />
+              <span>Enable Payment Reminders</span>
+            </label>
+          </div>
+          
+          <div className="setting-group">
+            <label>Default Recipient:</label>
+            <select
+              value={notificationSettings.default_recipient}
+              onChange={(e) => saveNotificationSettings({
+                ...notificationSettings,
+                default_recipient: e.target.value
+              })}
+              className="input"
+            >
+              <option value="parent">Parent (when available)</option>
+              <option value="student">Student</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       {/* Test Email Section */}
       <div className="notification-section">
         <h3>🧪 Test Email System</h3>
