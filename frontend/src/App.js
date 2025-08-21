@@ -1280,6 +1280,42 @@ const StudentsManager = ({ onRefresh }) => {
     }
   };
 
+  // Filter and search logic
+  const filteredAndSortedStudents = useMemo(() => {
+    let filtered = students.filter(student => {
+      const matchesSearch = searchTerm === '' || 
+        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (student.phone && student.phone.includes(searchTerm)) ||
+        (student.parent_name && student.parent_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (student.parent_email && student.parent_email.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const matchesFilter = filterBy === 'all' || 
+        (filterBy === 'has_parent' && student.parent_name) ||
+        (filterBy === 'no_parent' && !student.parent_name) ||
+        (filterBy === 'has_phone' && student.phone) ||
+        (filterBy === 'has_notes' && student.notes);
+
+      return matchesSearch && matchesFilter;
+    });
+
+    // Sort the filtered results
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'email':
+          return a.email.localeCompare(b.email);
+        case 'created_date':
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [students, searchTerm, sortBy, filterBy]);
+
   const handleAddStudent = async (e) => {
     e.preventDefault();
     try {
