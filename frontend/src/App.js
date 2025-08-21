@@ -112,8 +112,14 @@ const useAuth = () => {
 };
 
 // UI Components
-const Card = ({ children, className = "" }) => (
-  <div className={`card ${className}`}>{children}</div>
+const Card = ({ children, className = "", onClick, ...props }) => (
+  <div 
+    className={`card ${className}`} 
+    onClick={onClick}
+    {...props}
+  >
+    {children}
+  </div>
 );
 
 const Button = ({ children, onClick, className = "", variant = "primary", type = "button", disabled = false }) => (
