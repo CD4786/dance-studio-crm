@@ -321,7 +321,7 @@ class EmailService:
         
         Contact us if you have questions.
         
-        Dance Studio CRM
+        Dancing on the Boulevard
         """
         
         return await self.send_email(student_email, subject, html_body, text_body)
