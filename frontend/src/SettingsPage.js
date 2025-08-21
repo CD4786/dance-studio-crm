@@ -23,7 +23,8 @@ const SettingsPage = () => {
     { id: 'display', name: 'Display Settings', icon: '🖥️' },
     { id: 'business_rules', name: 'Business Rules', icon: '📋' },
     { id: 'program', name: 'Program Settings', icon: '📚' },
-    { id: 'notification', name: 'Notifications', icon: '🔔' }
+    { id: 'notification', name: 'Notifications', icon: '🔔' },
+    { id: 'email_center', name: 'Email Center', icon: '📧' }
   ];
 
   useEffect(() => {
