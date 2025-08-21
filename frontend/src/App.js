@@ -463,7 +463,9 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   // Calculate instructor statistics (daily, weekly, monthly lesson counts)
   const calculateInstructorStats = async (teacherId) => {
     try {
-      const allLessons = lessons.filter(lesson => 
+      // Fetch all lessons for this teacher
+      const response = await axios.get(`${API}/lessons`);
+      const allLessons = response.data.filter(lesson => 
         lesson.teacher_ids && lesson.teacher_ids.includes(teacherId)
       );
       
