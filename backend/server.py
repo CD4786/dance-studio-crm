@@ -2494,13 +2494,13 @@ async def send_custom_email(request: EmailNotificationRequest, current_user: Use
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🩰 Dance Studio CRM</h1>
+                    <h1>🩰 Dancing on the Boulevard</h1>
                 </div>
                 <div class="content">
                     {request.message.replace(chr(10), '<br>')}
                 </div>
                 <div class="footer">
-                    <p>Dance Studio CRM | Keep Dancing! 🌟</p>
+                    <p>Dancing on the Boulevard | Keep Dancing! 🌟</p>
                 </div>
             </div>
         </body>
