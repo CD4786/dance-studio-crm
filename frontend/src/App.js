@@ -470,6 +470,13 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
       // Don't throw, just log the error
     }
   }, [currentDate, fetchWithCache]);
+
+  // Calculate instructor statistics (daily, weekly, monthly lesson counts)
+  const calculateInstructorStats = async (teacherId) => {
+    try {
+      const allLessons = lessons.filter(lesson => 
+        lesson.teacher_ids && lesson.teacher_ids.includes(teacherId)
+      );
       
       const today = new Date(currentDate);
       const todayStart = new Date(today);
