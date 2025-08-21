@@ -19,6 +19,7 @@ import hashlib
 import json
 import asyncio
 import bcrypt
+from email_service import email_service
 
 # SMS Integration
 try:
