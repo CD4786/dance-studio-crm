@@ -6,6 +6,7 @@ import RecurringLessonModal from "./RecurringLessonModal";
 import StudentLedger from "./StudentLedger";
 import SettingsPage from "./SettingsPage";
 import UserManagement from "./UserManagement";
+import EnrollmentsPage from "./EnrollmentsPage";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API = `${BACKEND_URL}/api`;
