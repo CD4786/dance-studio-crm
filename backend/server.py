@@ -1597,8 +1597,8 @@ async def get_daily_data(date: str, current_user: User = Depends(get_current_use
             "start_datetime": {"$gte": start_date, "$lt": end_date}
         })
         
-        teachers_query = db.teachers.find({"is_active": True})
-        students_query = db.students.find({"is_active": True})
+        teachers_query = db.teachers.find({})
+        students_query = db.students.find({})
         
         # Execute queries concurrently
         lessons_task = lessons_query.to_list(200)
