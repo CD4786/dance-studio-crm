@@ -2454,6 +2454,9 @@ const MainApp = () => {
         {currentView === 'teachers' && (
           <TeachersManager onRefresh={handleRefresh} />
         )}
+        {currentView === 'enrollments' && (
+          <EnrollmentsPage onRefresh={handleRefresh} />
+        )}
 
         {currentView === 'settings' && (
           <SettingsPage />
