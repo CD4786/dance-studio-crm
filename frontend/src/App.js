@@ -1252,6 +1252,11 @@ const StudentsManager = ({ onRefresh }) => {
     total_paid: ''
   });
 
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [filterBy, setFilterBy] = useState('all');
+
   useEffect(() => {
     fetchStudents();
     fetchPrograms();
