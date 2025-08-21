@@ -212,6 +212,25 @@ class LessonPackage(BaseModel):
     description: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+# Email Notification Models
+class EmailNotificationRequest(BaseModel):
+    recipient_email: str
+    subject: str
+    message: str
+    notification_type: str = "general"
+
+class LessonReminderRequest(BaseModel):
+    lesson_id: str
+    send_to_parent: bool = True
+
+class PaymentReminderRequest(BaseModel):
+    student_id: str
+    amount_due: float
+    due_date: datetime
+
+class TestEmailRequest(BaseModel):
+    test_email: str
+
 class Settings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     category: str  # "business", "system", "program", "notification"
