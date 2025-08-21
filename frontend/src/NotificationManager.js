@@ -40,7 +40,111 @@ const NotificationManager = () => {
   useEffect(() => {
     fetchStudents();
     fetchLessons();
+    loadNotificationSettings();
   }, []);
+
+  useEffect(() => {
+    applyLessonFilters();
+  }, [lessons, lessonFilter]);
+
+  const loadNotificationSettings = async () => {
+    try {
+      const savedSettings = localStorage.getItem('notification_settings');
+      if (savedSettings) {
+        setNotificationSettings(JSON.parse(savedSettings));
+      }
+    } catch (error) {
+      console.error('Failed to load notification settings:', error);
+    }
+  };
+
+  const saveNotificationSettings = (newSettings) => {
+    setNotificationSettings(newSettings);
+    localStorage.setItem('notification_settings', JSON.stringify(newSettings));
+    showMessage('Notification settings saved successfully!');
+  };
+
+  const applyLessonFilters = () => {
+    let filtered = [...lessons];
+
+    // Filter by date range
+    const now = new Date();
+    switch (lessonFilter.dateRange) {
+      case 'today':
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date(now);
+        todayEnd.setHours(23, 59, 59, 999);
+        filtered = filtered.filter(lesson => {
+          const lessonDate = new Date(lesson.start_datetime);
+          return lessonDate >= todayStart && lessonDate <= todayEnd;
+        });
+        break;
+      case 'tomorrow':
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        const tomorrowEnd = new Date(tomorrow);
+        tomorrowEnd.setHours(23, 59, 59, 999);
+        filtered = filtered.filter(lesson => {
+          const lessonDate = new Date(lesson.start_datetime);
+          return lessonDate >= tomorrow && lessonDate <= tomorrowEnd;
+        });
+        break;
+      case 'next_7_days':
+        const nextWeek = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+        filtered = filtered.filter(lesson => {
+          const lessonDate = new Date(lesson.start_datetime);
+          return lessonDate >= now && lessonDate <= nextWeek;
+        });
+        break;
+      case 'next_30_days':
+        const nextMonth = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
+        filtered = filtered.filter(lesson => {
+          const lessonDate = new Date(lesson.start_datetime);
+          return lessonDate >= now && lessonDate <= nextMonth;
+        });
+        break;
+    }
+
+    // Filter by lesson type
+    if (lessonFilter.lessonType !== 'all') {
+      filtered = filtered.filter(lesson => lesson.booking_type === lessonFilter.lessonType);
+    }
+
+    // Filter by instructor
+    if (lessonFilter.instructor !== 'all') {
+      filtered = filtered.filter(lesson => 
+        lesson.teacher_ids && lesson.teacher_ids.includes(lessonFilter.instructor)
+      );
+    }
+
+    // Filter by email availability
+    if (lessonFilter.hasEmail !== 'all') {
+      filtered = filtered.filter(lesson => {
+        const student = students.find(s => s.id === lesson.student_id);
+        if (!student) return false;
+
+        const hasParentEmail = !!student.parent_email;
+        const hasStudentEmail = !!student.email;
+
+        switch (lessonFilter.hasEmail) {
+          case 'parent_email':
+            return hasParentEmail;
+          case 'student_email':
+            return hasStudentEmail;
+          case 'both_emails':
+            return hasParentEmail && hasStudentEmail;
+          case 'no_email':
+            return !hasParentEmail && !hasStudentEmail;
+          default:
+            return true;
+        }
+      });
+    }
+
+    setFilteredLessons(filtered);
+  };
 
   const fetchStudents = async () => {
     try {
