@@ -210,7 +210,7 @@ class EmailService:
                     <p>Thank you for being part of our dance family! 💃🕺</p>
                 </div>
                 <div class="footer">
-                    <p>Dance Studio CRM | Keep Dancing! 🌟</p>
+                    <p>Dancing on the Boulevard | Keep Dancing! 🌟</p>
                     <p>This is an automated reminder. Please contact us if you have questions.</p>
                 </div>
             </div>
