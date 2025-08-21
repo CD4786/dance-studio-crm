@@ -1427,13 +1427,12 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Dashboard Navigation Functionality Verification"
     - "Lesson Deletion Functionality"
     - "Authentication System with Admin Credentials"
     - "Lesson Creation with Multiple Instructors"
     - "Booking Type System"
-    - "API Health and Configuration"
   stuck_tasks:
-    - "Authentication System with Admin Credentials"
     - "WebSocket Real-time Updates System"
     - "Enhanced Existing Endpoints with Real-time Updates"
     - "WebSocket Frontend Integration"
