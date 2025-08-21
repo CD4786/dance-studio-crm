@@ -1431,8 +1431,52 @@ const StudentsManager = ({ onRefresh }) => {
         <Button onClick={() => setShowAddModal(true)}>Add Student</Button>
       </div>
 
+      {/* Search and Filter Controls */}
+      <div className="search-filter-controls">
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search students by name, email, phone, or parent info..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+        </div>
+        
+        <div className="filter-controls">
+          <select 
+            value={filterBy} 
+            onChange={(e) => setFilterBy(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Students</option>
+            <option value="has_parent">With Parent Info</option>
+            <option value="no_parent">Without Parent Info</option>
+            <option value="has_phone">With Phone</option>
+            <option value="has_notes">With Notes</option>
+          </select>
+          
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+            className="sort-select"
+          >
+            <option value="name">Sort by Name</option>
+            <option value="email">Sort by Email</option>
+            <option value="created_date">Sort by Date Added</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Results count */}
+      <div className="results-info">
+        <span className="results-count">
+          Showing {filteredAndSortedStudents.length} of {students.length} students
+        </span>
+      </div>
+
       <div className="students-grid">
-        {students.map(student => (
+        {filteredAndSortedStudents.map(student => (
           <Card key={student.id} className="student-card">
             <div className="student-info">
               <h3>{student.name}</h3>
