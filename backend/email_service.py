@@ -287,7 +287,7 @@ class EmailService:
                     <p>Thank you for your understanding! 💃</p>
                 </div>
                 <div class="footer">
-                    <p>Dance Studio CRM | Keep Dancing! 🌟</p>
+                    <p>Dancing on the Boulevard | Keep Dancing! 🌟</p>
                     <p>This is an automated notification.</p>
                 </div>
             </div>
