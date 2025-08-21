@@ -94,7 +94,28 @@ const SettingsPage = () => {
       if (category === 'display') {
         if (key === 'compact_mode') {
           document.documentElement.classList.toggle('compact-mode', value);
+        } else if (key === 'language') {
+          // Store language preference for future use
+          localStorage.setItem('preferred_language', value);
         }
+      }
+      
+      // Apply calendar settings (store in localStorage for calendar components to use)
+      if (category === 'calendar') {
+        localStorage.setItem(`calendar_${key}`, JSON.stringify(value));
+        
+        // Apply immediate effects for some calendar settings
+        if (key === 'time_slot_minutes') {
+          // Could trigger calendar refresh
+          console.log(`Time slot minutes set to: ${value}`);
+        } else if (key === 'start_hour' || key === 'end_hour') {
+          console.log(`Calendar hours updated: ${key} = ${value}`);
+        }
+      }
+      
+      // Apply business rules (store for validation logic)
+      if (category === 'business_rules') {
+        localStorage.setItem(`business_rule_${key}`, JSON.stringify(value));
       }
       
       setMessage('Setting saved successfully!');
