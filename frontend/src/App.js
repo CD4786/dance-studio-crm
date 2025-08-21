@@ -312,7 +312,7 @@ const Dashboard = ({ onRefresh, onNavigate }) => {
         
         <Card 
           className="stat-card clickable"
-          onClick={() => onNavigate && onNavigate('students')}
+          onClick={() => onNavigate && onNavigate('enrollments')}
         >
           <div className="stat-content">
             <div>
@@ -325,7 +325,7 @@ const Dashboard = ({ onRefresh, onNavigate }) => {
         
         <Card 
           className="stat-card clickable"
-          onClick={() => onNavigate && onNavigate('daily-calendar')}
+          onClick={() => onNavigate && onNavigate('daily')}
         >
           <div className="stat-content">
             <div>
@@ -338,7 +338,7 @@ const Dashboard = ({ onRefresh, onNavigate }) => {
         
         <Card 
           className="stat-card clickable"
-          onClick={() => onNavigate && onNavigate('daily-calendar')}
+          onClick={() => onNavigate && onNavigate('weekly')}
         >
           <div className="stat-content">
             <div>
