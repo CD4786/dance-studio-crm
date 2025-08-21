@@ -371,7 +371,7 @@ class EmailService:
         """
         
         text_body = f"""
-        Test Email from Dance Studio CRM
+        Test Email from Dancing on the Boulevard
         
         Success! Your email notification system is working correctly.
         
@@ -379,7 +379,7 @@ class EmailService:
         
         You can now send lesson reminders, payment alerts, and class updates!
         
-        Dance Studio CRM
+        Dancing on the Boulevard
         """
         
         return await self.send_email(to_email, subject, html_body, text_body)
