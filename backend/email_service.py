@@ -329,7 +329,7 @@ class EmailService:
     async def send_test_email(self, to_email: str) -> bool:
         """Send a test email to verify email functionality"""
         
-        subject = "🧪 Test Email from Dance Studio CRM"
+        subject = "🧪 Test Email from Dancing on the Boulevard"
         
         html_body = """
         <!DOCTYPE html>
@@ -351,7 +351,7 @@ class EmailService:
                 </div>
                 <div class="content">
                     <h2>Success! ✅</h2>
-                    <p>Your Dance Studio CRM email notification system is working correctly.</p>
+                    <p>Your Dancing on the Boulevard email notification system is working correctly.</p>
                     <p>This test email was sent at: """ + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + """</p>
                     <p>You can now send:</p>
                     <ul>
@@ -363,7 +363,7 @@ class EmailService:
                     <p>Ready to start sending notifications! 🚀</p>
                 </div>
                 <div class="footer">
-                    <p>Dance Studio CRM | Keep Dancing! 🌟</p>
+                    <p>Dancing on the Boulevard | Keep Dancing! 🌟</p>
                 </div>
             </div>
         </body>
