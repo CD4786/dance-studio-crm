@@ -453,18 +453,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
       const data = await fetchWithCache(`${API}/calendar/daily/${dateStr}`, cacheKey, forceRefresh);
       setCalendarData(data);
       
-      // Update instructor stats efficiently
-      if (data.teachers) {
-        const statsPromises = data.teachers.map(teacher => 
-          calculateInstructorStats(teacher.id)
-        );
-        const stats = await Promise.all(statsPromises);
-        const statsMap = {};
-        data.teachers.forEach((teacher, index) => {
-          statsMap[teacher.id] = stats[index];
-        });
-        setInstructorStats(statsMap);
-      }
+      // Instructor stats are managed individually by InstructorStatsDisplay components
     } catch (error) {
       console.error('Failed to fetch daily data:', error);
       // Don't throw, just log the error
