@@ -172,11 +172,38 @@ const SettingsPage = () => {
     console.log(`Applied custom colors: primary=${primaryColor}, secondary=${secondaryColor}`);
   };
 
-  // Apply theme on component mount
+  // Apply all UI settings on component mount and when settings change
   useEffect(() => {
-    const themeSettings = settings.filter(s => s.category === 'theme' && s.key === 'selected_theme');
-    if (themeSettings.length > 0) {
-      applyTheme(themeSettings[0].value);
+    if (settings.length > 0) {
+      // Apply theme settings
+      const themeSettings = settings.filter(s => s.category === 'theme');
+      const themeSettingsMap = {};
+      themeSettings.forEach(setting => {
+        themeSettingsMap[setting.key] = setting.value;
+      });
+      
+      // Apply theme
+      if (themeSettingsMap.selected_theme) {
+        applyTheme(themeSettingsMap.selected_theme);
+      }
+      
+      // Apply font size
+      if (themeSettingsMap.font_size) {
+        applyFontSize(themeSettingsMap.font_size);
+      }
+      
+      // Apply custom colors
+      if (themeSettingsMap.custom_primary_color || themeSettingsMap.custom_secondary_color) {
+        applyCustomColors(themeSettingsMap.custom_primary_color, themeSettingsMap.custom_secondary_color);
+      }
+      
+      // Apply display settings
+      const displaySettings = settings.filter(s => s.category === 'display');
+      displaySettings.forEach(setting => {
+        if (setting.key === 'compact_mode') {
+          document.documentElement.classList.toggle('compact-mode', setting.value);
+        }
+      });
     }
   }, [settings]);
 
