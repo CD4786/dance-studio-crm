@@ -20,6 +20,7 @@ const NotificationManager = () => {
   const [lessons, setLessons] = useState([]);
   const [filteredLessons, setFilteredLessons] = useState([]);
   const [selectedLessons, setSelectedLessons] = useState([]);
+  const [sending, setSending] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
     lesson_reminders_enabled: true,
     payment_reminders_enabled: true,
