@@ -2402,6 +2402,12 @@ const MainApp = () => {
             🎭 Teachers
           </button>
           <button 
+            className={currentView === 'enrollments' ? 'nav-item active' : 'nav-item'}
+            onClick={() => setCurrentView('enrollments')}
+          >
+            📚 Enrollments
+          </button>
+          <button 
             className={currentView === 'settings' ? 'nav-item active' : 'nav-item'}
             onClick={() => setCurrentView('settings')}
           >
