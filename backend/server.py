@@ -1588,7 +1588,9 @@ async def get_daily_data(date: str, current_user: User = Depends(get_current_use
     """Get daily calendar data with optimized queries"""
     try:
         # Parse date
+        print(f"Parsing date: '{date}' (type: {type(date)})")
         target_date = datetime.strptime(date, "%Y-%m-%d")
+        print(f"Parsed successfully: {target_date}")
         start_date = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
         end_date = target_date.replace(hour=23, minute=59, second=59, microsecond=999999)
         
