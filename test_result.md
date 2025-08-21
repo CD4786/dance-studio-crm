@@ -1454,11 +1454,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Dashboard Navigation Functionality Verification"
-    - "Lesson Deletion Functionality"
-    - "Authentication System with Admin Credentials"
-    - "Lesson Creation with Multiple Instructors"
-    - "Booking Type System"
+    - "Enhanced Email Notification System with Advanced Recipient Selection"
   stuck_tasks:
     - "WebSocket Real-time Updates System"
     - "Enhanced Existing Endpoints with Real-time Updates"
