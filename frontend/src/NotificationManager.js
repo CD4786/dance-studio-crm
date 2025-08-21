@@ -250,9 +250,19 @@ const NotificationManager = () => {
     }
   };
 
-  const handleSendLessonReminder = async (lessonId, sendToParent = true) => {
+  const handleSendLessonReminder = async (lessonId, recipientType = 'auto') => {
     setSending(true);
     try {
+      let sendToParent = true;
+      
+      if (recipientType === 'parent') {
+        sendToParent = true;
+      } else if (recipientType === 'student') {
+        sendToParent = false;
+      } else if (recipientType === 'auto') {
+        sendToParent = notificationSettings.default_recipient === 'parent';
+      }
+
       await axios.post(`${API}/notifications/lesson-reminder`, {
         lesson_id: lessonId,
         send_to_parent: sendToParent
@@ -263,6 +273,60 @@ const NotificationManager = () => {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleBulkSendReminders = async (recipientType = 'auto') => {
+    if (selectedLessons.length === 0) {
+      showMessage('Please select lessons to send reminders for', 'error');
+      return;
+    }
+
+    setSending(true);
+    try {
+      const results = await Promise.allSettled(
+        selectedLessons.map(lessonId => 
+          handleSendLessonReminder(lessonId, recipientType)
+        )
+      );
+
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      showMessage(`Bulk reminders sent: ${successful}/${selectedLessons.length} successful`);
+      setSelectedLessons([]);
+    } catch (error) {
+      showMessage('Failed to send bulk reminders: ' + error.message, 'error');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const toggleLessonSelection = (lessonId) => {
+    setSelectedLessons(prev => 
+      prev.includes(lessonId) 
+        ? prev.filter(id => id !== lessonId)
+        : [...prev, lessonId]
+    );
+  };
+
+  const toggleAllLessons = () => {
+    if (selectedLessons.length === filteredLessons.length) {
+      setSelectedLessons([]);
+    } else {
+      setSelectedLessons(filteredLessons.map(lesson => lesson.id));
+    }
+  };
+
+  const getRecipientInfo = (lesson) => {
+    const student = students.find(s => s.id === lesson.student_id);
+    if (!student) return { hasParent: false, hasStudent: false, parentName: '', studentName: '' };
+
+    return {
+      hasParent: !!student.parent_email,
+      hasStudent: !!student.email,
+      parentName: student.parent_name || 'Parent',
+      studentName: student.name || 'Student',
+      parentEmail: student.parent_email,
+      studentEmail: student.email
+    };
   };
 
   return (
