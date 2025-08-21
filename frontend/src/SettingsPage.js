@@ -269,6 +269,8 @@ const SettingsPage = () => {
       setSaving(false);
     }
   };
+
+  const handleResetDefaults = async () => {
     if (!window.confirm('Are you sure you want to reset all settings to defaults? This action cannot be undone.')) {
       return;
     }
