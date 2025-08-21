@@ -77,9 +77,24 @@ const SettingsPage = () => {
         value: value
       });
       
-      // Apply theme immediately if it's a theme setting
-      if (category === 'theme' && key === 'selected_theme') {
-        applyTheme(value);
+      // Apply UI changes immediately for specific settings
+      if (category === 'theme') {
+        if (key === 'selected_theme') {
+          applyTheme(value);
+        } else if (key === 'font_size') {
+          applyFontSize(value);
+        } else if (key === 'custom_primary_color' || key === 'custom_secondary_color') {
+          const primaryColor = formData.theme?.custom_primary_color;
+          const secondaryColor = formData.theme?.custom_secondary_color;
+          applyCustomColors(primaryColor, secondaryColor);
+        }
+      }
+      
+      // Apply other UI changes
+      if (category === 'display') {
+        if (key === 'compact_mode') {
+          document.documentElement.classList.toggle('compact-mode', value);
+        }
       }
       
       setMessage('Setting saved successfully!');
