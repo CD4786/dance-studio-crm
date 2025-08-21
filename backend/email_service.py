@@ -19,7 +19,11 @@ class EmailService:
         self.password = os.getenv("GMAIL_APP_PASSWORD")
         
         if not self.email or not self.password:
-            raise ValueError("Gmail credentials not found in environment variables")
+            logger.warning("Gmail credentials not found in environment variables. Email functionality will be limited.")
+            self.email_enabled = False
+        else:
+            self.email_enabled = True
+            logger.info(f"Email service initialized with Gmail account: {self.email}")
     
     async def send_email(
         self, 
