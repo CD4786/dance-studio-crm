@@ -30,7 +30,8 @@ class EmailService:
         to_email: str, 
         subject: str, 
         html_body: str, 
-        text_body: str = None
+        text_body: str = None,
+        studio_name: str = "Dancing on the Boulevard"
     ) -> bool:
         """Send an email using Gmail SMTP"""
         if not self.email_enabled:
@@ -41,7 +42,7 @@ class EmailService:
             # Create message
             message = MIMEMultipart("alternative")
             message["Subject"] = subject
-            message["From"] = f"Dancing on the Boulevard <{self.email}>"
+            message["From"] = f"{studio_name} <{self.email}>"
             message["To"] = to_email
             
             # Add text part if provided
