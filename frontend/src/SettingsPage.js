@@ -37,13 +37,25 @@ const SettingsPage = () => {
       const response = await axios.get(`${API}/settings`);
       setSettings(response.data);
       
-      // Initialize form data
+      // Initialize form data with proper type conversion
       const initialFormData = {};
       response.data.forEach(setting => {
         if (!initialFormData[setting.category]) {
           initialFormData[setting.category] = {};
         }
-        initialFormData[setting.category][setting.key] = setting.value;
+        
+        // Convert values to proper types
+        let value = setting.value;
+        if (setting.data_type === 'boolean') {
+          // Convert string boolean to actual boolean
+          value = value === true || value === 'true' || value === '1';
+        } else if (setting.data_type === 'integer') {
+          value = parseInt(value) || 0;
+        } else if (setting.data_type === 'decimal') {
+          value = parseFloat(value) || 0;
+        }
+        
+        initialFormData[setting.category][setting.key] = value;
       });
       setFormData(initialFormData);
     } catch (error) {
