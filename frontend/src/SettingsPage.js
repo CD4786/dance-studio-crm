@@ -459,7 +459,7 @@ const SettingsPage = () => {
             <label className="checkbox-label">
               <input
                 type="checkbox"
-                checked={value === true}
+                checked={value === true || value === 'true'}
                 onChange={(e) => handleInputChange(category, key, e.target.checked)}
               />
               <span>{setting.description || key}</span>
