@@ -22,7 +22,8 @@ const SettingsPage = () => {
     { id: 'calendar', name: 'Calendar Settings', icon: '📅' },
     { id: 'display', name: 'Display Settings', icon: '🖥️' },
     { id: 'business_rules', name: 'Business Rules', icon: '📋' },
-    { id: 'program', name: 'Program Settings', icon: '📚' },
+    { id: 'program', name: 'Program Settings', icon: '💃' },
+    { id: 'programs_manager', name: 'Programs Manager', icon: '📚' },
     { id: 'notification', name: 'Notifications', icon: '🔔' },
     { id: 'email_center', name: 'Email Center', icon: '📧' }
   ];
