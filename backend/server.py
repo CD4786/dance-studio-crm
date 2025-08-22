@@ -2563,9 +2563,72 @@ async def update_setting(category: str, key: str, setting_update: SettingsUpdate
     if not existing_setting:
         raise HTTPException(status_code=404, detail="Setting not found")
     
-    # Update the setting
+    # Get the expected data type for this setting
+    expected_data_type = existing_setting.get("data_type", "string")
+    
+    # Validate and convert the value based on the setting's data type
+    converted_value = setting_update.value
+    
+    try:
+        if expected_data_type == "boolean":
+            # Handle boolean conversion properly
+            if isinstance(setting_update.value, bool):
+                converted_value = setting_update.value
+            elif isinstance(setting_update.value, str):
+                # Convert string representations to boolean
+                if setting_update.value.lower() in ["true", "1", "yes", "on"]:
+                    converted_value = True
+                elif setting_update.value.lower() in ["false", "0", "no", "off"]:
+                    converted_value = False
+                else:
+                    raise HTTPException(status_code=400, detail=f"Invalid boolean value: {setting_update.value}")
+            elif isinstance(setting_update.value, int):
+                # Convert integer to boolean (0 = False, anything else = True)
+                converted_value = bool(setting_update.value)
+            else:
+                raise HTTPException(status_code=400, detail=f"Cannot convert {type(setting_update.value).__name__} to boolean")
+        
+        elif expected_data_type == "integer":
+            if isinstance(setting_update.value, int):
+                converted_value = setting_update.value
+            elif isinstance(setting_update.value, str) and setting_update.value.isdigit():
+                converted_value = int(setting_update.value)
+            else:
+                raise HTTPException(status_code=400, detail=f"Invalid integer value: {setting_update.value}")
+        
+        elif expected_data_type == "float":
+            if isinstance(setting_update.value, (int, float)):
+                converted_value = float(setting_update.value)
+            elif isinstance(setting_update.value, str):
+                try:
+                    converted_value = float(setting_update.value)
+                except ValueError:
+                    raise HTTPException(status_code=400, detail=f"Invalid float value: {setting_update.value}")
+            else:
+                raise HTTPException(status_code=400, detail=f"Invalid float value: {setting_update.value}")
+        
+        elif expected_data_type == "array":
+            if isinstance(setting_update.value, list):
+                converted_value = setting_update.value
+            else:
+                raise HTTPException(status_code=400, detail=f"Expected array but got {type(setting_update.value).__name__}")
+        
+        elif expected_data_type == "string":
+            # Convert to string
+            converted_value = str(setting_update.value)
+        
+        else:
+            # Unknown data type, keep as is
+            converted_value = setting_update.value
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Data type conversion error: {str(e)}")
+    
+    # Update the setting with the converted value
     update_data = {
-        "value": setting_update.value,
+        "value": converted_value,
         "updated_at": datetime.utcnow(),
         "updated_by": current_user.id
     }
