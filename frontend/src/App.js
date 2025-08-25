@@ -858,6 +858,18 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     });
   };
 
+  // Check if a time slot is available for booking (excludes only active lessons)
+  const isSlotAvailable = (hour, teacherId) => {
+    if (!calendarData?.lessons) return true;
+    const existingLesson = calendarData.lessons.find(lesson => {
+      const lessonHour = new Date(lesson.start_datetime).getHours();
+      const teacherMatch = (lesson.teacher_ids && lesson.teacher_ids.includes(teacherId)) ||
+                          lesson.teacher_id === teacherId;
+      return lessonHour === hour && teacherMatch && lesson.status !== 'cancelled';
+    });
+    return !existingLesson;
+  };
+
   const LessonBlock = ({ lesson, onEdit, onDelete, onAttend, onSendReminder, onCancel, onReactivate }) => (
     <div 
       className={`lesson-block ${lesson.is_attended ? 'attended' : ''} ${lesson.status === 'cancelled' ? 'cancelled' : ''}`}
