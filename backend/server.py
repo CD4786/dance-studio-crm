@@ -2485,7 +2485,7 @@ async def reactivate_lesson(lesson_id: str, current_user: User = Depends(get_cur
             "cancelled_at": None,
             "cancelled_by": None,
             "modified_at": datetime.utcnow(),
-            "modified_by": current_user.username
+            "modified_by": current_user.name
         }
         
         await db.lessons.update_one(
