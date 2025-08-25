@@ -2454,7 +2454,7 @@ async def cancel_lesson(lesson_id: str, cancellation: LessonCancellationRequest,
         await manager.broadcast_update("lesson_cancelled", {
             "lesson_id": lesson_id,
             "student_name": lesson.get("student_name", "Unknown"),
-            "cancelled_by": current_user.username,
+            "cancelled_by": current_user.name,
             "reason": cancellation.reason
         }, current_user.id, current_user.name)
         
