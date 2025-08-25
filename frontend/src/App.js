@@ -858,14 +858,17 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     });
   };
 
-  const LessonBlock = ({ lesson, onEdit, onDelete, onAttend, onSendReminder }) => (
+  const LessonBlock = ({ lesson, onEdit, onDelete, onAttend, onSendReminder, onCancel, onReactivate }) => (
     <div 
-      className={`lesson-block ${lesson.is_attended ? 'attended' : ''}`}
-      draggable
-      onDragStart={(e) => handleDragStart(lesson, e)}
+      className={`lesson-block ${lesson.is_attended ? 'attended' : ''} ${lesson.status === 'cancelled' ? 'cancelled' : ''}`}
+      draggable={lesson.status !== 'cancelled'}
+      onDragStart={(e) => lesson.status !== 'cancelled' ? handleDragStart(lesson, e) : e.preventDefault()}
     >
       <div className="lesson-content">
-        <div className="lesson-student">{lesson.student_name}</div>
+        <div className="lesson-student">
+          {lesson.student_name}
+          {lesson.status === 'cancelled' && <span className="cancelled-badge">CANCELLED</span>}
+        </div>
         <div className="lesson-time">
           {new Date(lesson.start_datetime).toLocaleTimeString('en-US', { 
             hour: 'numeric', 
@@ -883,15 +886,35 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
           </div>
         )}
         {lesson.notes && <div className="lesson-notes">{lesson.notes}</div>}
+        {lesson.status === 'cancelled' && lesson.cancellation_reason && (
+          <div className="cancellation-reason">
+            📝 Reason: {lesson.cancellation_reason}
+          </div>
+        )}
+        {lesson.status === 'cancelled' && lesson.cancelled_at && (
+          <div className="cancellation-date">
+            🗓️ Cancelled: {new Date(lesson.cancelled_at).toLocaleDateString()}
+          </div>
+        )}
       </div>
       <div className="lesson-actions">
-        <button onClick={() => onEdit(lesson)} className="lesson-action-btn" title="Edit">✏️</button>
-        <button onClick={() => onDelete(lesson.id)} className="lesson-action-btn" title="Delete">🗑️</button>
-        {!lesson.is_attended && (
-          <button onClick={() => onAttend(lesson.id)} className="lesson-action-btn" title="Mark Attended">✅</button>
+        {lesson.status === 'cancelled' ? (
+          <>
+            <button onClick={() => onReactivate(lesson.id)} className="lesson-action-btn" title="Reactivate Lesson">🔄</button>
+            <button onClick={() => onDelete(lesson.id)} className="lesson-action-btn" title="Delete Permanently">🗑️</button>
+          </>
+        ) : (
+          <>
+            <button onClick={() => onEdit(lesson)} className="lesson-action-btn" title="Edit">✏️</button>
+            <button onClick={() => onCancel(lesson.id)} className="lesson-action-btn cancel-btn" title="Cancel Lesson">❌</button>
+            <button onClick={() => onDelete(lesson.id)} className="lesson-action-btn" title="Delete">🗑️</button>
+            {!lesson.is_attended && (
+              <button onClick={() => onAttend(lesson.id)} className="lesson-action-btn" title="Mark Attended">✅</button>
+            )}
+            <button onClick={() => onSendReminder(lesson.id, 'email')} className="lesson-action-btn" title="Send Email Reminder">📧</button>
+            <button onClick={() => onSendReminder(lesson.id, 'sms')} className="lesson-action-btn" title="Send SMS Reminder">📱</button>
+          </>
         )}
-        <button onClick={() => onSendReminder(lesson.id, 'email')} className="lesson-action-btn" title="Send Email Reminder">📧</button>
-        <button onClick={() => onSendReminder(lesson.id, 'sms')} className="lesson-action-btn" title="Send SMS Reminder">📱</button>
       </div>
     </div>
   );
