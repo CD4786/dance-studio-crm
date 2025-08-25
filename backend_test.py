@@ -3314,6 +3314,213 @@ class DanceStudioAPITester:
         self.log_test("Cancel Nonexistent Recurring Series", success, "- Expected 404 error")
         return success
 
+    # LESSON CANCELLATION SYSTEM TESTS
+    def test_lesson_status_system(self):
+        """Test that lessons have proper status field and default to 'active' status"""
+        if not self.created_student_id or not self.created_teacher_id:
+            self.log_test("Lesson Status System", False, "- No student or teacher ID available")
+            return False
+            
+        # Create a new lesson for testing
+        tomorrow = datetime.now() + timedelta(days=1)
+        start_time = tomorrow.replace(hour=14, minute=0, second=0, microsecond=0)
+        
+        lesson_data = {
+            "student_id": self.created_student_id,
+            "teacher_ids": [self.created_teacher_id],
+            "start_datetime": start_time.isoformat(),
+            "duration_minutes": 60,
+            "booking_type": "private_lesson",
+            "notes": "Test lesson for status system"
+        }
+        
+        success, response = self.make_request('POST', 'lessons', lesson_data, 200)
+        
+        if success:
+            self.test_lesson_id = response.get('id')
+            lesson_status = response.get('status')
+            
+            # Verify lesson defaults to 'active' status
+            success = success and lesson_status == "active"
+            
+            print(f"   📋 Created lesson with status: {lesson_status}")
+            
+        self.log_test("Lesson Status System", success, f"- New lesson status: {lesson_status}")
+        return success
+
+    def test_lesson_cancellation_api(self):
+        """Test POST /api/lessons/{lesson_id}/cancel endpoint"""
+        if not hasattr(self, 'test_lesson_id') or not self.test_lesson_id:
+            self.log_test("Lesson Cancellation API", False, "- No test lesson ID available")
+            return False
+            
+        # Test cancellation with reason and notification options
+        cancellation_data = {
+            "reason": "Student requested cancellation due to scheduling conflict",
+            "notify_student": True
+        }
+        
+        success, response = self.make_request('PUT', f'lessons/{self.test_lesson_id}/cancel', 
+                                            cancellation_data, 200)
+        
+        if success:
+            message = response.get('message', '')
+            lesson_id = response.get('lesson_id', '')
+            
+            # Verify response
+            success = success and "cancelled successfully" in message and lesson_id == self.test_lesson_id
+            
+            print(f"   ✅ Cancellation response: {message}")
+            
+        self.log_test("Lesson Cancellation API", success, f"- Lesson {self.test_lesson_id} cancelled")
+        return success
+
+    def test_lesson_reactivation_api(self):
+        """Test POST /api/lessons/{lesson_id}/reactivate endpoint"""
+        if not hasattr(self, 'test_lesson_id') or not self.test_lesson_id:
+            self.log_test("Lesson Reactivation API", False, "- No test lesson ID available")
+            return False
+            
+        # Test reactivation of cancelled lesson
+        success, response = self.make_request('PUT', f'lessons/{self.test_lesson_id}/reactivate', 
+                                            expected_status=200)
+        
+        if success:
+            message = response.get('message', '')
+            lesson_id = response.get('lesson_id', '')
+            
+            # Verify response
+            success = success and "reactivated successfully" in message and lesson_id == self.test_lesson_id
+            
+            print(f"   ✅ Reactivation response: {message}")
+            
+        self.log_test("Lesson Reactivation API", success, f"- Lesson {self.test_lesson_id} reactivated")
+        return success
+
+    def test_cancelled_lessons_report(self):
+        """Test GET /api/reports/cancelled-lessons endpoint"""
+        # First, cancel the test lesson again for the report
+        if hasattr(self, 'test_lesson_id') and self.test_lesson_id:
+            cancellation_data = {
+                "reason": "Testing cancelled lessons report",
+                "notify_student": False
+            }
+            self.make_request('PUT', f'lessons/{self.test_lesson_id}/cancel', cancellation_data, 200)
+        
+        # Test getting cancelled lessons report
+        success, response = self.make_request('GET', 'reports/cancelled-lessons', expected_status=200)
+        
+        if success:
+            cancelled_lessons = response.get('cancelled_lessons', [])
+            total_count = response.get('total_count', 0)
+            filters_applied = response.get('filters_applied', {})
+            
+            # Verify report structure
+            success = success and isinstance(cancelled_lessons, list) and total_count >= 0
+            
+            # Check if our test lesson is in the report
+            test_lesson_found = False
+            if hasattr(self, 'test_lesson_id'):
+                for lesson in cancelled_lessons:
+                    if lesson.get('id') == self.test_lesson_id:
+                        test_lesson_found = True
+                        print(f"   📊 Found test lesson in report: {lesson.get('student_name')} - {lesson.get('cancellation_reason')}")
+                        break
+            
+            print(f"   📈 Report contains {total_count} cancelled lessons")
+            
+        self.log_test("Cancelled Lessons Report", success, f"- Found {total_count} cancelled lessons")
+        return success
+
+    def test_lesson_cancellation_data_integrity(self):
+        """Test that cancelled lessons preserve data and change status properly"""
+        if not hasattr(self, 'test_lesson_id') or not self.test_lesson_id:
+            self.log_test("Lesson Cancellation Data Integrity", False, "- No test lesson ID available")
+            return False
+            
+        # Get lesson details after cancellation
+        success, response = self.make_request('GET', f'lessons/{self.test_lesson_id}', expected_status=200)
+        
+        if success:
+            lesson_status = response.get('status')
+            is_cancelled = response.get('is_cancelled')
+            cancellation_reason = response.get('cancellation_reason')
+            cancelled_at = response.get('cancelled_at')
+            cancelled_by = response.get('cancelled_by')
+            student_name = response.get('student_name')
+            teacher_names = response.get('teacher_names', [])
+            
+            # Verify cancellation data integrity
+            data_integrity_checks = [
+                lesson_status == "cancelled",
+                is_cancelled == True,
+                cancellation_reason is not None,
+                cancelled_at is not None,
+                cancelled_by is not None,
+                student_name is not None,
+                len(teacher_names) > 0
+            ]
+            
+            success = success and all(data_integrity_checks)
+            
+            print(f"   🔍 Status: {lesson_status}, Cancelled: {is_cancelled}")
+            print(f"   📝 Reason: {cancellation_reason}")
+            print(f"   👤 Cancelled by: {cancelled_by}")
+            print(f"   📅 Cancelled at: {cancelled_at}")
+            
+        self.log_test("Lesson Cancellation Data Integrity", success, 
+                     f"- Status: {lesson_status}, Data preserved: {'Yes' if success else 'No'}")
+        return success
+
+    def test_lesson_cancellation_error_handling(self):
+        """Test error handling for cancellation endpoints"""
+        error_tests_passed = 0
+        total_error_tests = 4
+        
+        # Test 1: Cancel non-existent lesson
+        success, response = self.make_request('PUT', 'lessons/nonexistent-lesson-id/cancel', 
+                                            {"reason": "Test"}, 404)
+        if success:
+            error_tests_passed += 1
+            print(f"   ✅ Non-existent lesson cancellation: Expected 404")
+        
+        # Test 2: Reactivate non-existent lesson
+        success, response = self.make_request('PUT', 'lessons/nonexistent-lesson-id/reactivate', 
+                                            expected_status=404)
+        if success:
+            error_tests_passed += 1
+            print(f"   ✅ Non-existent lesson reactivation: Expected 404")
+        
+        # Test 3: Reactivate already active lesson
+        if hasattr(self, 'test_lesson_id') and self.test_lesson_id:
+            # First reactivate the lesson
+            self.make_request('PUT', f'lessons/{self.test_lesson_id}/reactivate', expected_status=200)
+            
+            # Try to reactivate again (should fail)
+            success, response = self.make_request('PUT', f'lessons/{self.test_lesson_id}/reactivate', 
+                                                expected_status=400)
+            if success:
+                error_tests_passed += 1
+                print(f"   ✅ Reactivate active lesson: Expected 400")
+        
+        # Test 4: Unauthorized access (without token)
+        original_token = self.token
+        self.token = None
+        
+        success, response = self.make_request('PUT', f'lessons/{self.test_lesson_id}/cancel', 
+                                            {"reason": "Test"}, 403)
+        if success:
+            error_tests_passed += 1
+            print(f"   ✅ Unauthorized cancellation: Expected 403")
+        
+        # Restore token
+        self.token = original_token
+        
+        success = error_tests_passed == total_error_tests
+        self.log_test("Lesson Cancellation Error Handling", success, 
+                     f"- {error_tests_passed}/{total_error_tests} error handling tests passed")
+        return success
+
     # WEBSOCKET REAL-TIME UPDATE TESTS
     def websocket_on_message(self, ws, message):
         """Handle WebSocket messages"""
