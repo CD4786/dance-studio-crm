@@ -4450,6 +4450,15 @@ class DanceStudioAPITester:
         self.test_cancel_nonexistent_recurring_series()
         self.test_cancel_recurring_lesson_series()
         
+        # LESSON CANCELLATION SYSTEM TESTS
+        print("\n🚫 Lesson Cancellation System Tests:")
+        self.test_lesson_status_system()
+        self.test_lesson_cancellation_api()
+        self.test_lesson_reactivation_api()
+        self.test_cancelled_lessons_report()
+        self.test_lesson_cancellation_data_integrity()
+        self.test_lesson_cancellation_error_handling()
+        
         # NEW WEBSOCKET REAL-TIME UPDATE TESTS
         print("\n📡 WebSocket Real-time Update Tests:")
         self.test_websocket_connection()
