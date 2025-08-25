@@ -3410,6 +3410,7 @@ class DanceStudioAPITester:
         # Test getting cancelled lessons report
         success, response = self.make_request('GET', 'reports/cancelled-lessons', expected_status=200)
         
+        total_count = 0
         if success:
             cancelled_lessons = response.get('cancelled_lessons', [])
             total_count = response.get('total_count', 0)
