@@ -2466,6 +2466,22 @@ const MainApp = () => {
             onChange={(e) => setSelectedDate(new Date(e.target.value))}
             className="date-picker"
           />
+          
+          {/* Performance Controls */}
+          <div className="performance-controls">
+            <button 
+              onClick={handleFastRefresh}
+              className="btn btn-outline btn-sm performance-btn"
+              title="Force refresh for immediate updates"
+            >
+              ⚡ Fast Refresh
+            </button>
+            <div className="performance-status">
+              <span className="status-dot online"></span>
+              <span className="status-text">Real-time Updates</span>
+            </div>
+          </div>
+          
           <Button variant="outline" onClick={logout}>
             Sign Out
           </Button>
