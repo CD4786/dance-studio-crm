@@ -896,7 +896,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     try {
       await axios.put(`${API}/lessons/${lessonId}/reactivate`);
       console.log('✅ Lesson reactivated successfully');
-      handleFastRefresh(); // Trigger fast refresh for immediate update
+      onRefresh(); // Trigger refresh for immediate update
     } catch (error) {
       console.error('❌ Failed to reactivate lesson:', error);
       alert('Failed to reactivate lesson: ' + (error.response?.data?.detail || error.message));
