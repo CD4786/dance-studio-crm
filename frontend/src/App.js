@@ -2246,11 +2246,12 @@ const MainApp = () => {
   }, [user]);
 
   const setupPollingFallback = () => {
-    console.log('🔄 Setting up polling fallback for real-time updates');
-    // Set up periodic refresh as fallback
+    console.log('🔄 Setting up FAST polling for better performance');
+    // REDUCED polling interval from 30s to 10s for faster updates
     const interval = setInterval(() => {
+      console.log('⚡ Auto-refresh triggered (every 10s)');
       setRefreshKey(prev => prev + 1);
-    }, 30000); // Refresh every 30 seconds
+    }, 10000); // Refresh every 10 seconds (was 30)
 
     return () => clearInterval(interval);
   };
