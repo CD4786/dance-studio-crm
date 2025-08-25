@@ -2404,6 +2404,163 @@ async def get_upcoming_lessons_for_reminders():
     
     return enriched_lessons
 
+# ===== LESSON CANCELLATION ENDPOINTS =====
+
+@app.put("/api/lessons/{lesson_id}/cancel")
+async def cancel_lesson(lesson_id: str, cancellation: LessonCancellationRequest, current_user: User = Depends(get_current_user)):
+    """Cancel a lesson (changes status to cancelled but keeps the record)"""
+    try:
+        # Find the lesson
+        lesson = await db.lessons.find_one({"id": lesson_id})
+        if not lesson:
+            raise HTTPException(status_code=404, detail="Lesson not found")
+        
+        # Update lesson with cancellation info
+        update_data = {
+            "status": LessonStatus.CANCELLED,
+            "is_cancelled": True,
+            "cancellation_reason": cancellation.reason,
+            "cancelled_at": datetime.utcnow(),
+            "cancelled_by": current_user.username,
+            "modified_at": datetime.utcnow(),
+            "modified_by": current_user.username
+        }
+        
+        await db.lessons.update_one(
+            {"id": lesson_id},
+            {"$set": update_data}
+        )
+        
+        # Send notification if requested
+        if cancellation.notify_student:
+            try:
+                # Get student info
+                student = await db.students.find_one({"id": lesson["student_id"]})
+                if student and (student.get("email") or student.get("parent_email")):
+                    from email_service import email_service
+                    recipient_email = student.get("parent_email") or student.get("email")
+                    recipient_name = student.get("parent_name") or student.get("name")
+                    
+                    await email_service.send_class_update(
+                        student_email=recipient_email,
+                        student_name=recipient_name,
+                        update_message=f"Your lesson has been cancelled. Reason: {cancellation.reason or 'No reason provided'}",
+                        lesson_details=lesson
+                    )
+            except Exception as e:
+                print(f"Failed to send cancellation notification: {e}")
+        
+        # Broadcast real-time update
+        await manager.broadcast_update("lesson_cancelled", {
+            "lesson_id": lesson_id,
+            "student_name": lesson.get("student_name", "Unknown"),
+            "cancelled_by": current_user.username,
+            "reason": cancellation.reason
+        }, current_user.id, current_user.name)
+        
+        return {"message": "Lesson cancelled successfully", "lesson_id": lesson_id}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to cancel lesson: {str(e)}")
+
+@app.put("/api/lessons/{lesson_id}/reactivate")
+async def reactivate_lesson(lesson_id: str, current_user: User = Depends(get_current_user)):
+    """Reactivate a cancelled lesson"""
+    try:
+        # Find the lesson
+        lesson = await db.lessons.find_one({"id": lesson_id})
+        if not lesson:
+            raise HTTPException(status_code=404, detail="Lesson not found")
+        
+        if lesson.get("status") != LessonStatus.CANCELLED:
+            raise HTTPException(status_code=400, detail="Lesson is not cancelled")
+        
+        # Update lesson to reactivate
+        update_data = {
+            "status": LessonStatus.ACTIVE,
+            "is_cancelled": False,
+            "cancellation_reason": None,
+            "cancelled_at": None,
+            "cancelled_by": None,
+            "modified_at": datetime.utcnow(),
+            "modified_by": current_user.username
+        }
+        
+        await db.lessons.update_one(
+            {"id": lesson_id},
+            {"$set": update_data}
+        )
+        
+        return {"message": "Lesson reactivated successfully", "lesson_id": lesson_id}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reactivate lesson: {str(e)}")
+
+@app.get("/api/reports/cancelled-lessons")
+async def get_cancelled_lessons_report(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    student_id: Optional[str] = None,
+    teacher_id: Optional[str] = None,
+    current_user: User = Depends(get_current_user)
+):
+    """Get cancelled lessons report with filtering options"""
+    try:
+        # Build query
+        query = {"status": LessonStatus.CANCELLED}
+        
+        # Date range filter
+        if start_date or end_date:
+            date_filter = {}
+            if start_date:
+                date_filter["$gte"] = datetime.fromisoformat(start_date)
+            if end_date:
+                date_filter["$lte"] = datetime.fromisoformat(end_date)
+            query["start_datetime"] = date_filter
+        
+        # Student filter
+        if student_id:
+            query["student_id"] = student_id
+        
+        # Teacher filter
+        if teacher_id:
+            query["teacher_ids"] = {"$in": [teacher_id]}
+        
+        # Get cancelled lessons
+        cancelled_lessons = await db.lessons.find(query).sort("cancelled_at", -1).to_list(1000)
+        
+        # Enrich with student and teacher names
+        for lesson in cancelled_lessons:
+            # Get student name
+            student = await db.students.find_one({"id": lesson["student_id"]})
+            lesson["student_name"] = student["name"] if student else "Unknown Student"
+            
+            # Get teacher names
+            teacher_names = []
+            for teacher_id in lesson.get("teacher_ids", []):
+                teacher = await db.teachers.find_one({"id": teacher_id})
+                if teacher:
+                    teacher_names.append(teacher["name"])
+            lesson["teacher_names"] = teacher_names
+        
+        return {
+            "cancelled_lessons": cancelled_lessons,
+            "total_count": len(cancelled_lessons),
+            "filters_applied": {
+                "start_date": start_date,
+                "end_date": end_date,
+                "student_id": student_id,
+                "teacher_id": teacher_id
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get cancelled lessons report: {str(e)}")
+
 # ===== EMAIL NOTIFICATION ENDPOINTS =====
 
 @api_router.post("/notifications/test-email")
