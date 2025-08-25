@@ -2500,7 +2500,7 @@ async def reactivate_lesson(lesson_id: str, current_user: User = Depends(get_cur
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to reactivate lesson: {str(e)}")
 
-@app.get("/api/reports/cancelled-lessons")
+@api_router.get("/reports/cancelled-lessons")
 async def get_cancelled_lessons_report(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
