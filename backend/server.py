@@ -165,6 +165,12 @@ class BookingType(str, Enum):
     TRAINING = "training"
     PARTY = "party"
 
+class LessonStatus(str, Enum):
+    ACTIVE = "active"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+    NO_SHOW = "no_show"
+
 # Models
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
