@@ -411,15 +411,15 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Optimized fetch function with caching
+  // Optimized fetch function with shorter cache time for faster updates
   const fetchWithCache = useCallback(async (url, cacheKey, forceRefresh = false) => {
     setError(null);
     
     // Return cached data if available and not forcing refresh
     if (!forceRefresh && dataCache.has(cacheKey)) {
       const cached = dataCache.get(cacheKey);
-      // Check if cache is still valid (5 minutes)
-      if (Date.now() - cached.timestamp < 300000) {
+      // REDUCED cache time to 30 seconds for faster calendar updates
+      if (Date.now() - cached.timestamp < 30000) {
         return cached.data;
       }
     }
@@ -429,15 +429,16 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
       const response = await axios.get(url);
       const data = response.data;
       
-      // Cache the data
+      // Cache the data with timestamp
       setDataCache(prev => new Map(prev).set(cacheKey, {
         data,
         timestamp: Date.now()
       }));
       
+      console.log(`📊 Data fetched and cached: ${cacheKey}`);
       return data;
     } catch (error) {
-      console.error(`Error fetching ${url}:`, error);
+      console.error(`❌ Error fetching ${url}:`, error);
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to fetch data';
       setError(errorMessage);
       throw error;
