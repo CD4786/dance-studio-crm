@@ -1539,6 +1539,8 @@ test_plan:
     - "WebSocket Frontend Integration"
   test_all: false
   test_priority: "high_first"
+  completed_focus:
+    - "Notification Settings Boolean Toggle Debug"
 
 agent_communication:
     - agent: "main"
