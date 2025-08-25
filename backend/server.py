@@ -2531,10 +2531,15 @@ async def get_cancelled_lessons_report(
             query["teacher_ids"] = {"$in": [teacher_id]}
         
         # Get cancelled lessons
-        cancelled_lessons = await db.lessons.find(query).sort("cancelled_at", -1).to_list(1000)
+        cancelled_lessons_raw = await db.lessons.find(query).sort("cancelled_at", -1).to_list(1000)
         
-        # Enrich with student and teacher names
-        for lesson in cancelled_lessons:
+        # Enrich with student and teacher names and convert to serializable format
+        cancelled_lessons = []
+        for lesson in cancelled_lessons_raw:
+            # Remove MongoDB ObjectId field
+            if "_id" in lesson:
+                del lesson["_id"]
+                
             # Get student name
             student = await db.students.find_one({"id": lesson["student_id"]})
             lesson["student_name"] = student["name"] if student else "Unknown Student"
@@ -2546,6 +2551,13 @@ async def get_cancelled_lessons_report(
                 if teacher:
                     teacher_names.append(teacher["name"])
             lesson["teacher_names"] = teacher_names
+            
+            # Convert datetime objects to ISO format strings
+            for field in ["start_datetime", "end_datetime", "cancelled_at", "created_at", "modified_at"]:
+                if field in lesson and lesson[field]:
+                    lesson[field] = lesson[field].isoformat() if hasattr(lesson[field], 'isoformat') else lesson[field]
+            
+            cancelled_lessons.append(lesson)
         
         return {
             "cancelled_lessons": cancelled_lessons,
