@@ -2351,72 +2351,26 @@ const MainApp = () => {
     setRefreshKey(prev => prev + 1);
   };
 
-  // Enhanced refresh with cache invalidation
+  // Enhanced refresh with cache invalidation for immediate updates
   const handleRefreshWithCache = (clearCache = true) => {
     if (clearCache) {
       // Clear calendar cache for current date
-      const year = currentDate.getFullYear();
-      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-      const day = String(currentDate.getDate()).padStart(2, '0');
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
       const cacheKey = `daily-${dateStr}`;
       
-      // Clear from cache
-      if (dataCache.has(cacheKey)) {
+      // Clear from dataCache if it exists
+      if (typeof dataCache !== 'undefined' && dataCache.has && dataCache.has(cacheKey)) {
         dataCache.delete(cacheKey);
         console.log('🔄 Cleared cache for date:', dateStr);
       }
     }
     
+    // Force immediate refresh
     setRefreshKey(prev => prev + 1);
-  };
-
-  // Optimized lesson creation with immediate UI update
-  const handleCreateLessonOptimized = async (lessonData) => {
-    try {
-      console.log('🚀 Creating lesson with immediate UI update...');
-      
-      // Optimistically add to local state first (for immediate UI feedback)
-      const tempLesson = {
-        ...lessonData,
-        id: `temp-${Date.now()}`, // Temporary ID
-        created_at: new Date().toISOString(),
-      };
-      
-      // Update local calendar data immediately
-      setCalendarData(prev => ({
-        ...prev,
-        lessons: [...(prev.lessons || []), tempLesson]
-      }));
-      
-      // Create lesson on backend
-      const response = await axios.post(`${API}/lessons`, lessonData);
-      const newLesson = response.data;
-      
-      // Replace temporary lesson with actual lesson from backend
-      setCalendarData(prev => ({
-        ...prev,
-        lessons: prev.lessons.map(lesson => 
-          lesson.id === tempLesson.id ? newLesson : lesson
-        )
-      }));
-      
-      // Clear cache and trigger refresh for other components
-      handleRefreshWithCache(true);
-      
-      console.log('✅ Lesson created successfully with immediate UI update');
-      return newLesson;
-    } catch (error) {
-      console.error('❌ Failed to create lesson:', error);
-      
-      // Remove optimistic update on error
-      setCalendarData(prev => ({
-        ...prev,
-        lessons: prev.lessons.filter(lesson => lesson.id !== `temp-${Date.now()}`)
-      }));
-      
-      throw error;
-    }
+    console.log('⚡ Fast refresh triggered for calendar');
   };
 
   const handleNavigation = (view) => {
