@@ -2421,9 +2421,9 @@ async def cancel_lesson(lesson_id: str, cancellation: LessonCancellationRequest,
             "is_cancelled": True,
             "cancellation_reason": cancellation.reason,
             "cancelled_at": datetime.utcnow(),
-            "cancelled_by": current_user.username,
+            "cancelled_by": current_user.name,
             "modified_at": datetime.utcnow(),
-            "modified_by": current_user.username
+            "modified_by": current_user.name
         }
         
         await db.lessons.update_one(
