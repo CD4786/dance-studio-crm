@@ -239,6 +239,10 @@ class PaymentReminderRequest(BaseModel):
 class TestEmailRequest(BaseModel):
     test_email: str
 
+class LessonCancellationRequest(BaseModel):
+    reason: Optional[str] = None
+    notify_student: bool = True
+
 class Settings(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     category: str  # "business", "system", "program", "notification"
