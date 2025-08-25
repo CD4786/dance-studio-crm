@@ -372,12 +372,15 @@ class PrivateLessonResponse(BaseModel):
     start_datetime: datetime
     end_datetime: datetime
     booking_type: BookingType = BookingType.PRIVATE_LESSON  # Added booking type
+    status: LessonStatus = LessonStatus.ACTIVE  # New status field
     notes: Optional[str] = None
     is_attended: bool = False
     enrollment_id: Optional[str] = None
     recurring_series_id: Optional[str] = None
     is_cancelled: bool = False
     cancellation_reason: Optional[str] = None
+    cancelled_at: Optional[datetime] = None
+    cancelled_by: Optional[str] = None
 
 class Payment(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
