@@ -870,7 +870,37 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     return !existingLesson;
   };
 
-  const LessonBlock = ({ lesson, onEdit, onDelete, onAttend, onSendReminder, onCancel, onReactivate }) => (
+  const handleCancelLesson = async (lessonId) => {
+    const reason = prompt("Please provide a reason for cancellation (optional):");
+    const notifyStudent = window.confirm("Send cancellation notification to student/parent?");
+    
+    try {
+      await axios.put(`${API}/lessons/${lessonId}/cancel`, {
+        reason: reason || null,
+        notify_student: notifyStudent
+      });
+      console.log('✅ Lesson cancelled successfully');
+      handleFastRefresh(); // Trigger fast refresh for immediate update
+    } catch (error) {
+      console.error('❌ Failed to cancel lesson:', error);
+      alert('Failed to cancel lesson: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleReactivateLesson = async (lessonId) => {
+    if (!window.confirm("Are you sure you want to reactivate this cancelled lesson?")) {
+      return;
+    }
+    
+    try {
+      await axios.put(`${API}/lessons/${lessonId}/reactivate`);
+      console.log('✅ Lesson reactivated successfully');
+      handleFastRefresh(); // Trigger fast refresh for immediate update
+    } catch (error) {
+      console.error('❌ Failed to reactivate lesson:', error);
+      alert('Failed to reactivate lesson: ' + (error.response?.data?.detail || error.message));
+    }
+  };
     <div 
       className={`lesson-block ${lesson.is_attended ? 'attended' : ''} ${lesson.status === 'cancelled' ? 'cancelled' : ''}`}
       draggable={lesson.status !== 'cancelled'}
