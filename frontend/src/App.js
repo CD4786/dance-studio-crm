@@ -2196,6 +2196,8 @@ const MainApp = () => {
   const [currentView, setCurrentView] = useState('dashboard');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [refreshKey, setRefreshKey] = useState(0);
+  const [realTimeUpdatesEnabled, setRealTimeUpdatesEnabled] = useState(true);
+  const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
   const [notifications, setNotifications] = useState([]);
 
   // WebSocket connection and real-time updates
