@@ -2406,7 +2406,7 @@ async def get_upcoming_lessons_for_reminders():
 
 # ===== LESSON CANCELLATION ENDPOINTS =====
 
-@app.put("/api/lessons/{lesson_id}/cancel")
+@api_router.put("/lessons/{lesson_id}/cancel")
 async def cancel_lesson(lesson_id: str, cancellation: LessonCancellationRequest, current_user: User = Depends(get_current_user)):
     """Cancel a lesson (changes status to cancelled but keeps the record)"""
     try:
