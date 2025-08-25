@@ -293,10 +293,7 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus:
-    - "Lesson Cancellation System Backend API"
-    - "Lesson Cancellation Frontend Implementation"
-    - "CancelledLessonsReport Integration"
+  current_focus: []
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
