@@ -2351,26 +2351,16 @@ const MainApp = () => {
     setRefreshKey(prev => prev + 1);
   };
 
-  // Enhanced refresh with cache invalidation for immediate updates
-  const handleRefreshWithCache = (clearCache = true) => {
-    if (clearCache) {
-      // Clear calendar cache for current date
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(selectedDate.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-      const cacheKey = `daily-${dateStr}`;
-      
-      // Clear from dataCache if it exists
-      if (typeof dataCache !== 'undefined' && dataCache.has && dataCache.has(cacheKey)) {
-        dataCache.delete(cacheKey);
-        console.log('🔄 Cleared cache for date:', dateStr);
-      }
-    }
-    
-    // Force immediate refresh
+  // Enhanced refresh with faster updates for calendar
+  const handleFastRefresh = () => {
+    console.log('⚡ Fast refresh triggered for immediate calendar updates');
     setRefreshKey(prev => prev + 1);
-    console.log('⚡ Fast refresh triggered for calendar');
+    
+    // Also trigger any additional refresh mechanisms
+    if (typeof window !== 'undefined' && window.location.hash.includes('daily')) {
+      // Force calendar components to refresh immediately
+      setTimeout(() => setRefreshKey(prev => prev + 1), 100);
+    }
   };
 
   const handleNavigation = (view) => {
