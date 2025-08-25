@@ -881,7 +881,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         notify_student: notifyStudent
       });
       console.log('✅ Lesson cancelled successfully');
-      handleFastRefresh(); // Trigger fast refresh for immediate update
+      onRefresh(); // Trigger refresh for immediate update
     } catch (error) {
       console.error('❌ Failed to cancel lesson:', error);
       alert('Failed to cancel lesson: ' + (error.response?.data?.detail || error.message));
