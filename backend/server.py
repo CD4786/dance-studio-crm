@@ -2465,7 +2465,7 @@ async def cancel_lesson(lesson_id: str, cancellation: LessonCancellationRequest,
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to cancel lesson: {str(e)}")
 
-@app.put("/api/lessons/{lesson_id}/reactivate")
+@api_router.put("/lessons/{lesson_id}/reactivate")
 async def reactivate_lesson(lesson_id: str, current_user: User = Depends(get_current_user)):
     """Reactivate a cancelled lesson"""
     try:
