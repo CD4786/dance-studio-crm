@@ -330,15 +330,18 @@ class PrivateLesson(BaseModel):
     start_datetime: datetime
     end_datetime: datetime
     booking_type: BookingType = BookingType.PRIVATE_LESSON  # Added booking type
+    status: LessonStatus = LessonStatus.ACTIVE  # New status field
     notes: Optional[str] = None
     is_attended: bool = False
     enrollment_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     # Recurring lesson support
     recurring_series_id: Optional[str] = None
-    # Cancellation support
+    # Cancellation support (keeping for backward compatibility)
     is_cancelled: bool = False
     cancellation_reason: Optional[str] = None
+    cancelled_at: Optional[datetime] = None
+    cancelled_by: Optional[str] = None
     modified_at: datetime = Field(default_factory=datetime.utcnow)
     modified_by: Optional[str] = None
 
