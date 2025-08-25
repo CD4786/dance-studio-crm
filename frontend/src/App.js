@@ -2652,6 +2652,9 @@ const MainApp = () => {
         {currentView === 'enrollments' && (
           <EnrollmentsPage onRefresh={handleRefresh} />
         )}
+        {currentView === 'reports' && (
+          <CancelledLessonsReport />
+        )}
 
         {currentView === 'settings' && (
           <SettingsPage />
