@@ -419,6 +419,18 @@ backend:
           agent: "testing"
           comment: "✅ COMPREHENSIVE SETTINGS DATA TYPES AND VALIDATION TESTING COMPLETED: Successfully tested all data types and validation systems as requested in the review! MAJOR ACHIEVEMENTS: 1) Data Type Support - ✅ String data types working perfectly (theme settings, color hex values, language preferences), ✅ Integer data types working (calendar hours, cancellation policy, max booking days), ✅ Boolean data types working (animations, glassmorphism, auto-confirm settings), ✅ Float data types working perfectly (late_cancellation_fee: 75.50, business rule fees), ✅ Array data types working (operating_hours, available_dance_styles), 2) Data Integrity - ✅ All settings save and retrieve correctly with proper type preservation, ✅ Values maintain exact format after save/retrieve cycles, ✅ No data corruption or type conversion issues, 3) Hex Color Validation - ✅ Valid hex colors accepted (#ffffff, #000000, #ff6b6b, #4ecdc4), ✅ Invalid formats properly rejected (#gggggg, #12345, #1234567, red, invalid), ✅ Requires # prefix and exactly 7 characters, ✅ Case-insensitive validation working, 4) Settings Categories Validation - ✅ All 9 categories properly organized and accessible, ✅ Category-based retrieval working (GET /api/settings/{category}), ✅ Individual setting retrieval working (GET /api/settings/{category}/{key}), 5) Update Validation - ✅ Authentication required for all updates (403 without token), ✅ Proper error handling for non-existent settings (404), ✅ Data type validation during updates, ✅ Updated_at timestamps working correctly. TESTING RESULTS: Settings data types and validation system is fully functional and production-ready with comprehensive type support, robust validation, and excellent data integrity. The new float data type for business rules is working perfectly, and hex color validation provides proper format enforcement. All 46 settings maintain data integrity across save/retrieve operations."
 
+  - task: "Booking Colors Settings Hex Color Validation Issue"
+    implemented: false
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL ISSUE IDENTIFIED: Booking colors settings system lacks hex color validation. DETAILED FINDINGS: 1) Settings Update Endpoint Missing Validation - PUT /api/settings/{category}/{key} endpoint (lines 2743-2831) only validates data types (string, integer, boolean, float, array) but does not validate hex color format for color settings, invalid hex colors like '#gggggg', '#12345', 'red', 'invalid_color' are accepted and saved to database. 2) Inconsistent Validation - Teacher color endpoints (lines 2871-2878) have proper hex color validation with format checking and character validation, settings endpoints completely lack this validation. 3) Root Cause Analysis - The issue is NOT with settings retrieval or persistence (both working correctly), the issue is that invalid hex colors can be stored due to missing validation in the settings update endpoint. 4) Impact Assessment - Frontend may receive invalid hex colors from backend, causing display issues or color application failures, users can accidentally save invalid color values that break the UI. RECOMMENDATION: Add hex color validation to the settings update endpoint specifically for color-related settings (any setting key containing 'color') to match the validation used in teacher color endpoints."
+
   - task: "Gmail SMTP Email Notification System"
     implemented: true
     working: true
