@@ -638,8 +638,8 @@ const SettingsPage = () => {
               ))}
             </div>
             
-            {/* Add Teacher Color Manager to booking settings */}
-            {activeTab === 'booking' && <TeacherColorManager />}
+            {/* Use Booking Colors Manager for booking settings */}
+            {activeTab === 'booking' && <BookingColorsManager />}
             
             {/* Add Programs Manager */}
             {activeTab === 'programs_manager' && <ProgramsManager />}
