@@ -271,7 +271,7 @@ const CancelledLessonsReport = () => {
                 </div>
                 
                 <div className="cell type-cell">
-                  <span className="booking-type">
+                  <span className="booking-type" data-type={lesson.booking_type || 'private_lesson'}>
                     {lesson.booking_type?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Private Lesson'}
                   </span>
                 </div>
