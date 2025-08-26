@@ -625,17 +625,20 @@ const SettingsPage = () => {
               </button>
             </div>
             <div className="settings-grid">
-              {getSettingsByCategory(activeTab).map(setting => (
-                <div key={setting.id} className="setting-item">
-                  <div className="setting-info">
-                    <h3>{setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
-                    <p className="setting-description">{setting.description}</p>
+              {/* Render regular settings for all tabs except booking, programs_manager, and email_center */}
+              {activeTab !== 'booking' && activeTab !== 'programs_manager' && activeTab !== 'email_center' && 
+                getSettingsByCategory(activeTab).map(setting => (
+                  <div key={setting.id} className="setting-item">
+                    <div className="setting-info">
+                      <h3>{setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3>
+                      <p className="setting-description">{setting.description}</p>
+                    </div>
+                    <div className="setting-control">
+                      {renderSettingInput(setting)}
+                    </div>
                   </div>
-                  <div className="setting-control">
-                    {renderSettingInput(setting)}
-                  </div>
-                </div>
-              ))}
+                ))
+              }
             </div>
             
             {/* Use Booking Colors Manager for booking settings */}
