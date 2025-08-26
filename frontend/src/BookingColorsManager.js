@@ -15,9 +15,9 @@ const BookingColorsManager = () => {
     { key: 'meeting_color', label: 'Meeting', description: 'Color for meeting bookings' },
     { key: 'training_color', label: 'Training', description: 'Color for training session bookings' },
     { key: 'party_color', label: 'Party', description: 'Color for party event bookings' },
-    { key: 'confirmed_color', label: 'Confirmed Status', description: 'Color for confirmed bookings' },
-    { key: 'pending_color', label: 'Pending Status', description: 'Color for pending bookings' },
-    { key: 'cancelled_color', label: 'Cancelled Status', description: 'Color for cancelled bookings' }
+    { key: 'confirmed_status_color', label: 'Confirmed Status', description: 'Color for confirmed bookings' },
+    { key: 'pending_status_color', label: 'Pending Status', description: 'Color for pending bookings' },
+    { key: 'cancelled_status_color', label: 'Cancelled Status', description: 'Color for cancelled bookings' }
   ];
 
   useEffect(() => {
