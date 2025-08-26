@@ -2754,6 +2754,21 @@ async def update_setting(category: str, key: str, setting_update: SettingsUpdate
     # Validate and convert the value based on the setting's data type
     converted_value = setting_update.value
     
+    # Add hex color validation for color-related settings
+    if "color" in key.lower() and isinstance(setting_update.value, str):
+        color = setting_update.value.strip()
+        if color:  # Only validate if color is provided (not empty)
+            # Validate hex color format
+            if not color.startswith("#") or len(color) != 7:
+                raise HTTPException(status_code=400, detail="Invalid color format. Use hex format like #3b82f6")
+            
+            # Additional validation: check if all characters after # are valid hex
+            hex_chars = color[1:]
+            if not all(c in '0123456789abcdefABCDEF' for c in hex_chars):
+                raise HTTPException(status_code=400, detail="Invalid hex color. Use valid hex characters (0-9, A-F)")
+            
+            converted_value = color
+    
     try:
         if expected_data_type == "boolean":
             # Handle boolean conversion properly
