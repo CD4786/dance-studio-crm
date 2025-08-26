@@ -27,7 +27,8 @@ const BookingColorsManager = () => {
   const fetchBookingSettings = async () => {
     try {
       const response = await axios.get(`${API}/settings/booking`);
-      setBookingSettings(response.data);
+      console.log('Booking settings response:', response); // Debug log
+      setBookingSettings(response.data || response); // Handle both response.data and direct response
       setLoading(false);
     } catch (error) {
       console.error('Failed to fetch booking settings:', error);
