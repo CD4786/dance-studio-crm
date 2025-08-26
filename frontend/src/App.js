@@ -922,7 +922,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
             })}
           </div>
           {lesson.booking_type && lesson.booking_type !== 'private_lesson' && (
-            <div className="lesson-type">
+            <div className="lesson-type" data-type={lesson.booking_type}>
               {lesson.booking_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </div>
           )}
