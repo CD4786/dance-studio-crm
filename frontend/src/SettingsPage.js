@@ -616,13 +616,16 @@ const SettingsPage = () => {
           <div className="settings-section" data-category={activeTab}>
             <div className="settings-section-header">
               <h2>{tabs.find(tab => tab.id === activeTab)?.name}</h2>
-              <button 
-                onClick={handleSaveAllInCategory}
-                className="btn btn-primary btn-sm"
-                disabled={saving}
-              >
-                Save All in Category
-              </button>
+              {/* Hide Save All button for special tabs that have their own save functionality */}
+              {activeTab !== 'booking' && activeTab !== 'programs_manager' && activeTab !== 'email_center' && (
+                <button 
+                  onClick={handleSaveAllInCategory}
+                  className="btn btn-primary btn-sm"
+                  disabled={saving}
+                >
+                  Save All in Category
+                </button>
+              )}
             </div>
             <div className="settings-grid">
               {/* Render regular settings for all tabs except booking, programs_manager, and email_center */}
