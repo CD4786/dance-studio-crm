@@ -83,13 +83,13 @@ const BookingColorsManager = () => {
       case 'party_color':
         root.style.setProperty('--party-color', color);
         break;
-      case 'confirmed_color':
+      case 'confirmed_status_color':
         root.style.setProperty('--confirmed-color', color);
         break;
-      case 'pending_color':
+      case 'pending_status_color':
         root.style.setProperty('--pending-color', color);
         break;
-      case 'cancelled_color':
+      case 'cancelled_status_color':
         root.style.setProperty('--cancelled-color', color);
         break;
     }
