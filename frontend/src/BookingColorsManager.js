@@ -109,9 +109,9 @@ const BookingColorsManager = () => {
       meeting_color: '#22c55e',         // Green
       training_color: '#f59e0b',        // Orange
       party_color: '#a855f7',           // Purple
-      confirmed_color: '#10b981',       // Emerald
-      pending_color: '#f59e0b',         // Amber
-      cancelled_color: '#ef4444'        // Red
+      confirmed_status_color: '#10b981',       // Emerald
+      pending_status_color: '#f59e0b',         // Amber
+      cancelled_status_color: '#ef4444'        // Red
     };
 
     try {
