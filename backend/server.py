@@ -834,5 +834,106 @@ async def get_student_lessons(student_id: str):
     }).sort("date", -1).to_list(100)
     return lessons
 
+# Lesson cancellation endpoints
+@api_router.post("/lessons/{lesson_id}/cancel")
+async def cancel_lesson(lesson_id: str, cancel_data: dict, current_user: User = Depends(get_current_user)):
+    lesson = await db.lessons.find_one({"id": lesson_id})
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    reason = cancel_data.get("reason", "No reason provided")
+    
+    await db.lessons.update_one(
+        {"id": lesson_id},
+        {"$set": {
+            "status": LessonStatus.CANCELLED,
+            "cancelled_by": current_user.id,
+            "cancellation_reason": reason,
+            "cancelled_at": datetime.utcnow()
+        }}
+    )
+    
+    return {"message": "Lesson cancelled successfully", "lesson_id": lesson_id}
+
+@api_router.post("/lessons/{lesson_id}/reactivate")
+async def reactivate_lesson(lesson_id: str, current_user: User = Depends(get_current_user)):
+    lesson = await db.lessons.find_one({"id": lesson_id})
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    await db.lessons.update_one(
+        {"id": lesson_id},
+        {"$set": {
+            "status": LessonStatus.ACTIVE,
+            "cancelled_by": None,
+            "cancellation_reason": None,
+            "cancelled_at": None
+        }}
+    )
+    
+    return {"message": "Lesson reactivated successfully", "lesson_id": lesson_id}
+
+# Cancelled lessons report
+@api_router.get("/reports/cancelled-lessons")
+async def get_cancelled_lessons_report():
+    cancelled_lessons = await db.lessons.find({
+        "status": LessonStatus.CANCELLED
+    }).sort("cancelled_at", -1).to_list(1000)
+    return cancelled_lessons
+
+# Settings endpoints
+@api_router.get("/settings")
+async def get_all_settings():
+    settings = await db.settings.find().to_list(1000)
+    return settings
+
+@api_router.get("/settings/{category}")
+async def get_settings_by_category(category: str):
+    settings = await db.settings.find({"category": category}).to_list(100)
+    return settings
+
+@api_router.get("/settings/{category}/{key}")
+async def get_specific_setting(category: str, key: str):
+    setting = await db.settings.find_one({"category": category, "key": key})
+    if not setting:
+        raise HTTPException(status_code=404, detail="Setting not found")
+    return setting
+
+@api_router.put("/settings/{category}/{key}")
+async def update_setting(category: str, key: str, update_data: dict, current_user: User = Depends(get_current_user)):
+    value = update_data.get("value")
+    
+    # Validate hex colors for color settings
+    if "color" in key.lower() and isinstance(value, str):
+        if not is_valid_hex_color(value):
+            raise HTTPException(status_code=400, detail="Invalid hex color format")
+    
+    result = await db.settings.update_one(
+        {"category": category, "key": key},
+        {"$set": {"value": value, "updated_at": datetime.utcnow()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Setting not found")
+    
+    return {"message": "Setting updated successfully", "category": category, "key": key, "value": value}
+
+# User management endpoints
+@api_router.get("/users")
+async def get_users():
+    users = await db.users.find().to_list(1000)
+    return [UserResponse(**user) for user in users]
+
+@api_router.delete("/users/{user_id}")
+async def delete_user(user_id: str, current_user: User = Depends(get_current_user)):
+    if current_user.role not in [UserRole.OWNER, UserRole.MANAGER]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": "User deleted successfully"}
+
 # Include the API router in the app
 app.include_router(api_router)
