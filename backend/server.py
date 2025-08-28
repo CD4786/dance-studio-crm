@@ -451,7 +451,7 @@ async def update_teacher_color(teacher_id: str, color_data: dict, current_user: 
 # Student routes
 @api_router.get("/students")
 async def get_students():
-    students = await db.students.find().to_list(1000)
+    students = await db.students.find({}, {"_id": 0}).to_list(1000)
     return students
 
 @api_router.post("/students", response_model=Student)
