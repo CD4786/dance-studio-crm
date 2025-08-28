@@ -83,6 +83,18 @@ class ReconstructedBackendTester:
 
     def test_admin_authentication(self):
         """Test authentication with admin@test.com / admin123 credentials"""
+        # First try to create admin user if it doesn't exist
+        admin_data = {
+            "email": "admin@test.com",
+            "name": "Admin User",
+            "password": "admin123",
+            "role": "owner",
+            "studio_name": "Test Dance Studio"
+        }
+        
+        # Try to register (will fail if user exists, which is fine)
+        self.make_request('POST', 'auth/register', admin_data, expected_status=200)
+        
         login_data = {
             "email": "admin@test.com",
             "password": "admin123"
