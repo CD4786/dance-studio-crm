@@ -971,12 +971,12 @@ try:
         # Serve static files from React build
         app.mount("/static", StaticFiles(directory=frontend_build_path / "static"), name="static")
         
-        # Serve React app for all non-API routes
+        # Serve React app for all non-API routes (must be after API router inclusion)
         @app.get("/{path:path}")
         async def serve_react_app(path: str):
-            # If it's an API route, let it be handled by the API router
-            if path.startswith("api/"):
-                raise HTTPException(status_code=404, detail="API endpoint not found")
+            # Skip API routes, health, docs, etc.
+            if path.startswith(("api/", "health", "docs", "redoc", "openapi.json")):
+                raise HTTPException(status_code=404, detail=f"Path not found: {path}")
             
             # For all other routes, serve the React index.html
             index_file = frontend_build_path / "index.html"
