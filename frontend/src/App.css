@@ -4445,6 +4445,160 @@ p, span, div, label, input, textarea, select {
   text-align: center;
 }
 
+/* Lesson History Styles */
+.toggle-history-btn {
+  width: 100%;
+  background: rgba(168, 85, 247, 0.1);
+  color: var(--accent-primary);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.toggle-history-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+}
+
+.lesson-history-list {
+  margin-top: 0.75rem;
+}
+
+.history-summary {
+  display: flex;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.lesson-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+}
+
+.lesson-history-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.lesson-history-item.past {
+  border-left: 3px solid var(--text-muted);
+}
+
+.lesson-history-item.future {
+  border-left: 3px solid var(--accent-primary);
+}
+
+.lesson-history-item.attended {
+  border-left: 3px solid #22c55e;
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.lesson-history-details {
+  flex: 1;
+}
+
+.lesson-date-time {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.lesson-date {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.lesson-time {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.lesson-info {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.lesson-type {
+  color: var(--accent-primary);
+  font-size: 0.7rem;
+  text-transform: capitalize;
+}
+
+.lesson-teacher {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+}
+
+.lesson-history-actions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.navigate-btn, .attend-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.7rem;
+}
+
+.navigate-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+  transform: scale(1.1);
+}
+
+.attend-btn:hover {
+  background: rgba(34, 197, 94, 0.2);
+  transform: scale(1.1);
+}
+
+.attended-badge, .cancelled-badge {
+  font-size: 0.8rem;
+  padding: 0.1rem;
+}
+
+.attended-badge {
+  color: #22c55e;
+}
+
+.cancelled-badge {
+  color: #ef4444;
+}
+
+.more-lessons-notice {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  padding: 0.5rem;
+  font-style: italic;
+}
+
 .enrollment-financial {
   display: flex;
   flex-direction: column;
