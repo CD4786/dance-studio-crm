@@ -575,9 +575,10 @@ class ReconstructedBackendTester:
         
         success, response = self.make_request('POST', 'lessons', lesson_data, 200)
         
+        status = "unknown"
         if success:
             lesson_id = response.get('id')
-            status = response.get('status')
+            status = response.get('status', 'unknown')
             booking_type = response.get('booking_type')
             
             # Verify default status is 'active'
