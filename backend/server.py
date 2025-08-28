@@ -377,6 +377,23 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str = None):
     except WebSocketDisconnect:
         manager.disconnect(websocket, user_id)
 
+# API root endpoint
+@api_router.get("/")
+async def api_root():
+    return {
+        "message": "Dance Studio CRM API", 
+        "version": "1.0.0",
+        "endpoints": [
+            "GET /api/health - Health check",
+            "POST /api/auth/login - Authentication",
+            "GET /api/students - List students",
+            "GET /api/teachers - List teachers",
+            "GET /api/enrollments - List enrollments",
+            "GET /api/lessons - List lessons",
+            "GET /api/settings - List settings"
+        ]
+    }
+
 # Health check
 @api_router.get("/health")
 async def health_check():
