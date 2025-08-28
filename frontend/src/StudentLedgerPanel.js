@@ -1,3 +1,4 @@
+// Enhanced StudentLedgerPanel with real-time synchronization
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -29,6 +30,7 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
     total_paid: '0.00'
   });
 
+  // Auto-refresh when panel opens or student changes
   useEffect(() => {
     if (isOpen && student) {
       fetchLedgerData();
@@ -36,16 +38,37 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
     }
   }, [isOpen, student]);
 
+  // Listen for real-time updates via custom event
+  useEffect(() => {
+    const handleRealTimeUpdate = (event) => {
+      const { type, data } = event.detail;
+      
+      // Refresh ledger data if this student is affected
+      if (student && data.student_id === student.id) {
+        console.log(`Real-time update for ${student.name}: ${type}`);
+        fetchLedgerData();
+        
+        if (showLessonHistory) {
+          fetchLessonHistory();
+        }
+      }
+    };
+
+    window.addEventListener('ledger-update', handleRealTimeUpdate);
+    
+    return () => {
+      window.removeEventListener('ledger-update', handleRealTimeUpdate);
+    };
+  }, [student, showLessonHistory]);
+
   const fetchLedgerData = async () => {
     try {
       setLoading(true);
       setError('');
-      console.log('Fetching ledger data for student:', student.id);
-      console.log('API URL:', `${API}/students/${student.id}/ledger`);
-      console.log('Axios headers:', axios.defaults.headers);
+      console.log('Fetching comprehensive ledger data for student:', student.id);
       
       const response = await axios.get(`${API}/students/${student.id}/ledger`);
-      console.log('Ledger data received:', response.data);
+      console.log('Comprehensive ledger data received:', response.data);
       setLedgerData(response.data);
     } catch (error) {
       console.error('Failed to fetch ledger data:', error);
@@ -72,93 +95,8 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
       setPrograms(response.data || []);
     } catch (error) {
       console.error('Failed to fetch programs:', error);
-      // Don't set error state for programs failure, just log it
       setPrograms([]);
     }
-  };
-
-  const handleAddPayment = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API}/payments`, {
-        student_id: student.id,
-        enrollment_id: paymentData.enrollment_id || null,
-        amount: parseFloat(paymentData.amount),
-        payment_method: paymentData.payment_method,
-        notes: paymentData.notes
-      });
-      
-      setShowAddPayment(false);
-      setPaymentData({ amount: '', payment_method: 'cash', enrollment_id: '', notes: '' });
-      await fetchLedgerData();
-      
-      if (onLedgerUpdate) {
-        onLedgerUpdate(student.id);
-      }
-      
-      alert('Payment added successfully!');
-    } catch (error) {
-      console.error('Failed to add payment:', error);
-      alert('Failed to add payment: ' + (error.response?.data?.detail || error.message));
-    }
-  };
-
-  const handleAddEnrollment = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(`${API}/enrollments`, {
-        student_id: student.id,
-        program_name: enrollmentData.program_name,
-        total_lessons: parseInt(enrollmentData.total_lessons),
-        price_per_lesson: parseFloat(enrollmentData.price_per_lesson),
-        initial_payment: parseFloat(enrollmentData.initial_payment),
-        total_paid: parseFloat(enrollmentData.total_paid)  // For backward compatibility
-      });
-      
-      setShowAddEnrollment(false);
-      setEnrollmentData({ 
-        program_name: '', 
-        total_lessons: '', 
-        price_per_lesson: '50.00',
-        initial_payment: '0.00', 
-        total_paid: '0.00' 
-      });
-      await fetchLedgerData();
-      
-      if (onLedgerUpdate) {
-        onLedgerUpdate(student.id);
-      }
-      
-      alert('Enrollment added successfully!');
-    } catch (error) {
-      console.error('Failed to add enrollment:', error);
-      alert('Failed to add enrollment: ' + (error.response?.data?.detail || error.message));
-    }
-  };
-
-  const handleDeletePayment = async (paymentId) => {
-    if (window.confirm('Are you sure you want to delete this payment?')) {
-      try {
-        await axios.delete(`${API}/payments/${paymentId}`);
-        await fetchLedgerData();
-        
-        if (onLedgerUpdate) {
-          onLedgerUpdate(student.id);
-        }
-        
-        alert('Payment deleted successfully!');
-      } catch (error) {
-        console.error('Failed to delete payment:', error);
-        alert('Failed to delete payment');
-      }
-    }
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount || 0);
   };
 
   const fetchLessonHistory = async () => {
@@ -170,15 +108,98 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
     }
   };
 
-  const handleMarkLessonAttended = async (lessonId, lessonDate) => {
+  const handleAddPayment = async (e) => {
+    e.preventDefault();
     try {
-      await axios.post(`${API}/lessons/${lessonId}/attend`);
-      await fetchLessonHistory(); // Refresh lesson history
-      await fetchLedgerData(); // Refresh ledger data for updated credits
+      const paymentResponse = await axios.post(`${API}/payments`, {
+        student_id: student.id,
+        enrollment_id: paymentData.enrollment_id || null,
+        amount: parseFloat(paymentData.amount),
+        payment_method: paymentData.payment_method,
+        notes: paymentData.notes
+      });
+      
+      setShowAddPayment(false);
+      setPaymentData({ amount: '', payment_method: 'cash', enrollment_id: '', notes: '' });
+      
+      // Real-time update will be handled via WebSocket, but also refresh locally
+      await fetchLedgerData();
       
       if (onLedgerUpdate) {
         onLedgerUpdate(student.id);
       }
+      
+      // Dispatch custom event for other components
+      window.dispatchEvent(new CustomEvent('ledger-update', {
+        detail: { type: 'payment_created', data: { student_id: student.id } }
+      }));
+      
+      alert(`Payment of $${paymentData.amount} added successfully! Lesson credits updated.`);
+    } catch (error) {
+      console.error('Failed to add payment:', error);
+      alert('Failed to add payment: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleAddEnrollment = async (e) => {
+    e.preventDefault();
+    try {
+      const enrollmentResponse = await axios.post(`${API}/enrollments`, {
+        student_id: student.id,
+        program_name: enrollmentData.program_name,
+        total_lessons: parseInt(enrollmentData.total_lessons),
+        price_per_lesson: parseFloat(enrollmentData.price_per_lesson),
+        initial_payment: parseFloat(enrollmentData.initial_payment),
+        total_paid: parseFloat(enrollmentData.total_paid)
+      });
+      
+      setShowAddEnrollment(false);
+      setEnrollmentData({ 
+        program_name: '', 
+        total_lessons: '', 
+        price_per_lesson: '50.00',
+        initial_payment: '0.00', 
+        total_paid: '0.00' 
+      });
+      
+      // Real-time update will be handled via WebSocket, but also refresh locally
+      await fetchLedgerData();
+      
+      if (onLedgerUpdate) {
+        onLedgerUpdate(student.id);
+      }
+      
+      // Dispatch custom event for other components
+      window.dispatchEvent(new CustomEvent('ledger-update', {
+        detail: { type: 'enrollment_created', data: { student_id: student.id } }
+      }));
+      
+      const totalCost = parseInt(enrollmentData.total_lessons) * parseFloat(enrollmentData.price_per_lesson);
+      const availableLessons = Math.floor(parseFloat(enrollmentData.initial_payment) / parseFloat(enrollmentData.price_per_lesson));
+      
+      alert(`Enrollment created successfully!\n\nProgram: ${enrollmentData.program_name}\nTotal Cost: $${totalCost}\nLessons Available: ${availableLessons}`);
+    } catch (error) {
+      console.error('Failed to add enrollment:', error);
+      alert('Failed to add enrollment: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleMarkLessonAttended = async (lessonId, lessonDate) => {
+    try {
+      await axios.post(`${API}/lessons/${lessonId}/attend`);
+      
+      // Refresh both lesson history and ledger data
+      await fetchLessonHistory();
+      await fetchLedgerData();
+      
+      if (onLedgerUpdate) {
+        onLedgerUpdate(student.id);
+      }
+      
+      // Dispatch custom event
+      window.dispatchEvent(new CustomEvent('ledger-update', {
+        detail: { type: 'lesson_attended', data: { student_id: student.id } }
+      }));
       
       alert('Lesson marked as attended! Available lessons updated.');
     } catch (error) {
@@ -188,33 +209,27 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
   };
 
   const handleNavigateToLesson = (lessonDate) => {
-    // This will be handled by the parent component
     if (onNavigateToDate) {
       onNavigateToDate(lessonDate);
       onClose(); // Close the panel after navigation
     }
   };
 
-  const calculateBalance = () => {
-    if (!ledgerData) return 0;
-    
-    const totalPaid = ledgerData.total_paid || 0;
-    const enrollments = ledgerData.enrollments || [];
-    const totalEnrollmentCost = enrollments.reduce((sum, enrollment) => {
-      // Assuming each lesson costs $50 (you can adjust this)
-      return sum + (enrollment.total_lessons * 50);
-    }, 0);
-    
-    return totalPaid - totalEnrollmentCost;
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount || 0);
   };
 
   const getAvailableLessons = () => {
-    if (!ledgerData || !ledgerData.enrollments) return 0;
-    
-    // Sum up all available lessons from active enrollments
-    return ledgerData.enrollments.reduce((total, enrollment) => {
-      return total + (enrollment.lessons_available || 0);
-    }, 0);
+    if (!ledgerData || !ledgerData.summary) return 0;
+    return ledgerData.summary.total_lessons_available || 0;
+  };
+
+  const calculateBalance = () => {
+    if (!ledgerData || !ledgerData.summary) return 0;
+    return ledgerData.summary.total_balance_remaining || 0;
   };
 
   if (!isOpen) return null;
@@ -239,12 +254,12 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
 
       <div className="panel-content">
         {loading ? (
-          <div className="loading-state">Loading...</div>
+          <div className="loading-state">Loading comprehensive data...</div>
         ) : error ? (
           <div className="error-state">{error}</div>
         ) : (
           <>
-            {/* Quick Summary */}
+            {/* Enhanced Summary with Real-time Data */}
             <div className="quick-summary">
               <div className="summary-item">
                 <span className="label">Balance:</span>
@@ -257,6 +272,20 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
                 <span className="value">{getAvailableLessons()}</span>
               </div>
             </div>
+
+            {/* Comprehensive Stats Display */}
+            {ledgerData?.summary && (
+              <div className="comprehensive-stats">
+                <div className="stat-row">
+                  <span>📚 Total Enrolled: {ledgerData.summary.total_enrolled_lessons}</span>
+                  <span>✅ Lessons Taken: {ledgerData.summary.total_lessons_taken}</span>
+                </div>
+                <div className="stat-row">
+                  <span>💰 Total Paid: {formatCurrency(ledgerData.summary.total_amount_paid)}</span>
+                  <span>🎯 Grand Total: {formatCurrency(ledgerData.summary.total_grand_total)}</span>
+                </div>
+              </div>
+            )}
 
             {/* Quick Actions */}
             <div className="quick-actions">
@@ -274,15 +303,15 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
               </button>
             </div>
 
-            {/* Recent Activity */}
+            {/* Enhanced Activity Display */}
             <div className="recent-activity">
               <h4>Recent Activity</h4>
               
-              {/* Show enrollments */}
+              {/* Show enrollments with enhanced credit info */}
               {ledgerData?.enrollments?.length > 0 && (
                 <div className="activity-section">
-                  <h5>📚 Enrollments</h5>
-                  {ledgerData.enrollments.slice(0, 2).map((enrollment, index) => {
+                  <h5>📚 Active Enrollments</h5>
+                  {ledgerData.enrollments.filter(e => e.is_active).slice(0, 3).map((enrollment, index) => {
                     const grandTotal = (enrollment.total_lessons || 0) * (enrollment.price_per_lesson || 50);
                     const amountPaid = enrollment.amount_paid || 0;
                     const balanceRemaining = grandTotal - amountPaid;
@@ -314,7 +343,7 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
                                 setPaymentData({
                                   ...paymentData,
                                   enrollment_id: enrollment.id,
-                                  amount: balanceRemaining.toString()
+                                  amount: balanceRemaining.toFixed(2)
                                 });
                                 setShowAddPayment(true);
                               }}
@@ -331,7 +360,7 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
                 </div>
               )}
 
-              {/* Show payments */}
+              {/* Show recent payments */}
               {ledgerData?.payments?.length > 0 && (
                 <div className="activity-section">
                   <h5>💳 Recent Payments</h5>
@@ -345,13 +374,6 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
                       </div>
                       <div className="activity-actions">
                         <span className="activity-amount positive">+{formatCurrency(payment.amount)}</span>
-                        <button 
-                          onClick={() => handleDeletePayment(payment.id)}
-                          className="delete-btn"
-                          title="Delete Payment"
-                        >
-                          ×
-                        </button>
                       </div>
                     </div>
                   ))}
@@ -447,7 +469,7 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
         )}
       </div>
 
-      {/* Add Payment Form */}
+      {/* Enhanced Payment Form */}
       {showAddPayment && (
         <div className="floating-form">
           <div className="form-header">
@@ -476,8 +498,8 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
               value={paymentData.enrollment_id}
               onChange={(e) => setPaymentData({...paymentData, enrollment_id: e.target.value})}
             >
-              <option value="">General Payment</option>
-              {ledgerData?.enrollments?.map((enrollment) => {
+              <option value="">General Payment (Auto-Apply)</option>
+              {ledgerData?.enrollments?.filter(e => e.is_active).map((enrollment) => {
                 const grandTotal = (enrollment.total_lessons || 0) * (enrollment.price_per_lesson || 50);
                 const amountPaid = enrollment.amount_paid || 0;
                 const balance = grandTotal - amountPaid;
@@ -496,14 +518,14 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
               placeholder="Notes (optional)"
             />
             <div className="form-actions">
-              <button type="submit" className="submit-btn">Add</button>
+              <button type="submit" className="submit-btn">Add Payment</button>
               <button type="button" onClick={() => setShowAddPayment(false)} className="cancel-btn">Cancel</button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Add Enrollment Form */}
+      {/* Enhanced Enrollment Form */}
       {showAddEnrollment && (
         <div className="floating-form">
           <div className="form-header">
@@ -545,11 +567,18 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
               type="number"
               step="0.01"
               value={enrollmentData.initial_payment}
-              onChange={(e) => setEnrollmentData({...enrollmentData, initial_payment: e.target.value, total_paid: e.target.value})}
+              onChange={(e) => setEnrollmentData({
+                ...enrollmentData, 
+                initial_payment: e.target.value,
+                total_paid: e.target.value
+              })}
               placeholder="Initial payment ($)"
             />
+            <div className="lessons-available-preview">
+              <span>Lessons Available: {Math.floor(parseFloat(enrollmentData.initial_payment || 0) / parseFloat(enrollmentData.price_per_lesson || 1))}</span>
+            </div>
             <div className="form-actions">
-              <button type="submit" className="submit-btn">Add</button>
+              <button type="submit" className="submit-btn">Add Enrollment</button>
               <button type="button" onClick={() => setShowAddEnrollment(false)} className="cancel-btn">Cancel</button>
             </div>
           </form>
