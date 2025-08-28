@@ -60,6 +60,32 @@ const EnrollmentsPage = ({ onRefresh }) => {
     }
   };
 
+  // Helper function to get student name
+  const getStudentName = (studentId) => {
+    const student = students.find(s => s.id === studentId);
+    return student ? student.name : 'Unknown Student';
+  };
+
+  // Helper function to calculate enrollment totals
+  const calculateEnrollmentTotals = (enrollment) => {
+    const grandTotal = (enrollment.total_lessons || 0) * (enrollment.price_per_lesson || 50);
+    const amountPaid = enrollment.amount_paid || 0;
+    const balanceRemaining = grandTotal - amountPaid;
+    
+    return {
+      grandTotal,
+      amountPaid,
+      balanceRemaining
+    };
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount || 0);
+  };
+
   const handleAddEnrollment = async (e) => {
     e.preventDefault();
     try {
