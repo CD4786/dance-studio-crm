@@ -1331,6 +1331,19 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         teachers={teachers}
         selectedSlot={selectedTimeSlot}
       />
+
+      {/* Student Ledger Modal */}
+      <StudentLedgerModal
+        student={selectedStudentForLedger}
+        lesson={selectedLessonForLedger}
+        isOpen={showLedgerModal}
+        onClose={() => {
+          setShowLedgerModal(false);
+          setSelectedStudentForLedger(null);
+          setSelectedLessonForLedger(null);
+        }}
+        onLedgerUpdate={handleLedgerUpdate}
+      />
     </div>
   );
 };
