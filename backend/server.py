@@ -273,7 +273,9 @@ class Enrollment(BaseModel):
     student_id: str
     program_name: str  # Changed from package_id to program_name
     total_lessons: int  # Total lessons for this enrollment
-    remaining_lessons: int
+    remaining_lessons: int  # Keep for backward compatibility
+    lessons_taken: int = Field(default=0)  # Number of lessons actually attended
+    lessons_available: int = Field(default=0)  # Lessons available based on payments
     price_per_lesson: float = Field(default=50.0)  # Price per individual lesson
     grand_total: float = Field(default=0.0)  # Total cost of enrollment (calculated)
     amount_paid: float = Field(default=0.0)  # Amount paid towards this enrollment
@@ -284,9 +286,18 @@ class Enrollment(BaseModel):
     is_active: bool = True
     
     def calculate_totals(self):
-        """Calculate grand total and remaining balance"""
+        """Calculate grand total, remaining balance, and available lessons"""
         self.grand_total = self.total_lessons * self.price_per_lesson
         self.balance_remaining = self.grand_total - self.amount_paid
+        
+        # Calculate lessons available based on payments made
+        # Available lessons = (Amount paid / Price per lesson) - Lessons taken
+        lessons_paid_for = int(self.amount_paid / self.price_per_lesson) if self.price_per_lesson > 0 else 0
+        self.lessons_available = max(0, lessons_paid_for - self.lessons_taken)
+        
+        # Update remaining lessons for backward compatibility
+        self.remaining_lessons = max(0, self.total_lessons - self.lessons_taken)
+        
         return self
 
 class EnrollmentCreate(BaseModel):
