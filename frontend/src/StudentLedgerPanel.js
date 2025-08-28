@@ -350,6 +350,23 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
               <option value="credit_card">Credit Card</option>
               <option value="bank_transfer">Bank Transfer</option>
             </select>
+            <select
+              value={paymentData.enrollment_id}
+              onChange={(e) => setPaymentData({...paymentData, enrollment_id: e.target.value})}
+            >
+              <option value="">General Payment</option>
+              {ledgerData?.enrollments?.map((enrollment) => {
+                const grandTotal = (enrollment.total_lessons || 0) * (enrollment.price_per_lesson || 50);
+                const amountPaid = enrollment.amount_paid || 0;
+                const balance = grandTotal - amountPaid;
+                
+                return (
+                  <option key={enrollment.id} value={enrollment.id}>
+                    {enrollment.program_name} - Balance: ${balance.toFixed(2)}
+                  </option>
+                );
+              })}
+            </select>
             <input
               type="text"
               value={paymentData.notes}
