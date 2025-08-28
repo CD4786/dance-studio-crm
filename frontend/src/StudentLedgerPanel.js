@@ -35,9 +35,10 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
     try {
       setLoading(true);
       setError('');
+      console.log('Fetching ledger data for student:', student.id);
       const response = await axios.get(`${API}/students/${student.id}/ledger`);
-      setLedgerData(response.data);
       console.log('Ledger data received:', response.data);
+      setLedgerData(response.data);
     } catch (error) {
       console.error('Failed to fetch ledger data:', error);
       setError('Failed to load student ledger');
@@ -48,10 +49,14 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
 
   const fetchPrograms = async () => {
     try {
+      console.log('Fetching programs...');
       const response = await axios.get(`${API}/programs`);
+      console.log('Programs received:', response.data);
       setPrograms(response.data || []);
     } catch (error) {
       console.error('Failed to fetch programs:', error);
+      // Don't set error state for programs failure, just log it
+      setPrograms([]);
     }
   };
 
