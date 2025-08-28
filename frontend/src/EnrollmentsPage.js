@@ -306,24 +306,32 @@ const EnrollmentsPage = ({ onRefresh }) => {
                   )}
                 </p>
               </div>
+              
+              <div className="enrollment-actions">
+                <button 
+                  onClick={() => openEditModal(enrollment)}
+                  className="btn btn-outline btn-sm"
+                >
+                  Edit
+                </button>
+                <button 
+                  onClick={() => handleDeleteEnrollment(enrollment.id)}
+                  className="btn btn-danger btn-sm"
+                >
+                  Delete
+                </button>
+                {totals.balanceRemaining > 0 && (
+                  <button 
+                    className="btn btn-primary btn-sm balance-btn"
+                    title={`Pay remaining balance: ${formatCurrency(totals.balanceRemaining)}`}
+                  >
+                    💳 Pay Balance
+                  </button>
+                )}
+              </div>
+            </div>
           );
         })}
-            <div className="enrollment-actions">
-              <button 
-                onClick={() => openEditModal(enrollment)}
-                className="btn btn-outline btn-sm"
-              >
-                Edit
-              </button>
-              <button 
-                onClick={() => handleDeleteEnrollment(enrollment.id)}
-                className="btn btn-danger btn-sm"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
 
       {/* Add Enrollment Modal */}
