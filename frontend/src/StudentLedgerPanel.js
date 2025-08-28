@@ -242,17 +242,47 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
               {ledgerData?.enrollments?.length > 0 && (
                 <div className="activity-section">
                   <h5>📚 Enrollments</h5>
-                  {ledgerData.enrollments.slice(0, 2).map((enrollment, index) => (
-                    <div key={index} className="activity-item">
-                      <div className="activity-details">
-                        <span className="activity-name">{enrollment.program_name}</span>
-                        <span className="activity-info">
-                          {enrollment.remaining_lessons || 0} of {enrollment.total_lessons} lessons left
-                        </span>
+                  {ledgerData.enrollments.slice(0, 2).map((enrollment, index) => {
+                    const grandTotal = (enrollment.total_lessons || 0) * (enrollment.price_per_lesson || 50);
+                    const amountPaid = enrollment.amount_paid || 0;
+                    const balanceRemaining = grandTotal - amountPaid;
+                    
+                    return (
+                      <div key={index} className="activity-item enrollment-item">
+                        <div className="activity-details">
+                          <span className="activity-name">{enrollment.program_name}</span>
+                          <span className="activity-info">
+                            {enrollment.remaining_lessons || 0} of {enrollment.total_lessons} lessons left
+                          </span>
+                          <div className="enrollment-financial">
+                            <span className="enrollment-cost">Total: {formatCurrency(grandTotal)}</span>
+                            <span className="enrollment-paid">Paid: {formatCurrency(amountPaid)}</span>
+                            <span className={`enrollment-balance ${balanceRemaining > 0 ? 'negative' : 'positive'}`}>
+                              Balance: {formatCurrency(balanceRemaining)}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="activity-actions">
+                          {balanceRemaining > 0 && (
+                            <button 
+                              onClick={() => {
+                                setPaymentData({
+                                  ...paymentData,
+                                  enrollment_id: enrollment.id,
+                                  amount: balanceRemaining.toString()
+                                });
+                                setShowAddPayment(true);
+                              }}
+                              className="pay-balance-btn"
+                              title="Pay Balance"
+                            >
+                              💳 Pay ${balanceRemaining.toFixed(0)}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <span className="activity-amount">{formatCurrency(enrollment.total_paid)}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
