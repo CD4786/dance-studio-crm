@@ -894,7 +894,7 @@ async def get_settings_by_category(category: str):
 
 @api_router.get("/settings/{category}/{key}")
 async def get_specific_setting(category: str, key: str):
-    setting = await db.settings.find_one({"category": category, "key": key})
+    setting = await db.settings.find_one({"category": category, "key": key}, {"_id": 0})
     if not setting:
         raise HTTPException(status_code=404, detail="Setting not found")
     return setting
