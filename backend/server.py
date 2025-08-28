@@ -274,16 +274,28 @@ class Enrollment(BaseModel):
     program_name: str  # Changed from package_id to program_name
     total_lessons: int  # Total lessons for this enrollment
     remaining_lessons: int
-    total_paid: float
+    price_per_lesson: float = Field(default=50.0)  # Price per individual lesson
+    grand_total: float = Field(default=0.0)  # Total cost of enrollment (calculated)
+    amount_paid: float = Field(default=0.0)  # Amount paid towards this enrollment
+    balance_remaining: float = Field(default=0.0)  # Remaining balance (calculated)
+    total_paid: float  # Keep for backward compatibility - total amount paid overall
     purchase_date: datetime = Field(default_factory=datetime.utcnow)
     expiry_date: Optional[datetime] = None
     is_active: bool = True
+    
+    def calculate_totals(self):
+        """Calculate grand total and remaining balance"""
+        self.grand_total = self.total_lessons * self.price_per_lesson
+        self.balance_remaining = self.grand_total - self.amount_paid
+        return self
 
 class EnrollmentCreate(BaseModel):
     student_id: str
     program_name: str
     total_lessons: int  # Allow custom lesson numbers
-    total_paid: float
+    price_per_lesson: float = Field(default=50.0)  # Price per lesson
+    initial_payment: float = Field(default=0.0)  # Initial payment amount
+    total_paid: float  # Keep for backward compatibility
     expiry_date: Optional[datetime] = None
 
 # Recurring lesson patterns
