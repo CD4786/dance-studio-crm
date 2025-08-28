@@ -348,3 +348,114 @@ def is_valid_hex_color(color: str) -> bool:
         return True
     except ValueError:
         return False
+
+# WebSocket endpoint
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket, user_id: str = None):
+    await manager.connect(websocket, user_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            # Handle incoming WebSocket messages if needed
+            pass
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, user_id)
+
+# Health check
+@api_router.get("/health")
+async def health_check():
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
+# Dashboard stats
+@api_router.get("/dashboard/stats")
+async def get_dashboard_stats():
+    total_teachers = await db.teachers.count_documents({"is_active": True})
+    total_students = await db.students.count_documents({})
+    active_enrollments = await db.enrollments.count_documents({"is_active": True})
+    
+    # Calculate estimated revenue from active enrollments
+    enrollments = await db.enrollments.find({"is_active": True}).to_list(1000)
+    estimated_revenue = sum(e.get("grand_total", 0) for e in enrollments)
+    
+    return {
+        "total_teachers": total_teachers,
+        "total_students": total_students, 
+        "active_enrollments": active_enrollments,
+        "estimated_monthly_revenue": estimated_revenue
+    }
+
+# Authentication routes
+@api_router.post("/auth/register", response_model=UserResponse)
+async def register(user_data: UserCreate):
+    existing_user = await db.users.find_one({"email": user_data.email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    hashed_password = hash_password(user_data.password)
+    user = User(
+        email=user_data.email,
+        name=user_data.name,
+        role=user_data.role,
+        hashed_password=hashed_password,
+        studio_name=user_data.studio_name
+    )
+    
+    await db.users.insert_one(user.dict())
+    return UserResponse(**user.dict())
+
+@api_router.post("/auth/login")
+async def login(login_data: UserLogin):
+    user = await db.users.find_one({"email": login_data.email})
+    if not user or not verify_password(login_data.password, user["hashed_password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    access_token = create_access_token({"user_id": user["id"], "role": user["role"]})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": UserResponse(**user)
+    }
+
+# Teacher routes
+@api_router.get("/teachers")
+async def get_teachers():
+    teachers = await db.teachers.find({"is_active": True}).to_list(1000)
+    return teachers
+
+@api_router.post("/teachers", response_model=Teacher)
+async def create_teacher(teacher_data: TeacherCreate, current_user: User = Depends(get_current_user)):
+    teacher = Teacher(**teacher_data.dict())
+    await db.teachers.insert_one(teacher.dict())
+    return teacher
+
+@api_router.get("/teachers/{teacher_id}/color")
+async def get_teacher_color(teacher_id: str):
+    teacher = await db.teachers.find_one({"id": teacher_id})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    return {"teacher_id": teacher_id, "color": teacher.get("color", "#3b82f6")}
+
+@api_router.put("/teachers/{teacher_id}/color")
+async def update_teacher_color(teacher_id: str, color_data: dict, current_user: User = Depends(get_current_user)):
+    teacher = await db.teachers.find_one({"id": teacher_id})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    color = color_data.get("color", "")
+    if not is_valid_hex_color(color):
+        raise HTTPException(status_code=400, detail="Invalid hex color format")
+    
+    await db.teachers.update_one({"id": teacher_id}, {"$set": {"color": color}})
+    return {"message": "Color updated successfully", "color": color}
+
+# Student routes
+@api_router.get("/students")
+async def get_students():
+    students = await db.students.find().to_list(1000)
+    return students
+
+@api_router.post("/students", response_model=Student)
+async def create_student(student_data: StudentCreate, current_user: User = Depends(get_current_user)):
+    student = Student(**student_data.dict())
+    await db.students.insert_one(student.dict())
+    return student
