@@ -372,6 +372,67 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
                 >
                   {showLessonHistory ? '📖 Hide History' : '📋 View All Lessons'}
                 </button>
+                
+                {showLessonHistory && lessonHistory && (
+                  <div className="lesson-history-list">
+                    <div className="history-summary">
+                      <span>Total: {lessonHistory.total_lessons}</span>
+                      <span>Attended: {lessonHistory.attended_lessons}</span>
+                      <span>Upcoming: {lessonHistory.upcoming_lessons}</span>
+                    </div>
+                    
+                    {lessonHistory.lessons.slice(0, 10).map((historyLesson, index) => (
+                      <div key={index} className={`lesson-history-item ${historyLesson.is_past ? 'past' : 'future'} ${historyLesson.is_attended ? 'attended' : ''}`}>
+                        <div className="lesson-history-details">
+                          <div className="lesson-date-time">
+                            <span className="lesson-date">{new Date(historyLesson.start_datetime).toLocaleDateString()}</span>
+                            <span className="lesson-time">{new Date(historyLesson.start_datetime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                          </div>
+                          <div className="lesson-info">
+                            <span className="lesson-type">{historyLesson.booking_type?.replace('_', ' ')}</span>
+                            {historyLesson.teacher_names?.length > 0 && (
+                              <span className="lesson-teacher">{historyLesson.teacher_names.join(', ')}</span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="lesson-history-actions">
+                          <button 
+                            onClick={() => handleNavigateToLesson(historyLesson.date_only)}
+                            className="navigate-btn"
+                            title="Go to this day"
+                          >
+                            📅
+                          </button>
+                          
+                          {historyLesson.is_past && !historyLesson.is_attended && historyLesson.status !== 'cancelled' && (
+                            <button 
+                              onClick={() => handleMarkLessonAttended(historyLesson.id, historyLesson.date_only)}
+                              className="attend-btn"
+                              title="Mark as attended"
+                            >
+                              ✅
+                            </button>
+                          )}
+                          
+                          {historyLesson.is_attended && (
+                            <span className="attended-badge" title="Attended">✅</span>
+                          )}
+                          
+                          {historyLesson.status === 'cancelled' && (
+                            <span className="cancelled-badge" title="Cancelled">❌</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {lessonHistory.lessons.length > 10 && (
+                      <div className="more-lessons-notice">
+                        Showing 10 of {lessonHistory.lessons.length} lessons
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* No data state */}
