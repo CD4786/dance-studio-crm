@@ -4310,6 +4310,70 @@ p, span, div, label, input, textarea, select {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Enhanced Enrollment Display */
+.enrollment-item {
+  border-left: 4px solid var(--accent-primary);
+}
+
+.enrollment-financial {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.25rem;
+}
+
+.enrollment-cost, .enrollment-paid, .enrollment-balance {
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.enrollment-cost {
+  color: var(--text-muted);
+}
+
+.enrollment-paid {
+  color: #22c55e;
+}
+
+.enrollment-balance.negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.enrollment-balance.positive {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.pay-balance-btn {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.pay-balance-btn:hover {
+  background: var(--accent-secondary);
+  transform: scale(1.05);
+}
+
+.enrollment-total {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem;
+  text-align: center;
+  font-weight: 600;
+  color: var(--accent-primary);
+  font-size: 0.85rem;
+  margin: 0.25rem 0;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .student-ledger-panel {
@@ -4327,5 +4391,14 @@ p, span, div, label, input, textarea, select {
   
   .quick-actions {
     flex-direction: column;
+  }
+  
+  .enrollment-financial {
+    font-size: 0.65rem;
+  }
+  
+  .pay-balance-btn {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
   }
 }
