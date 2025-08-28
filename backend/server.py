@@ -667,7 +667,7 @@ async def create_payment(payment_data: PaymentCreate, current_user: User = Depen
 
 @api_router.get("/payments")
 async def get_payments():
-    payments = await db.payments.find().to_list(1000)
+    payments = await db.payments.find({}, {"_id": 0}).to_list(1000)
     return payments
 
 # Lesson routes
