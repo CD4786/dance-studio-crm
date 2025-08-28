@@ -1751,6 +1751,39 @@ async def mark_lesson_attended(lesson_id: str, current_user: User = Depends(get_
     
     return {"message": "Attendance marked successfully"}
 
+@api_router.get("/students/{student_id}/lesson-credits")
+async def get_student_lesson_credits(student_id: str, current_user: User = Depends(get_current_user)):
+    """Get student's available lesson credits across all active enrollments"""
+    enrollments = await db.enrollments.find({
+        "student_id": student_id,
+        "is_active": True
+    }).to_list(100)
+    
+    total_available = 0
+    enrollment_details = []
+    
+    for enrollment_doc in enrollments:
+        enrollment = Enrollment(**enrollment_doc)
+        enrollment.calculate_totals()
+        
+        enrollment_details.append({
+            "id": enrollment.id,
+            "program_name": enrollment.program_name,
+            "total_lessons": enrollment.total_lessons,
+            "lessons_taken": enrollment.lessons_taken,
+            "lessons_available": enrollment.lessons_available,
+            "amount_paid": enrollment.amount_paid,
+            "price_per_lesson": enrollment.price_per_lesson
+        })
+        
+        total_available += enrollment.lessons_available
+    
+    return {
+        "student_id": student_id,
+        "total_lessons_available": total_available,
+        "enrollments": enrollment_details
+    }
+
 # Daily Calendar Route
 @api_router.get("/calendar/daily/{date}")
 async def get_daily_data(date: str, current_user: User = Depends(get_current_user)):
