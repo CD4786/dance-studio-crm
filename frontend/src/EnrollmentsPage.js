@@ -28,7 +28,7 @@ const EnrollmentsPage = ({ onRefresh }) => {
     fetchEnrollments();
     fetchStudents();
     fetchPrograms();
-  }, [onRefresh]);
+  }, []); // Remove onRefresh from dependency to prevent infinite loops
 
   const fetchEnrollments = async () => {
     try {
