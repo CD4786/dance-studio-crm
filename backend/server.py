@@ -32,8 +32,14 @@ mongo_url = os.environ.get('MONGO_URL')
 client = AsyncIOMotorClient(mongo_url)
 db = client.get_database()
 
-# Create FastAPI app
-app = FastAPI(title="Dance Studio CRM", version="1.0.0")
+# Create FastAPI app with Railway-compatible configuration
+app = FastAPI(
+    title="Dance Studio CRM", 
+    version="1.0.0",
+    description="Dance Studio Customer Relationship Management System",
+    docs_url="/api/docs",  # Move docs to /api/docs
+    redoc_url="/api/redoc"  # Move redoc to /api/redoc
+)
 
 # CORS middleware for Railway deployment
 app.add_middleware(
