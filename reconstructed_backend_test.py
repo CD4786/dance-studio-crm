@@ -391,6 +391,10 @@ class ReconstructedBackendTester:
             
         success, response = self.make_request('GET', f'students/{self.created_student_id}/ledger', expected_status=200)
         
+        student_name = "Unknown"
+        enrollments_count = 0
+        payments_count = 0
+        
         if success:
             # Verify all required fields are present
             required_fields = ['student', 'enrollments', 'payments', 'upcoming_lessons', 
