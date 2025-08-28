@@ -943,6 +943,16 @@ async def delete_user(user_id: str, current_user: User = Depends(get_current_use
     
     return {"message": "User deleted successfully"}
 
+# Startup event
+@app.on_event("startup")
+async def startup_event():
+    # Test database connection
+    try:
+        await db.command("ping")
+        print("✅ Database connection successful")
+    except Exception as e:
+        print(f"❌ Database connection failed: {e}")
+
 # Root route handler for Railway
 @app.get("/")
 async def root():
