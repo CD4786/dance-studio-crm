@@ -884,7 +884,7 @@ async def get_cancelled_lessons_report():
 # Settings endpoints
 @api_router.get("/settings")
 async def get_all_settings():
-    settings = await db.settings.find().to_list(1000)
+    settings = await db.settings.find({}, {"_id": 0}).to_list(1000)
     return settings
 
 @api_router.get("/settings/{category}")
