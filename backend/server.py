@@ -831,7 +831,7 @@ async def get_student_available_lessons(student_id: str):
 async def get_student_lessons(student_id: str):
     lessons = await db.lessons.find({
         "student_ids": student_id
-    }).sort("date", -1).to_list(100)
+    }, {"_id": 0}).sort("date", -1).to_list(100)
     return lessons
 
 # Lesson cancellation endpoints
