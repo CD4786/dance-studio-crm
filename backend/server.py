@@ -419,7 +419,7 @@ async def login(login_data: UserLogin):
 # Teacher routes
 @api_router.get("/teachers")
 async def get_teachers():
-    teachers = await db.teachers.find({"is_active": True}).to_list(1000)
+    teachers = await db.teachers.find({"is_active": True}, {"_id": 0}).to_list(1000)
     return teachers
 
 @api_router.post("/teachers", response_model=Teacher)
