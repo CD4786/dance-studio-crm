@@ -41,6 +41,14 @@ app = FastAPI(
     redoc_url="/api/redoc"  # Move redoc to /api/redoc
 )
 
+# Request logging middleware for Railway debugging
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f"🔍 Request: {request.method} {request.url.path}")
+    response = await call_next(request)
+    print(f"📤 Response: {response.status_code}")
+    return response
+
 # CORS middleware for Railway deployment
 app.add_middleware(
     CORSMiddleware,
