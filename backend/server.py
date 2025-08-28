@@ -253,7 +253,7 @@ class PrivateLesson(BaseModel):
     student_ids: List[str] = []
     teacher_ids: List[str] = []
     teacher_names: Optional[List[str]] = []
-    date: date
+    date: str  # Changed from date to str to avoid BSON serialization issues
     start_time: str
     end_time: str
     duration_minutes: int = 60
