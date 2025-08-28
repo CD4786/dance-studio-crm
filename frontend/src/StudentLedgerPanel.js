@@ -364,10 +364,20 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
             <input
               type="number"
               step="0.01"
-              value={enrollmentData.total_paid}
-              onChange={(e) => setEnrollmentData({...enrollmentData, total_paid: e.target.value})}
-              placeholder="Amount paid ($)"
+              value={enrollmentData.price_per_lesson}
+              onChange={(e) => setEnrollmentData({...enrollmentData, price_per_lesson: e.target.value})}
+              placeholder="Price per lesson ($)"
               required
+            />
+            <div className="enrollment-total">
+              <span>Total Cost: ${(parseFloat(enrollmentData.total_lessons || 0) * parseFloat(enrollmentData.price_per_lesson || 0)).toFixed(2)}</span>
+            </div>
+            <input
+              type="number"
+              step="0.01"
+              value={enrollmentData.initial_payment}
+              onChange={(e) => setEnrollmentData({...enrollmentData, initial_payment: e.target.value, total_paid: e.target.value})}
+              placeholder="Initial payment ($)"
             />
             <div className="form-actions">
               <button type="submit" className="submit-btn">Add</button>
