@@ -564,3 +564,108 @@ async def update_enrollment(enrollment_id: str, enrollment_data: EnrollmentCreat
 async def get_enrollments():
     enrollments = await db.enrollments.find().to_list(1000)
     return enrollments
+
+# Payment routes - enhanced with enrollment credit updates and broadcasts
+@api_router.post("/payments", response_model=Payment)
+async def create_payment(payment_data: PaymentCreate, current_user: User = Depends(get_current_user)):
+    payment_dict = payment_data.dict()
+    payment = Payment(
+        **payment_dict,
+        created_by=current_user.id
+    )
+    
+    await db.payments.insert_one(payment.dict())
+    
+    # Get student info for broadcasting
+    student = await db.students.find_one({"id": payment_data.student_id})
+    student_name = student["name"] if student else "Unknown Student"
+    
+    # Update enrollment credits if payment is linked to enrollment
+    enrollment_updated = None
+    if payment_data.enrollment_id:
+        # Get current enrollment
+        enrollment_doc = await db.enrollments.find_one({"id": payment_data.enrollment_id})
+        if enrollment_doc:
+            # Calculate new amount paid for this enrollment
+            enrollment_payments = await db.payments.find({"enrollment_id": payment_data.enrollment_id}).to_list(1000)
+            total_paid_to_enrollment = sum(p.get("amount", 0) for p in enrollment_payments)
+            
+            # Update enrollment with new totals
+            enrollment = Enrollment(**enrollment_doc)
+            enrollment.amount_paid = total_paid_to_enrollment
+            enrollment.calculate_totals()
+            
+            # Save updated enrollment
+            await db.enrollments.update_one(
+                {"id": payment_data.enrollment_id},
+                {"$set": {
+                    "amount_paid": enrollment.amount_paid,
+                    "grand_total": enrollment.grand_total,
+                    "balance_remaining": enrollment.balance_remaining,
+                    "lessons_available": enrollment.lessons_available
+                }}
+            )
+            enrollment_updated = enrollment
+    
+    # If no specific enrollment, update all student enrollments proportionally
+    else:
+        enrollments = await db.enrollments.find({
+            "student_id": payment_data.student_id,
+            "is_active": True
+        }).to_list(100)
+        
+        # Find enrollment with highest balance to apply payment to
+        if enrollments:
+            max_balance_enrollment = None
+            max_balance = 0
+            
+            for enroll_doc in enrollments:
+                enroll = Enrollment(**enroll_doc)
+                enroll.calculate_totals()
+                if enroll.balance_remaining > max_balance:
+                    max_balance = enroll.balance_remaining
+                    max_balance_enrollment = enroll
+            
+            if max_balance_enrollment:
+                # Apply payment to this enrollment
+                new_amount_paid = max_balance_enrollment.amount_paid + payment.amount
+                max_balance_enrollment.amount_paid = new_amount_paid
+                max_balance_enrollment.calculate_totals()
+                
+                await db.enrollments.update_one(
+                    {"id": max_balance_enrollment.id},
+                    {"$set": {
+                        "amount_paid": max_balance_enrollment.amount_paid,
+                        "lessons_available": max_balance_enrollment.lessons_available,
+                        "balance_remaining": max_balance_enrollment.balance_remaining
+                    }}
+                )
+                enrollment_updated = max_balance_enrollment
+    
+    # Broadcast comprehensive payment update
+    await manager.broadcast_update(
+        "payment_created",
+        {
+            "payment_id": payment.id,
+            "student_id": payment.student_id,
+            "student_name": student_name,
+            "amount": payment.amount,
+            "payment_method": payment.payment_method,
+            "enrollment_id": payment.enrollment_id,
+            "enrollment_updated": {
+                "enrollment_id": enrollment_updated.id,
+                "lessons_available": enrollment_updated.lessons_available,
+                "balance_remaining": enrollment_updated.balance_remaining,
+                "program_name": enrollment_updated.program_name
+            } if enrollment_updated else None
+        },
+        current_user.id,
+        current_user.name
+    )
+    
+    return payment
+
+@api_router.get("/payments")
+async def get_payments():
+    payments = await db.payments.find().to_list(1000)
+    return payments
