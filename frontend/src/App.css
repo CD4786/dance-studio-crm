@@ -4315,6 +4315,76 @@ p, span, div, label, input, textarea, select {
   border-left: 4px solid var(--accent-primary);
 }
 
+/* Enrollments Page Enhancements */
+.student-name {
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.enrollment-lessons {
+  margin: 1rem 0;
+}
+
+.enrollment-financial {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin: 1rem 0;
+}
+
+.enrollment-financial p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.balance-remaining.negative {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.balance-remaining.positive {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.status-badge.balance-due {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.balance-btn {
+  background: var(--accent-primary);
+  color: white;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.balance-btn:hover {
+  background: var(--accent-secondary);
+}
+
+.enrollment-total-display {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem;
+  text-align: center;
+  margin: 1rem 0;
+  color: var(--accent-primary);
+}
+
+.enrollment-card {
+  position: relative;
+}
+
+.enrollment-card .enrollment-financial {
+  border-left: 3px solid var(--accent-primary);
+}
+
 .enrollment-financial {
   display: flex;
   flex-direction: column;
