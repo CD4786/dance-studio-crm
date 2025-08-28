@@ -1392,6 +1392,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
           setSelectedLessonForLedger(null);
         }}
         onLedgerUpdate={handleLedgerUpdate}
+        onNavigateToDate={handleNavigateToDate}
       />
     </div>
   );
