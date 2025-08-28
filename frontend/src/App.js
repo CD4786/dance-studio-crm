@@ -975,6 +975,14 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     console.log(`Ledger updated for student ${studentId}`);
   };
 
+  const handleNavigateToDate = (dateString) => {
+    // Navigate to the specific date in the calendar
+    const targetDate = new Date(dateString + 'T00:00:00');
+    setCurrentDate(targetDate);
+    fetchDailyData(dateString); // Fetch data for the target date
+    console.log(`Navigated to date: ${dateString}`);
+  };
+
   const LessonBlock = ({ lesson, onEdit, onDelete, onAttend, onSendReminder, onCancel, onReactivate, onOpenLedger }) => {
     return (
       <div 
