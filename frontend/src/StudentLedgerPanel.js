@@ -172,9 +172,13 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
     return totalPaid - totalEnrollmentCost;
   };
 
-  const getRemainingLessons = () => {
-    if (!ledgerData) return 0;
-    return ledgerData.remaining_lessons || 0;
+  const getAvailableLessons = () => {
+    if (!ledgerData || !ledgerData.enrollments) return 0;
+    
+    // Sum up all available lessons from active enrollments
+    return ledgerData.enrollments.reduce((total, enrollment) => {
+      return total + (enrollment.lessons_available || 0);
+    }, 0);
   };
 
   if (!isOpen) return null;
