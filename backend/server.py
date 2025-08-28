@@ -947,5 +947,29 @@ async def root():
 async def root_health():
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
+# Static file serving for React frontend (Railway deployment)
+try:
+    # Check if built frontend exists
+    frontend_build_path = Path(__file__).parent.parent / "frontend" / "build"
+    if frontend_build_path.exists():
+        # Serve static files from React build
+        app.mount("/static", StaticFiles(directory=frontend_build_path / "static"), name="static")
+        
+        # Serve React app for all non-API routes
+        @app.get("/{path:path}")
+        async def serve_react_app(path: str):
+            # If it's an API route, let it be handled by the API router
+            if path.startswith("api/"):
+                raise HTTPException(status_code=404, detail="API endpoint not found")
+            
+            # For all other routes, serve the React index.html
+            index_file = frontend_build_path / "index.html"
+            if index_file.exists():
+                return FileResponse(index_file)
+            else:
+                raise HTTPException(status_code=404, detail="Frontend not built")
+except Exception as e:
+    print(f"Warning: Could not set up static file serving: {e}")
+
 # Include the API router in the app
 app.include_router(api_router)
