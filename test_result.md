@@ -222,7 +222,7 @@ The multiple instructor lesson booking system with date picker and booking types
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the student ledger API endpoint to see why the frontend modal is showing 'No ledger data available' when clicked."
+user_problem_statement: "Test the newly reconstructed backend server after critical startup failure. The server.py file was corrupted and has been completely rebuilt with all necessary FastAPI setup, models, and API endpoints. Priority: Test real-time synchronization system for enrollments, payments, and lesson history. Also test lesson history navigation feature in student ledger."
 
 backend:
   - task: "Student Ledger API Endpoint Testing"
