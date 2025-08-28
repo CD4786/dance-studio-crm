@@ -1080,6 +1080,7 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
                       onSendReminder={handleSendReminder}
                       onCancel={handleCancelLesson}
                       onReactivate={handleReactivateLesson}
+                      onOpenLedger={handleOpenLedger}
                     />
                   ) : (
                     <div className="empty-slot">+</div>
