@@ -708,6 +708,7 @@ class ReconstructedBackendTester:
         # Get all settings
         success, response = self.make_request('GET', 'settings', expected_status=200)
         
+        settings_count = 0
         if success:
             settings_count = len(response) if isinstance(response, list) else 0
             
