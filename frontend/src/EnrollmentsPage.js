@@ -270,24 +270,44 @@ const EnrollmentsPage = ({ onRefresh }) => {
 
       {/* Enrollments Grid */}
       <div className="enrollments-grid">
-        {filteredAndSortedEnrollments.map(enrollment => (
-          <div key={enrollment.id} className="enrollment-card">
-            <div className="enrollment-info">
-              <h3>{enrollment.student_name}</h3>
-              <p><strong>Program:</strong> {enrollment.program_name}</p>
-              <p><strong>Total Lessons:</strong> {enrollment.total_lessons}</p>
-              <p><strong>Remaining:</strong> {enrollment.remaining_lessons}</p>
-              <p><strong>Used:</strong> {enrollment.total_lessons - enrollment.remaining_lessons}</p>
-              <p><strong>Total Paid:</strong> ${enrollment.total_paid}</p>
-              <p className="enrollment-status">
-                <span className={`status-badge ${enrollment.remaining_lessons > 0 ? 'active' : 'completed'}`}>
-                  {enrollment.remaining_lessons > 0 ? 'Active' : 'Completed'}
-                </span>
-                {enrollment.remaining_lessons <= 3 && enrollment.remaining_lessons > 0 && (
-                  <span className="status-badge warning">Low Lessons</span>
-                )}
-              </p>
-            </div>
+        {filteredAndSortedEnrollments.map(enrollment => {
+          const totals = calculateEnrollmentTotals(enrollment);
+          
+          return (
+            <div key={enrollment.id} className="enrollment-card">
+              <div className="enrollment-info">
+                <h3 className="student-name">{getStudentName(enrollment.student_id)}</h3>
+                <p><strong>Program:</strong> {enrollment.program_name}</p>
+                
+                <div className="enrollment-lessons">
+                  <p><strong>Total Lessons:</strong> {enrollment.total_lessons}</p>
+                  <p><strong>Remaining:</strong> {enrollment.remaining_lessons}</p>
+                  <p><strong>Used:</strong> {enrollment.total_lessons - enrollment.remaining_lessons}</p>
+                </div>
+                
+                <div className="enrollment-financial">
+                  <p><strong>Price Per Lesson:</strong> {formatCurrency(enrollment.price_per_lesson || 50)}</p>
+                  <p><strong>Grand Total:</strong> {formatCurrency(totals.grandTotal)}</p>
+                  <p><strong>Amount Paid:</strong> {formatCurrency(totals.amountPaid)}</p>
+                  <p className={`balance-remaining ${totals.balanceRemaining > 0 ? 'negative' : 'positive'}`}>
+                    <strong>Balance:</strong> {formatCurrency(totals.balanceRemaining)}
+                  </p>
+                </div>
+                
+                <p className="enrollment-status">
+                  <span className={`status-badge ${enrollment.remaining_lessons > 0 ? 'active' : 'completed'}`}>
+                    {enrollment.remaining_lessons > 0 ? 'Active' : 'Completed'}
+                  </span>
+                  {enrollment.remaining_lessons <= 3 && enrollment.remaining_lessons > 0 && (
+                    <span className="status-badge warning">Low Lessons</span>
+                  )}
+                  {totals.balanceRemaining > 0 && (
+                    <span className="status-badge balance-due">Balance Due</span>
+                  )}
+                </p>
+              </div>
+          );
+        })}
             <div className="enrollment-actions">
               <button 
                 onClick={() => openEditModal(enrollment)}
