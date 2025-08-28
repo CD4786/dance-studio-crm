@@ -676,7 +676,7 @@ async def get_lessons(date_filter: str = None):
     query = {}
     if date_filter:
         query["date"] = date_filter
-    lessons = await db.lessons.find(query).to_list(1000)
+    lessons = await db.lessons.find(query, {"_id": 0}).to_list(1000)
     return lessons
 
 @api_router.post("/lessons", response_model=PrivateLesson)
