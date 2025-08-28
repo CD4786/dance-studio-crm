@@ -308,7 +308,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Student Ledger API Endpoint Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
