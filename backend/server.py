@@ -878,7 +878,7 @@ async def reactivate_lesson(lesson_id: str, current_user: User = Depends(get_cur
 async def get_cancelled_lessons_report():
     cancelled_lessons = await db.lessons.find({
         "status": LessonStatus.CANCELLED
-    }).sort("cancelled_at", -1).to_list(1000)
+    }, {"_id": 0}).sort("cancelled_at", -1).to_list(1000)
     return cancelled_lessons
 
 # Settings endpoints
