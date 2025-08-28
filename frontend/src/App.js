@@ -909,22 +909,40 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
 
   const handleOpenLedger = async (lesson) => {
     try {
+      console.log('Opening ledger for lesson:', lesson);
+      console.log('Lesson student_id:', lesson.student_id);
+      console.log('Available students:', students.map(s => ({id: s.id, name: s.name})));
+      
       // Find the student data for this lesson
       const student = students.find(s => s.id === lesson.student_id);
       if (student) {
+        console.log('Found student in local list:', student);
         setSelectedStudentForLedger(student);
         setSelectedLessonForLedger(lesson);
         setShowLedgerModal(true);
       } else {
         // If student not in current list, fetch the student data
+        console.log('Student not in local list, fetching from API...');
         const response = await axios.get(`${API}/students/${lesson.student_id}`);
+        console.log('Fetched student from API:', response.data);
         setSelectedStudentForLedger(response.data);
         setSelectedLessonForLedger(lesson);
         setShowLedgerModal(true);
       }
     } catch (error) {
-      console.error('Failed to fetch student data:', error);
-      alert('Failed to load student information');
+      console.error('Failed to fetch student data for ledger:', error);
+      
+      // Create a basic student object with lesson data if API fails
+      const fallbackStudent = {
+        id: lesson.student_id,
+        name: lesson.student_name || 'Unknown Student',
+        email: 'unknown@example.com'
+      };
+      
+      console.log('Using fallback student data:', fallbackStudent);
+      setSelectedStudentForLedger(fallbackStudent);
+      setSelectedLessonForLedger(lesson);
+      setShowLedgerModal(true);
     }
   };
 
