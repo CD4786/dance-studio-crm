@@ -322,6 +322,17 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
                 </div>
               )}
 
+              {/* Lesson History Section */}
+              <div className="activity-section">
+                <h5>📚 Lesson History</h5>
+                <button 
+                  onClick={() => setShowLessonHistory(!showLessonHistory)}
+                  className="toggle-history-btn"
+                >
+                  {showLessonHistory ? '📖 Hide History' : '📋 View All Lessons'}
+                </button>
+              </div>
+
               {/* No data state */}
               {(!ledgerData?.enrollments?.length && !ledgerData?.payments?.length) && (
                 <div className="no-data">
