@@ -225,13 +225,40 @@ The multiple instructor lesson booking system with date picker and booking types
 user_problem_statement: "Test the newly reconstructed backend server after critical startup failure. The server.py file was corrupted and has been completely rebuilt with all necessary FastAPI setup, models, and API endpoints. Priority: Test real-time synchronization system for enrollments, payments, and lesson history. Also test lesson history navigation feature in student ledger."
 
 backend:
-  - task: "Student Ledger API Endpoint Testing"
-    implemented: true  
-    working: true
+  - task: "Critical Backend Server Reconstruction"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+        - working: false
+          agent: "main"
+          comment: "Critical server startup failure due to corrupted server.py file missing imports, FastAPI setup, model definitions. Server couldn't start with NameError: name 'api_router' is not defined."
+        - working: "NA"
+          agent: "main"
+          comment: "Completely reconstructed server.py file with proper FastAPI setup, all models (User, Student, Teacher, Enrollment, Payment, PrivateLesson, etc.), WebSocket manager for real-time updates, authentication system, and comprehensive API endpoints. Server now starts successfully."
+
+  - task: "Real-Time Synchronization System Testing"
+    implemented: true
+    working: "NA"
     file: "server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Rebuilt enrollment creation/update endpoints with real-time WebSocket broadcasts. Payment creation enhanced to update enrollment credits and broadcast changes. Lesson attendance marking updated to deduct from available lessons and broadcast updates."
+
+  - task: "Student Ledger API with Lesson History Navigation"
+    implemented: true
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
     status_history:
         - working: "NA"
           agent: "main"
