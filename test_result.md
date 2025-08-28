@@ -336,10 +336,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Student Ledger API Endpoint Testing"
+    - "Critical Backend Server Reconstruction"
+    - "Real-Time Synchronization System Testing"
+    - "Student Ledger API with Lesson History Navigation"
   stuck_tasks: []
   test_all: false
-  test_priority: "high_first"
+  test_priority: "critical_first"
 
 agent_communication:
     - agent: "main"
