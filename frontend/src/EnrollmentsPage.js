@@ -391,13 +391,31 @@ const EnrollmentsPage = ({ onRefresh }) => {
                 />
               </div>
               <div className="form-group">
-                <label>Total Paid:</label>
+                <label>Price Per Lesson ($):</label>
                 <input
                   type="number"
                   step="0.01"
-                  value={formData.total_paid}
-                  onChange={(e) => setFormData({...formData, total_paid: e.target.value})}
+                  value={formData.price_per_lesson}
+                  onChange={(e) => setFormData({...formData, price_per_lesson: e.target.value})}
                   required
+                  min="0"
+                  className="input"
+                />
+              </div>
+              <div className="enrollment-total-display">
+                <strong>Total Cost: ${(parseFloat(formData.total_lessons || 0) * parseFloat(formData.price_per_lesson || 0)).toFixed(2)}</strong>
+              </div>
+              <div className="form-group">
+                <label>Initial Payment ($):</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.initial_payment}
+                  onChange={(e) => setFormData({
+                    ...formData, 
+                    initial_payment: e.target.value,
+                    total_paid: e.target.value // Keep for backward compatibility
+                  })}
                   min="0"
                   className="input"
                 />
