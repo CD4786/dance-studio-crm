@@ -889,7 +889,7 @@ async def get_all_settings():
 
 @api_router.get("/settings/{category}")
 async def get_settings_by_category(category: str):
-    settings = await db.settings.find({"category": category}).to_list(100)
+    settings = await db.settings.find({"category": category}, {"_id": 0}).to_list(100)
     return settings
 
 @api_router.get("/settings/{category}/{key}")
