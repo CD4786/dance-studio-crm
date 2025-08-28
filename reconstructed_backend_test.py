@@ -310,7 +310,7 @@ class ReconstructedBackendTester:
         lesson_data = {
             "student_ids": [self.created_student_id],
             "teacher_ids": [self.created_teacher_id],
-            "date": tomorrow.date().isoformat(),
+            "date": tomorrow.strftime('%Y-%m-%d'),  # Use string format instead of date object
             "start_time": "14:00",
             "end_time": "15:00",
             "duration_minutes": 60,
