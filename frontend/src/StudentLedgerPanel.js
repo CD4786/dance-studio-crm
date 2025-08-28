@@ -251,9 +251,14 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
                       <div key={index} className="activity-item enrollment-item">
                         <div className="activity-details">
                           <span className="activity-name">{enrollment.program_name}</span>
-                          <span className="activity-info">
-                            {enrollment.remaining_lessons || 0} of {enrollment.total_lessons} lessons left
-                          </span>
+                          <div className="lesson-credits-info">
+                            <span className="lessons-available">
+                              💎 Available: {enrollment.lessons_available || 0} lessons
+                            </span>
+                            <span className="lessons-taken">
+                              ✅ Taken: {enrollment.lessons_taken || 0} of {enrollment.total_lessons}
+                            </span>
+                          </div>
                           <div className="enrollment-financial">
                             <span className="enrollment-cost">Total: {formatCurrency(grandTotal)}</span>
                             <span className="enrollment-paid">Paid: {formatCurrency(amountPaid)}</span>
