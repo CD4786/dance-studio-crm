@@ -977,12 +977,14 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         <div className="lesson-actions">
           {lesson.status === 'cancelled' ? (
             <>
+              <button onClick={() => onOpenLedger && onOpenLedger(lesson)} className="lesson-action-btn" title="View Student Ledger">💰</button>
               <button onClick={() => onReactivate && onReactivate(lesson.id)} className="lesson-action-btn" title="Reactivate Lesson">🔄</button>
               <button onClick={() => onDelete(lesson.id)} className="lesson-action-btn" title="Delete Permanently">🗑️</button>
             </>
           ) : (
             <>
               <button onClick={() => onEdit(lesson)} className="lesson-action-btn" title="Edit">✏️</button>
+              <button onClick={() => onOpenLedger && onOpenLedger(lesson)} className="lesson-action-btn" title="View Student Ledger">💰</button>
               <button onClick={() => onCancel && onCancel(lesson.id)} className="lesson-action-btn cancel-btn" title="Cancel Lesson">❌</button>
               <button onClick={() => onDelete(lesson.id)} className="lesson-action-btn" title="Delete">🗑️</button>
               {!lesson.is_attended && (
