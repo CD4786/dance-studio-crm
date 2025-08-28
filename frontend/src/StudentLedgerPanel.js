@@ -36,12 +36,24 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
       setLoading(true);
       setError('');
       console.log('Fetching ledger data for student:', student.id);
+      console.log('API URL:', `${API}/students/${student.id}/ledger`);
+      console.log('Axios headers:', axios.defaults.headers);
+      
       const response = await axios.get(`${API}/students/${student.id}/ledger`);
       console.log('Ledger data received:', response.data);
       setLedgerData(response.data);
     } catch (error) {
       console.error('Failed to fetch ledger data:', error);
-      setError('Failed to load student ledger');
+      console.error('Error response:', error.response);
+      console.error('Error message:', error.message);
+      
+      if (error.response?.status === 401) {
+        setError('Authentication failed - please log in again');
+      } else if (error.response?.status === 404) {
+        setError('Student not found');
+      } else {
+        setError(`Failed to load student ledger: ${error.response?.data?.detail || error.message}`);
+      }
     } finally {
       setLoading(false);
     }
