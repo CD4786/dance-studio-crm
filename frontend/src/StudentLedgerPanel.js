@@ -22,7 +22,9 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
   const [enrollmentData, setEnrollmentData] = useState({
     program_name: '',
     total_lessons: '',
-    total_paid: ''
+    price_per_lesson: '50.00',
+    initial_payment: '0.00',
+    total_paid: '0.00'
   });
 
   useEffect(() => {
