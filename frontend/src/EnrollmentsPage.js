@@ -280,9 +280,12 @@ const EnrollmentsPage = ({ onRefresh }) => {
                 <p><strong>Program:</strong> {enrollment.program_name}</p>
                 
                 <div className="enrollment-lessons">
-                  <p><strong>Total Lessons:</strong> {enrollment.total_lessons}</p>
-                  <p><strong>Remaining:</strong> {enrollment.remaining_lessons}</p>
-                  <p><strong>Used:</strong> {enrollment.total_lessons - enrollment.remaining_lessons}</p>
+                  <p><strong>Total Enrolled:</strong> {enrollment.total_lessons} lessons</p>
+                  <div className="lesson-credits-display">
+                    <p className="lessons-available"><strong>💎 Available:</strong> {enrollment.lessons_available || 0} lessons</p>
+                    <p className="lessons-taken"><strong>✅ Attended:</strong> {enrollment.lessons_taken || 0} lessons</p>
+                    <p><strong>📝 Remaining:</strong> {enrollment.total_lessons - (enrollment.lessons_taken || 0)} lessons</p>
+                  </div>
                 </div>
                 
                 <div className="enrollment-financial">
