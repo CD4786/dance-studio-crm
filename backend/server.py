@@ -35,12 +35,12 @@ db = client.get_database()
 # Create FastAPI app
 app = FastAPI(title="Dance Studio CRM", version="1.0.0")
 
-# CORS middleware
+# CORS middleware for Railway deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Railway handles the domain routing
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
