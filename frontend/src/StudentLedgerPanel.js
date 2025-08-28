@@ -161,6 +161,40 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
     }).format(amount || 0);
   };
 
+  const fetchLessonHistory = async () => {
+    try {
+      const response = await axios.get(`${API}/students/${student.id}/lessons-history`);
+      setLessonHistory(response.data);
+    } catch (error) {
+      console.error('Failed to fetch lesson history:', error);
+    }
+  };
+
+  const handleMarkLessonAttended = async (lessonId, lessonDate) => {
+    try {
+      await axios.post(`${API}/lessons/${lessonId}/attend`);
+      await fetchLessonHistory(); // Refresh lesson history
+      await fetchLedgerData(); // Refresh ledger data for updated credits
+      
+      if (onLedgerUpdate) {
+        onLedgerUpdate(student.id);
+      }
+      
+      alert('Lesson marked as attended! Available lessons updated.');
+    } catch (error) {
+      console.error('Failed to mark lesson attendance:', error);
+      alert('Failed to mark attendance: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleNavigateToLesson = (lessonDate) => {
+    // This will be handled by the parent component
+    if (onNavigateToDate) {
+      onNavigateToDate(lessonDate);
+      onClose(); // Close the panel after navigation
+    }
+  };
+
   const calculateBalance = () => {
     if (!ledgerData) return 0;
     
