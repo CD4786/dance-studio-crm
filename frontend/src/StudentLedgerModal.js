@@ -3,12 +3,13 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL;
 
-const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }) => {
+const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }) => {
   const [ledgerData, setLedgerData] = useState(null);
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [showAddEnrollment, setShowAddEnrollment] = useState(false);
+  const [error, setError] = useState('');
   
   const [paymentData, setPaymentData] = useState({
     amount: '',
@@ -33,11 +34,13 @@ const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
   const fetchLedgerData = async () => {
     try {
       setLoading(true);
+      setError('');
       const response = await axios.get(`${API}/students/${student.id}/ledger`);
       setLedgerData(response.data);
+      console.log('Ledger data received:', response.data);
     } catch (error) {
       console.error('Failed to fetch ledger data:', error);
-      alert('Failed to load student ledger');
+      setError('Failed to load student ledger');
     } finally {
       setLoading(false);
     }
@@ -46,7 +49,7 @@ const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
   const fetchPrograms = async () => {
     try {
       const response = await axios.get(`${API}/programs`);
-      setPrograms(response.data);
+      setPrograms(response.data || []);
     } catch (error) {
       console.error('Failed to fetch programs:', error);
     }
@@ -57,7 +60,7 @@ const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
     try {
       await axios.post(`${API}/payments`, {
         student_id: student.id,
-        enrollment_id: paymentData.enrollment_id,
+        enrollment_id: paymentData.enrollment_id || null,
         amount: parseFloat(paymentData.amount),
         payment_method: paymentData.payment_method,
         notes: paymentData.notes
@@ -67,7 +70,6 @@ const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
       setPaymentData({ amount: '', payment_method: 'cash', enrollment_id: '', notes: '' });
       await fetchLedgerData();
       
-      // Notify parent component of ledger update for real-time updates
       if (onLedgerUpdate) {
         onLedgerUpdate(student.id);
       }
@@ -75,7 +77,7 @@ const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
       alert('Payment added successfully!');
     } catch (error) {
       console.error('Failed to add payment:', error);
-      alert('Failed to add payment');
+      alert('Failed to add payment: ' + (error.response?.data?.detail || error.message));
     }
   };
 
@@ -86,14 +88,14 @@ const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
         student_id: student.id,
         program_name: enrollmentData.program_name,
         total_lessons: parseInt(enrollmentData.total_lessons),
-        total_paid: parseFloat(enrollmentData.total_paid)
+        total_paid: parseFloat(enrollmentData.total_paid),
+        is_active: true
       });
       
       setShowAddEnrollment(false);
       setEnrollmentData({ program_name: '', total_lessons: '', total_paid: '' });
       await fetchLedgerData();
       
-      // Notify parent component of ledger update
       if (onLedgerUpdate) {
         onLedgerUpdate(student.id);
       }
@@ -101,7 +103,7 @@ const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
       alert('Enrollment added successfully!');
     } catch (error) {
       console.error('Failed to add enrollment:', error);
-      alert('Failed to add enrollment');
+      alert('Failed to add enrollment: ' + (error.response?.data?.detail || error.message));
     }
   };
 
@@ -111,7 +113,6 @@ const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
         await axios.delete(`${API}/payments/${paymentId}`);
         await fetchLedgerData();
         
-        // Notify parent component of ledger update
         if (onLedgerUpdate) {
           onLedgerUpdate(student.id);
         }
@@ -128,255 +129,228 @@ const StudentLedgerModal = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount);
+    }).format(amount || 0);
+  };
+
+  const calculateBalance = () => {
+    if (!ledgerData) return 0;
+    
+    const totalPaid = ledgerData.total_paid || 0;
+    const enrollments = ledgerData.enrollments || [];
+    const totalEnrollmentCost = enrollments.reduce((sum, enrollment) => {
+      // Assuming each lesson costs $50 (you can adjust this)
+      return sum + (enrollment.total_lessons * 50);
+    }, 0);
+    
+    return totalPaid - totalEnrollmentCost;
+  };
+
+  const getRemainingLessons = () => {
+    if (!ledgerData) return 0;
+    return ledgerData.remaining_lessons || 0;
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="student-ledger-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <div className="modal-title-section">
-            <h2>💰 Student Ledger</h2>
-            <div className="student-info">
-              <h3>{student?.name}</h3>
-              {lesson && (
-                <p className="lesson-context">
-                  📅 Lesson: {new Date(lesson.start_datetime).toLocaleDateString()} at{' '}
-                  {new Date(lesson.start_datetime).toLocaleTimeString('en-US', { 
-                    hour: 'numeric', 
-                    minute: '2-digit' 
-                  })}
-                </p>
-              )}
-            </div>
-          </div>
-          <button onClick={onClose} className="modal-close-btn">✕</button>
+    <div className="student-ledger-panel">
+      <div className="panel-header">
+        <div className="panel-title-section">
+          <h3>💰 {student?.name} Ledger</h3>
+          {lesson && (
+            <p className="lesson-context">
+              📅 {new Date(lesson.start_datetime).toLocaleDateString()} at{' '}
+              {new Date(lesson.start_datetime).toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit' 
+              })}
+            </p>
+          )}
         </div>
+        <button onClick={onClose} className="panel-close-btn">✕</button>
+      </div>
 
-        <div className="modal-content">
-          {loading ? (
-            <div className="loading-state">Loading ledger data...</div>
-          ) : ledgerData ? (
-            <>
-              {/* Summary Section */}
-              <div className="ledger-summary">
-                <div className="summary-cards">
-                  <div className="summary-card balance">
-                    <div className="card-icon">💳</div>
-                    <div className="card-content">
-                      <h4>Current Balance</h4>
-                      <span className={`balance-amount ${ledgerData.summary.balance >= 0 ? 'positive' : 'negative'}`}>
-                        {formatCurrency(ledgerData.summary.balance)}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="summary-card lessons">
-                    <div className="card-icon">📚</div>
-                    <div className="card-content">
-                      <h4>Lessons Remaining</h4>
-                      <span className="lessons-count">{ledgerData.summary.lessons_remaining}</span>
-                    </div>
-                  </div>
-                </div>
+      <div className="panel-content">
+        {loading ? (
+          <div className="loading-state">Loading...</div>
+        ) : error ? (
+          <div className="error-state">{error}</div>
+        ) : (
+          <>
+            {/* Quick Summary */}
+            <div className="quick-summary">
+              <div className="summary-item">
+                <span className="label">Balance:</span>
+                <span className={`value ${calculateBalance() >= 0 ? 'positive' : 'negative'}`}>
+                  {formatCurrency(calculateBalance())}
+                </span>
               </div>
-
-              {/* Quick Actions */}
-              <div className="quick-actions">
-                <button 
-                  onClick={() => setShowAddPayment(true)}
-                  className="action-btn primary"
-                >
-                  ➕ Add Payment
-                </button>
-                <button 
-                  onClick={() => setShowAddEnrollment(true)}
-                  className="action-btn secondary"
-                >
-                  📝 Add Enrollment
-                </button>
+              <div className="summary-item">
+                <span className="label">Lessons Left:</span>
+                <span className="value">{getRemainingLessons()}</span>
               </div>
+            </div>
 
-              {/* Recent Transactions */}
-              <div className="transactions-section">
-                <h4>Recent Transactions</h4>
-                <div className="transactions-list">
-                  {ledgerData.recent_transactions?.slice(0, 5).map((transaction, index) => (
-                    <div key={index} className="transaction-item">
-                      <div className="transaction-details">
-                        <span className="transaction-type">
-                          {transaction.type === 'payment' ? '💰' : '📚'} {transaction.description}
-                        </span>
-                        <span className="transaction-date">
-                          {new Date(transaction.date).toLocaleDateString()}
+            {/* Quick Actions */}
+            <div className="quick-actions">
+              <button 
+                onClick={() => setShowAddPayment(true)}
+                className="action-btn primary"
+              >
+                💰 Add Payment
+              </button>
+              <button 
+                onClick={() => setShowAddEnrollment(true)}
+                className="action-btn secondary"
+              >
+                📝 Add Enrollment
+              </button>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="recent-activity">
+              <h4>Recent Activity</h4>
+              
+              {/* Show enrollments */}
+              {ledgerData?.enrollments?.length > 0 && (
+                <div className="activity-section">
+                  <h5>📚 Enrollments</h5>
+                  {ledgerData.enrollments.slice(0, 2).map((enrollment, index) => (
+                    <div key={index} className="activity-item">
+                      <div className="activity-details">
+                        <span className="activity-name">{enrollment.program_name}</span>
+                        <span className="activity-info">
+                          {enrollment.remaining_lessons || 0} of {enrollment.total_lessons} lessons left
                         </span>
                       </div>
-                      <div className="transaction-amount">
-                        <span className={`amount ${transaction.type === 'payment' ? 'positive' : 'neutral'}`}>
-                          {transaction.type === 'payment' ? '+' : ''}{formatCurrency(transaction.amount)}
+                      <span className="activity-amount">{formatCurrency(enrollment.total_paid)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Show payments */}
+              {ledgerData?.payments?.length > 0 && (
+                <div className="activity-section">
+                  <h5>💳 Recent Payments</h5>
+                  {ledgerData.payments.slice(0, 3).map((payment, index) => (
+                    <div key={index} className="activity-item">
+                      <div className="activity-details">
+                        <span className="activity-name">{payment.payment_method}</span>
+                        <span className="activity-info">
+                          {new Date(payment.payment_date).toLocaleDateString()}
                         </span>
-                        {transaction.type === 'payment' && (
-                          <button 
-                            onClick={() => handleDeletePayment(transaction.id)}
-                            className="delete-btn"
-                            title="Delete Payment"
-                          >
-                            🗑️
-                          </button>
-                        )}
+                      </div>
+                      <div className="activity-actions">
+                        <span className="activity-amount positive">+{formatCurrency(payment.amount)}</span>
+                        <button 
+                          onClick={() => handleDeletePayment(payment.id)}
+                          className="delete-btn"
+                          title="Delete Payment"
+                        >
+                          ×
+                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* Add Payment Modal */}
-              {showAddPayment && (
-                <div className="form-modal">
-                  <div className="form-modal-content">
-                    <h4>Add Payment</h4>
-                    <form onSubmit={handleAddPayment}>
-                      <div className="form-group">
-                        <label>Amount ($)</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={paymentData.amount}
-                          onChange={(e) => setPaymentData({...paymentData, amount: e.target.value})}
-                          required
-                          className="form-input"
-                          placeholder="0.00"
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label>Payment Method</label>
-                        <select
-                          value={paymentData.payment_method}
-                          onChange={(e) => setPaymentData({...paymentData, payment_method: e.target.value})}
-                          className="form-select"
-                        >
-                          <option value="cash">Cash</option>
-                          <option value="check">Check</option>
-                          <option value="credit_card">Credit Card</option>
-                          <option value="bank_transfer">Bank Transfer</option>
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Enrollment (Optional)</label>
-                        <select
-                          value={paymentData.enrollment_id}
-                          onChange={(e) => setPaymentData({...paymentData, enrollment_id: e.target.value})}
-                          className="form-select"
-                        >
-                          <option value="">Select Enrollment</option>
-                          {ledgerData.enrollments?.map((enrollment) => (
-                            <option key={enrollment.id} value={enrollment.id}>
-                              {enrollment.program_name} - {enrollment.lessons_remaining} lessons left
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Notes (Optional)</label>
-                        <input
-                          type="text"
-                          value={paymentData.notes}
-                          onChange={(e) => setPaymentData({...paymentData, notes: e.target.value})}
-                          className="form-input"
-                          placeholder="Payment notes..."
-                        />
-                      </div>
-
-                      <div className="form-actions">
-                        <button type="submit" className="submit-btn">Add Payment</button>
-                        <button 
-                          type="button" 
-                          onClick={() => setShowAddPayment(false)}
-                          className="cancel-btn"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
               )}
 
-              {/* Add Enrollment Modal */}
-              {showAddEnrollment && (
-                <div className="form-modal">
-                  <div className="form-modal-content">
-                    <h4>Add Enrollment</h4>
-                    <form onSubmit={handleAddEnrollment}>
-                      <div className="form-group">
-                        <label>Program</label>
-                        <select
-                          value={enrollmentData.program_name}
-                          onChange={(e) => setEnrollmentData({...enrollmentData, program_name: e.target.value})}
-                          className="form-select"
-                          required
-                        >
-                          <option value="">Select Program</option>
-                          {programs.map((program) => (
-                            <option key={program.id} value={program.name}>
-                              {program.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Total Lessons</label>
-                        <input
-                          type="number"
-                          value={enrollmentData.total_lessons}
-                          onChange={(e) => setEnrollmentData({...enrollmentData, total_lessons: e.target.value})}
-                          required
-                          className="form-input"
-                          placeholder="Number of lessons"
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label>Amount Paid ($)</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={enrollmentData.total_paid}
-                          onChange={(e) => setEnrollmentData({...enrollmentData, total_paid: e.target.value})}
-                          required
-                          className="form-input"
-                          placeholder="0.00"
-                        />
-                      </div>
-
-                      <div className="form-actions">
-                        <button type="submit" className="submit-btn">Add Enrollment</button>
-                        <button 
-                          type="button" 
-                          onClick={() => setShowAddEnrollment(false)}
-                          className="cancel-btn"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  </div>
+              {/* No data state */}
+              {(!ledgerData?.enrollments?.length && !ledgerData?.payments?.length) && (
+                <div className="no-data">
+                  <p>No enrollments or payments yet.</p>
+                  <p>Add an enrollment or payment to get started!</p>
                 </div>
               )}
-            </>
-          ) : (
-            <div className="no-data">No ledger data available</div>
-          )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
+
+      {/* Add Payment Form */}
+      {showAddPayment && (
+        <div className="floating-form">
+          <div className="form-header">
+            <h4>Add Payment</h4>
+            <button onClick={() => setShowAddPayment(false)} className="form-close">×</button>
+          </div>
+          <form onSubmit={handleAddPayment} className="compact-form">
+            <input
+              type="number"
+              step="0.01"
+              value={paymentData.amount}
+              onChange={(e) => setPaymentData({...paymentData, amount: e.target.value})}
+              placeholder="Amount ($)"
+              required
+            />
+            <select
+              value={paymentData.payment_method}
+              onChange={(e) => setPaymentData({...paymentData, payment_method: e.target.value})}
+            >
+              <option value="cash">Cash</option>
+              <option value="check">Check</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="bank_transfer">Bank Transfer</option>
+            </select>
+            <input
+              type="text"
+              value={paymentData.notes}
+              onChange={(e) => setPaymentData({...paymentData, notes: e.target.value})}
+              placeholder="Notes (optional)"
+            />
+            <div className="form-actions">
+              <button type="submit" className="submit-btn">Add</button>
+              <button type="button" onClick={() => setShowAddPayment(false)} className="cancel-btn">Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Add Enrollment Form */}
+      {showAddEnrollment && (
+        <div className="floating-form">
+          <div className="form-header">
+            <h4>Add Enrollment</h4>
+            <button onClick={() => setShowAddEnrollment(false)} className="form-close">×</button>
+          </div>
+          <form onSubmit={handleAddEnrollment} className="compact-form">
+            <select
+              value={enrollmentData.program_name}
+              onChange={(e) => setEnrollmentData({...enrollmentData, program_name: e.target.value})}
+              required
+            >
+              <option value="">Select Program</option>
+              {programs.map((program) => (
+                <option key={program.id} value={program.name}>
+                  {program.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="number"
+              value={enrollmentData.total_lessons}
+              onChange={(e) => setEnrollmentData({...enrollmentData, total_lessons: e.target.value})}
+              placeholder="Number of lessons"
+              required
+            />
+            <input
+              type="number"
+              step="0.01"
+              value={enrollmentData.total_paid}
+              onChange={(e) => setEnrollmentData({...enrollmentData, total_paid: e.target.value})}
+              placeholder="Amount paid ($)"
+              required
+            />
+            <div className="form-actions">
+              <button type="submit" className="submit-btn">Add</button>
+              <button type="button" onClick={() => setShowAddEnrollment(false)} className="cancel-btn">Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 };
 
-export default StudentLedgerModal;
+export default StudentLedgerPanel;
