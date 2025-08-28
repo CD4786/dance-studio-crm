@@ -362,7 +362,12 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
               <div className="activity-section">
                 <h5>📚 Lesson History</h5>
                 <button 
-                  onClick={() => setShowLessonHistory(!showLessonHistory)}
+                  onClick={() => {
+                    if (!showLessonHistory) {
+                      fetchLessonHistory();
+                    }
+                    setShowLessonHistory(!showLessonHistory);
+                  }}
                   className="toggle-history-btn"
                 >
                   {showLessonHistory ? '📖 Hide History' : '📋 View All Lessons'}
