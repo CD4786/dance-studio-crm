@@ -108,12 +108,19 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
         student_id: student.id,
         program_name: enrollmentData.program_name,
         total_lessons: parseInt(enrollmentData.total_lessons),
-        total_paid: parseFloat(enrollmentData.total_paid),
-        is_active: true
+        price_per_lesson: parseFloat(enrollmentData.price_per_lesson),
+        initial_payment: parseFloat(enrollmentData.initial_payment),
+        total_paid: parseFloat(enrollmentData.total_paid)  // For backward compatibility
       });
       
       setShowAddEnrollment(false);
-      setEnrollmentData({ program_name: '', total_lessons: '', total_paid: '' });
+      setEnrollmentData({ 
+        program_name: '', 
+        total_lessons: '', 
+        price_per_lesson: '50.00',
+        initial_payment: '0.00', 
+        total_paid: '0.00' 
+      });
       await fetchLedgerData();
       
       if (onLedgerUpdate) {
