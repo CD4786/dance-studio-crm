@@ -383,6 +383,9 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [editingLesson, setEditingLesson] = useState(null);
   const [students, setStudents] = useState([]);
+  const [showLedgerModal, setShowLedgerModal] = useState(false);
+  const [selectedStudentForLedger, setSelectedStudentForLedger] = useState(null);
+  const [selectedLessonForLedger, setSelectedLessonForLedger] = useState(null);
   const [teachers, setTeachers] = useState([]);
   const [newLessonData, setNewLessonData] = useState({
     student_id: '',
