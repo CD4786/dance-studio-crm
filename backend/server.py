@@ -1163,11 +1163,21 @@ async def create_enrollment(enrollment_data: EnrollmentCreate):
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
-    # Create enrollment with the provided data
+    # Create enrollment with calculated totals
     enrollment = Enrollment(
-        **enrollment_data.dict(),
-        remaining_lessons=enrollment_data.total_lessons  # Use the total_lessons from the request
+        student_id=enrollment_data.student_id,
+        program_name=enrollment_data.program_name,
+        total_lessons=enrollment_data.total_lessons,
+        remaining_lessons=enrollment_data.total_lessons,
+        price_per_lesson=enrollment_data.price_per_lesson,
+        amount_paid=enrollment_data.initial_payment,
+        total_paid=enrollment_data.total_paid,  # For backward compatibility
+        expiry_date=enrollment_data.expiry_date
     )
+    
+    # Calculate totals
+    enrollment.calculate_totals()
+    
     await db.enrollments.insert_one(enrollment.dict())
     return enrollment
 
