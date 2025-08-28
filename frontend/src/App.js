@@ -907,7 +907,34 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
     }
   };
 
-  const LessonBlock = ({ lesson, onEdit, onDelete, onAttend, onSendReminder, onCancel, onReactivate }) => {
+  const handleOpenLedger = async (lesson) => {
+    try {
+      // Find the student data for this lesson
+      const student = students.find(s => s.id === lesson.student_id);
+      if (student) {
+        setSelectedStudentForLedger(student);
+        setSelectedLessonForLedger(lesson);
+        setShowLedgerModal(true);
+      } else {
+        // If student not in current list, fetch the student data
+        const response = await axios.get(`${API}/students/${lesson.student_id}`);
+        setSelectedStudentForLedger(response.data);
+        setSelectedLessonForLedger(lesson);
+        setShowLedgerModal(true);
+      }
+    } catch (error) {
+      console.error('Failed to fetch student data:', error);
+      alert('Failed to load student information');
+    }
+  };
+
+  const handleLedgerUpdate = (studentId) => {
+    // Trigger refresh to update any balance-related displays
+    onRefresh();
+    console.log(`Ledger updated for student ${studentId}`);
+  };
+
+  const LessonBlock = ({ lesson, onEdit, onDelete, onAttend, onSendReminder, onCancel, onReactivate, onOpenLedger }) => {
     return (
       <div 
         className={`lesson-block ${lesson.is_attended ? 'attended' : ''} ${lesson.status === 'cancelled' ? 'cancelled' : ''}`}
