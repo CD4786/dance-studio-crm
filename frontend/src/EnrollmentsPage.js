@@ -64,8 +64,11 @@ const EnrollmentsPage = ({ onRefresh }) => {
     e.preventDefault();
     try {
       await axios.post(`${API}/enrollments`, {
-        ...formData,
+        student_id: formData.student_id,
+        program_name: formData.program_name,
         total_lessons: parseInt(formData.total_lessons),
+        price_per_lesson: parseFloat(formData.price_per_lesson),
+        initial_payment: parseFloat(formData.initial_payment),
         total_paid: parseFloat(formData.total_paid)
       });
       
@@ -74,12 +77,15 @@ const EnrollmentsPage = ({ onRefresh }) => {
         student_id: '',
         program_name: '',
         total_lessons: '',
-        total_paid: ''
+        price_per_lesson: '50.00',
+        initial_payment: '0.00',
+        total_paid: '0.00'
       });
       fetchEnrollments();
+      onRefresh && onRefresh(); // Trigger refresh in parent components
     } catch (error) {
       console.error('Failed to create enrollment:', error);
-      alert('Failed to create enrollment');
+      alert('Failed to create enrollment: ' + (error.response?.data?.detail || error.message));
     }
   };
 
