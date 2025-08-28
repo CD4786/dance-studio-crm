@@ -1682,14 +1682,49 @@ async def mark_lesson_attended(lesson_id: str, current_user: User = Depends(get_
         }
     )
     
-    # If lesson has enrollment, deduct from remaining lessons
-    if lesson.get("enrollment_id"):
-        enrollment = await db.enrollments.find_one({"id": lesson["enrollment_id"]})
-        if enrollment and enrollment["remaining_lessons"] > 0:
+    # Deduct lesson from student's available lesson credits
+    student_id = lesson.get("student_id")
+    if student_id:
+        # Find an active enrollment with available lessons for this student
+        enrollments = await db.enrollments.find({
+            "student_id": student_id,
+            "is_active": True
+        }).to_list(100)
+        
+        # Find enrollment with available lessons (prioritize by purchase date)
+        available_enrollment = None
+        for enrollment_doc in sorted(enrollments, key=lambda x: x.get("purchase_date", datetime.min)):
+            enrollment = Enrollment(**enrollment_doc)
+            enrollment.calculate_totals()
+            
+            if enrollment.lessons_available > 0:
+                available_enrollment = enrollment
+                break
+        
+        if available_enrollment:
+            # Deduct one lesson from available lessons
             await db.enrollments.update_one(
-                {"id": lesson["enrollment_id"]}, 
-                {"$inc": {"remaining_lessons": -1}}
+                {"id": available_enrollment.id},
+                {
+                    "$inc": {"lessons_taken": 1},
+                    "$set": {"modified_at": datetime.utcnow()}
+                }
             )
+            
+            # Recalculate and update the enrollment totals
+            updated_enrollment = Enrollment(**await db.enrollments.find_one({"id": available_enrollment.id}))
+            updated_enrollment.calculate_totals()
+            
+            await db.enrollments.update_one(
+                {"id": available_enrollment.id},
+                {"$set": {
+                    "lessons_available": updated_enrollment.lessons_available,
+                    "remaining_lessons": updated_enrollment.remaining_lessons
+                }}
+            )
+        else:
+            # Optional: Log that student doesn't have available lessons
+            print(f"Warning: Student {student_id} marked attendance but has no available lesson credits")
     
     # Get enriched lesson data for broadcast
     student = await db.students.find_one({"id": lesson["student_id"]})
