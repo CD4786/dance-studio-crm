@@ -10,6 +10,8 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
   const [loading, setLoading] = useState(true);
   const [showAddPayment, setShowAddPayment] = useState(false);
   const [showAddEnrollment, setShowAddEnrollment] = useState(false);
+  const [showLessonHistory, setShowLessonHistory] = useState(false);
+  const [lessonHistory, setLessonHistory] = useState(null);
   const [error, setError] = useState('');
   
   const [paymentData, setPaymentData] = useState({
