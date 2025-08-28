@@ -963,7 +963,10 @@ async def root():
 async def root_health():
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
 
-# Static file serving for React frontend (Railway deployment)
+# Include the API router in the app FIRST
+app.include_router(api_router)
+
+# Static file serving for React frontend (Railway deployment) - AFTER API router
 try:
     # Check if built frontend exists
     frontend_build_path = Path(__file__).parent.parent / "frontend" / "build"
@@ -971,21 +974,16 @@ try:
         # Serve static files from React build
         app.mount("/static", StaticFiles(directory=frontend_build_path / "static"), name="static")
         
-        # Serve React app for all non-API routes (must be after API router inclusion)
+        # Serve React app for all non-API routes (defined after API router)
         @app.get("/{path:path}")
         async def serve_react_app(path: str):
-            # Skip API routes, health, docs, etc.
-            if path.startswith(("api/", "health", "docs", "redoc", "openapi.json")):
-                raise HTTPException(status_code=404, detail=f"Path not found: {path}")
-            
-            # For all other routes, serve the React index.html
+            # For all non-API routes, serve the React index.html
             index_file = frontend_build_path / "index.html"
             if index_file.exists():
                 return FileResponse(index_file)
             else:
-                raise HTTPException(status_code=404, detail="Frontend not built")
+                return {"error": "Frontend not built", "path": path}
+    else:
+        print("Warning: Frontend build directory not found")
 except Exception as e:
     print(f"Warning: Could not set up static file serving: {e}")
-
-# Include the API router in the app
-app.include_router(api_router)
