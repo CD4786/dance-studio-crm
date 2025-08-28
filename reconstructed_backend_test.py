@@ -499,10 +499,14 @@ class ReconstructedBackendTester:
         
         success, response = self.make_request('POST', 'enrollments', enrollment_data, 200)
         
+        grand_total = 0
+        balance_remaining = 0
+        lessons_available = 0
+        
         if success:
-            grand_total = response.get('grand_total')
-            balance_remaining = response.get('balance_remaining')
-            lessons_available = response.get('lessons_available')
+            grand_total = response.get('grand_total', 0)
+            balance_remaining = response.get('balance_remaining', 0)
+            lessons_available = response.get('lessons_available', 0)
             
             # Verify calculations
             expected_grand_total = 10 * 80.0  # 800.0
