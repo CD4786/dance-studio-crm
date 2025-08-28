@@ -1784,6 +1784,38 @@ async def get_student_lesson_credits(student_id: str, current_user: User = Depen
         "enrollments": enrollment_details
     }
 
+@api_router.get("/students/{student_id}/lessons-history")
+async def get_student_lessons_history(student_id: str, current_user: User = Depends(get_current_user)):
+    """Get all lessons (past and future) for a student"""
+    lessons = await db.lessons.find({
+        "student_id": student_id
+    }).sort("start_datetime", -1).to_list(1000)  # Most recent first
+    
+    lesson_history = []
+    for lesson in lessons:
+        lesson_data = {
+            "id": lesson["id"],
+            "start_datetime": lesson["start_datetime"],
+            "end_datetime": lesson.get("end_datetime"),
+            "duration_minutes": lesson.get("duration_minutes", 60),
+            "teacher_names": lesson.get("teacher_names", []),
+            "booking_type": lesson.get("booking_type", "private_lesson"),
+            "is_attended": lesson.get("is_attended", False),
+            "status": lesson.get("status", "booked"),
+            "notes": lesson.get("notes", ""),
+            "is_past": lesson["start_datetime"] < datetime.utcnow(),
+            "date_only": lesson["start_datetime"].strftime("%Y-%m-%d")
+        }
+        lesson_history.append(lesson_data)
+    
+    return {
+        "student_id": student_id,
+        "total_lessons": len(lesson_history),
+        "attended_lessons": len([l for l in lesson_history if l["is_attended"]]),
+        "upcoming_lessons": len([l for l in lesson_history if not l["is_past"] and l["status"] != "cancelled"]),
+        "lessons": lesson_history
+    }
+
 # Daily Calendar Route
 @api_router.get("/calendar/daily/{date}")
 async def get_daily_data(date: str, current_user: User = Depends(get_current_user)):
