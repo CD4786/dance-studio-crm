@@ -788,13 +788,36 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
 
   const handleAttendLesson = async (lessonId) => {
     try {
+      // First, get the lesson to find the student ID
+      const lesson = calendarData.lessons.find(l => l.id === lessonId);
+      if (!lesson) {
+        alert('Lesson not found');
+        return;
+      }
+
+      // Check if student has available lesson credits
+      const creditsResponse = await axios.get(`${API}/students/${lesson.student_id}/lesson-credits`);
+      const availableLessons = creditsResponse.data.total_lessons_available;
+
+      if (availableLessons <= 0) {
+        alert(`${lesson.student_name} has no available lesson credits. Please add payment to their enrollment before marking attendance.`);
+        return;
+      }
+
+      // Confirm attendance marking
+      const confirmMessage = `Mark ${lesson.student_name} as attended?\n\nThis will deduct 1 lesson credit.\nRemaining after: ${availableLessons - 1} lessons`;
+      if (!window.confirm(confirmMessage)) {
+        return;
+      }
+
+      // Mark attendance
       await axios.post(`${API}/lessons/${lessonId}/attend`);
       fetchDailyData();
       onRefresh();
-      alert('Attendance marked successfully!');
+      alert(`Attendance marked! ${lesson.student_name} now has ${availableLessons - 1} lesson credits remaining.`);
     } catch (error) {
       console.error('Failed to mark attendance:', error);
-      alert('Failed to mark attendance');
+      alert('Failed to mark attendance: ' + (error.response?.data?.detail || error.message));
     }
   };
 
