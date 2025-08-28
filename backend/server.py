@@ -755,3 +755,84 @@ async def mark_lesson_attendance(lesson_id: str, current_user: User = Depends(ge
             )
     
     return {"message": "Attendance marked successfully", "lesson_id": lesson_id}
+
+# Student Ledger endpoint
+@api_router.get("/students/{student_id}/ledger")
+async def get_student_ledger(student_id: str):
+    # Get student info
+    student = await db.students.find_one({"id": student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Get student's enrollments
+    enrollments_docs = await db.enrollments.find({"student_id": student_id}).to_list(100)
+    enrollments = []
+    for doc in enrollments_docs:
+        enrollment = Enrollment(**doc)
+        enrollment.calculate_totals()  # Ensure calculations are up-to-date
+        enrollments.append(enrollment)
+    
+    # Get student's payments
+    payments_docs = await db.payments.find({"student_id": student_id}).to_list(100)
+    payments = [Payment(**doc) for doc in payments_docs]
+    
+    # Get student's upcoming lessons
+    today = datetime.utcnow().date()
+    upcoming_lessons_docs = await db.lessons.find({
+        "student_ids": student_id,
+        "date": {"$gte": today.isoformat()},
+        "status": LessonStatus.ACTIVE
+    }).sort("date", 1).to_list(50)
+    upcoming_lessons = [PrivateLesson(**doc) for doc in upcoming_lessons_docs]
+    
+    # Get student's lesson history
+    lesson_history_docs = await db.lessons.find({
+        "student_ids": student_id,
+        "date": {"$lt": today.isoformat()}
+    }).sort("date", -1).to_list(100)
+    lesson_history = [PrivateLesson(**doc) for doc in lesson_history_docs]
+    
+    # Calculate totals
+    total_paid = sum(p.amount for p in payments)
+    total_enrolled_lessons = sum(e.total_lessons for e in enrollments)
+    remaining_lessons = sum(e.remaining_lessons for e in enrollments)
+    lessons_taken = sum(e.lessons_taken for e in enrollments)
+    
+    return StudentLedgerResponse(
+        student=Student(**student),
+        enrollments=enrollments,
+        payments=payments,
+        upcoming_lessons=upcoming_lessons,
+        lesson_history=lesson_history,
+        total_paid=total_paid,
+        total_enrolled_lessons=total_enrolled_lessons,
+        remaining_lessons=remaining_lessons,
+        lessons_taken=lessons_taken
+    )
+
+# Get available lessons for a student
+@api_router.get("/students/{student_id}/available_lessons")
+async def get_student_available_lessons(student_id: str):
+    enrollments_docs = await db.enrollments.find({
+        "student_id": student_id,
+        "is_active": True
+    }).to_list(100)
+    
+    total_available = 0
+    for doc in enrollments_docs:
+        enrollment = Enrollment(**doc)
+        enrollment.calculate_totals()
+        total_available += enrollment.lessons_available
+    
+    return {"student_id": student_id, "available_lessons": total_available}
+
+# Get lesson history for a student
+@api_router.get("/students/{student_id}/lessons")
+async def get_student_lessons(student_id: str):
+    lessons = await db.lessons.find({
+        "student_ids": student_id
+    }).sort("date", -1).to_list(100)
+    return lessons
+
+# Include the API router in the app
+app.include_router(api_router)
