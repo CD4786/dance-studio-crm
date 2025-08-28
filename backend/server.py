@@ -669,3 +669,89 @@ async def create_payment(payment_data: PaymentCreate, current_user: User = Depen
 async def get_payments():
     payments = await db.payments.find().to_list(1000)
     return payments
+
+# Lesson routes
+@api_router.get("/lessons")
+async def get_lessons(date_filter: str = None):
+    query = {}
+    if date_filter:
+        query["date"] = date_filter
+    lessons = await db.lessons.find(query).to_list(1000)
+    return lessons
+
+@api_router.post("/lessons", response_model=PrivateLesson)
+async def create_lesson(lesson_data: LessonCreate, current_user: User = Depends(get_current_user)):
+    # Get teacher names for the lesson
+    teacher_names = []
+    if lesson_data.teacher_ids:
+        for teacher_id in lesson_data.teacher_ids:
+            teacher = await db.teachers.find_one({"id": teacher_id})
+            if teacher:
+                teacher_names.append(teacher["name"])
+    
+    lesson = PrivateLesson(
+        **lesson_data.dict(),
+        teacher_names=teacher_names,
+        created_by=current_user.id
+    )
+    
+    await db.lessons.insert_one(lesson.dict())
+    return lesson
+
+@api_router.post("/lessons/{lesson_id}/attend")
+async def mark_lesson_attendance(lesson_id: str, current_user: User = Depends(get_current_user)):
+    # Get the lesson
+    lesson = await db.lessons.find_one({"id": lesson_id})
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+    
+    # Mark lesson as attended
+    await db.lessons.update_one(
+        {"id": lesson_id},
+        {"$set": {"attended": True}}
+    )
+    
+    # Update enrollment credits for each student in the lesson
+    for student_id in lesson.get("student_ids", []):
+        # Get student's active enrollments
+        enrollments = await db.enrollments.find({
+            "student_id": student_id,
+            "is_active": True,
+            "lessons_available": {"$gt": 0}
+        }).sort("purchase_date", 1).to_list(100)  # Oldest first
+        
+        if enrollments:
+            # Deduct from the first available enrollment
+            enrollment_doc = enrollments[0]
+            enrollment = Enrollment(**enrollment_doc)
+            
+            # Increment lessons taken and recalculate
+            enrollment.lessons_taken += 1
+            enrollment.calculate_totals()
+            
+            await db.enrollments.update_one(
+                {"id": enrollment.id},
+                {"$set": {
+                    "lessons_taken": enrollment.lessons_taken,
+                    "lessons_available": enrollment.lessons_available,
+                    "remaining_lessons": enrollment.remaining_lessons
+                }}
+            )
+            
+            # Broadcast lesson attendance update
+            await manager.broadcast_update(
+                "lesson_attended",
+                {
+                    "lesson_id": lesson_id,
+                    "student_id": student_id,
+                    "enrollment_id": enrollment.id,
+                    "lessons_taken": enrollment.lessons_taken,
+                    "lessons_available": enrollment.lessons_available,
+                    "date": lesson.get("date"),
+                    "time": f"{lesson.get('start_time')} - {lesson.get('end_time')}"
+                },
+                current_user.id,
+                current_user.name
+            )
+    
+    return {"message": "Attendance marked successfully", "lesson_id": lesson_id}
