@@ -562,7 +562,7 @@ async def update_enrollment(enrollment_id: str, enrollment_data: EnrollmentCreat
 
 @api_router.get("/enrollments")
 async def get_enrollments():
-    enrollments = await db.enrollments.find().to_list(1000)
+    enrollments = await db.enrollments.find({}, {"_id": 0}).to_list(1000)
     return enrollments
 
 # Payment routes - enhanced with enrollment credit updates and broadcasts
