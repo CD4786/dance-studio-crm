@@ -459,3 +459,108 @@ async def create_student(student_data: StudentCreate, current_user: User = Depen
     student = Student(**student_data.dict())
     await db.students.insert_one(student.dict())
     return student
+
+# Enrollment routes - with real-time synchronization
+@api_router.post("/enrollments", response_model=Enrollment)
+async def create_enrollment(enrollment_data: EnrollmentCreate):
+    # Verify student exists
+    student = await db.students.find_one({"id": enrollment_data.student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Create enrollment with calculated totals
+    enrollment = Enrollment(
+        student_id=enrollment_data.student_id,
+        program_name=enrollment_data.program_name,
+        total_lessons=enrollment_data.total_lessons,
+        remaining_lessons=enrollment_data.total_lessons,
+        price_per_lesson=enrollment_data.price_per_lesson,
+        amount_paid=enrollment_data.initial_payment,
+        total_paid=enrollment_data.total_paid,  # For backward compatibility
+        expiry_date=enrollment_data.expiry_date
+    )
+    
+    # Calculate totals
+    enrollment.calculate_totals()
+    
+    await db.enrollments.insert_one(enrollment.dict())
+    
+    # Broadcast real-time update to all connected clients
+    await manager.broadcast_update(
+        "enrollment_created",
+        {
+            "enrollment_id": enrollment.id,
+            "student_id": enrollment.student_id,
+            "student_name": student["name"],
+            "program_name": enrollment.program_name,
+            "total_lessons": enrollment.total_lessons,
+            "lessons_available": enrollment.lessons_available,
+            "amount_paid": enrollment.amount_paid,
+            "grand_total": enrollment.grand_total
+        },
+        "system",
+        "System"
+    )
+    
+    return enrollment
+
+@api_router.put("/enrollments/{enrollment_id}", response_model=Enrollment)
+async def update_enrollment(enrollment_id: str, enrollment_data: EnrollmentCreate):
+    # Verify enrollment exists
+    existing_enrollment = await db.enrollments.find_one({"id": enrollment_id})
+    if not existing_enrollment:
+        raise HTTPException(status_code=404, detail="Enrollment not found")
+    
+    # Verify student exists
+    student = await db.students.find_one({"id": enrollment_data.student_id})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    # Update enrollment with calculated totals
+    enrollment = Enrollment(
+        id=enrollment_id,  # Keep the existing ID
+        student_id=enrollment_data.student_id,
+        program_name=enrollment_data.program_name,
+        total_lessons=enrollment_data.total_lessons,
+        remaining_lessons=existing_enrollment.get("remaining_lessons", enrollment_data.total_lessons),
+        lessons_taken=existing_enrollment.get("lessons_taken", 0),
+        price_per_lesson=enrollment_data.price_per_lesson,
+        amount_paid=enrollment_data.initial_payment,
+        total_paid=enrollment_data.total_paid,  # For backward compatibility
+        purchase_date=existing_enrollment.get("purchase_date"),  # Keep original purchase date
+        expiry_date=enrollment_data.expiry_date,
+        is_active=existing_enrollment.get("is_active", True)
+    )
+    
+    # Calculate totals
+    enrollment.calculate_totals()
+    
+    # Update in database
+    await db.enrollments.update_one(
+        {"id": enrollment_id},
+        {"$set": enrollment.dict()}
+    )
+    
+    # Broadcast real-time update
+    await manager.broadcast_update(
+        "enrollment_updated",
+        {
+            "enrollment_id": enrollment.id,
+            "student_id": enrollment.student_id,
+            "student_name": student["name"],
+            "program_name": enrollment.program_name,
+            "total_lessons": enrollment.total_lessons,
+            "lessons_available": enrollment.lessons_available,
+            "amount_paid": enrollment.amount_paid,
+            "grand_total": enrollment.grand_total
+        },
+        "system",
+        "System"
+    )
+    
+    return enrollment
+
+@api_router.get("/enrollments")
+async def get_enrollments():
+    enrollments = await db.enrollments.find().to_list(1000)
+    return enrollments
