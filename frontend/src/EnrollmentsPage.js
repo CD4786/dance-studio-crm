@@ -139,6 +139,8 @@ const EnrollmentsPage = ({ onRefresh }) => {
       student_id: enrollment.student_id,
       program_name: enrollment.program_name,
       total_lessons: enrollment.total_lessons.toString(),
+      price_per_lesson: (enrollment.price_per_lesson || 50).toString(),
+      initial_payment: (enrollment.amount_paid || 0).toString(),
       total_paid: enrollment.total_paid.toString()
     });
     setShowEditModal(true);
