@@ -108,7 +108,7 @@ const EnrollmentsPage = ({ onRefresh }) => {
         total_paid: '0.00'
       });
       fetchEnrollments();
-      onRefresh && onRefresh(); // Trigger refresh in parent components
+      // Note: Removed onRefresh call to prevent constant refreshing
     } catch (error) {
       console.error('Failed to create enrollment:', error);
       alert('Failed to create enrollment: ' + (error.response?.data?.detail || error.message));
