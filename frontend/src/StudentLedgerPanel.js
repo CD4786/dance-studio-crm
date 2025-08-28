@@ -217,8 +217,8 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate }
                 </span>
               </div>
               <div className="summary-item">
-                <span className="label">Lessons Left:</span>
-                <span className="value">{getRemainingLessons()}</span>
+                <span className="label">Lessons Available:</span>
+                <span className="value">{getAvailableLessons()}</span>
               </div>
             </div>
 
