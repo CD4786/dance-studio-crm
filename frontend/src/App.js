@@ -1332,8 +1332,8 @@ const DailyCalendar = ({ selectedDate, onRefresh }) => {
         selectedSlot={selectedTimeSlot}
       />
 
-      {/* Student Ledger Modal */}
-      <StudentLedgerModal
+      {/* Student Ledger Panel */}
+      <StudentLedgerPanel
         student={selectedStudentForLedger}
         lesson={selectedLessonForLedger}
         isOpen={showLedgerModal}
