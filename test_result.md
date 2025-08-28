@@ -222,7 +222,7 @@ The multiple instructor lesson booking system with date picker and booking types
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "URGENT: Fix critical frontend syntax error in LessonBlock component preventing application from working. Fix lesson cancellation system implementation to ensure cancelled lessons are visually distinct but time slots remain available for rebooking. Ensure CancelledLessonsReport page is integrated correctly."
+user_problem_statement: "Test the student ledger API endpoint to see why the frontend modal is showing 'No ledger data available' when clicked."
 
 backend:
   - task: "Lesson Cancellation System Backend API"
