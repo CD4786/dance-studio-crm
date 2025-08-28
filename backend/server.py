@@ -975,6 +975,30 @@ async def create_payment(payment_data: PaymentCreate, current_user: User = Depen
     
     await db.payments.insert_one(payment.dict())
     
+    # If payment is linked to an enrollment, update the enrollment's amount_paid
+    if payment_data.enrollment_id:
+        # Get current enrollment
+        enrollment_doc = await db.enrollments.find_one({"id": payment_data.enrollment_id})
+        if enrollment_doc:
+            # Calculate new amount paid for this enrollment
+            enrollment_payments = await db.payments.find({"enrollment_id": payment_data.enrollment_id}).to_list(1000)
+            total_paid_to_enrollment = sum(p.get("amount", 0) for p in enrollment_payments)
+            
+            # Update enrollment with new totals
+            enrollment = Enrollment(**enrollment_doc)
+            enrollment.amount_paid = total_paid_to_enrollment
+            enrollment.calculate_totals()
+            
+            # Save updated enrollment
+            await db.enrollments.update_one(
+                {"id": payment_data.enrollment_id},
+                {"$set": {
+                    "amount_paid": enrollment.amount_paid,
+                    "grand_total": enrollment.grand_total,
+                    "balance_remaining": enrollment.balance_remaining
+                }}
+            )
+    
     # Broadcast real-time update
     await manager.broadcast_update(
         "payment_created",
@@ -982,7 +1006,8 @@ async def create_payment(payment_data: PaymentCreate, current_user: User = Depen
             "payment_id": payment.id,
             "student_id": payment.student_id,
             "amount": payment.amount,
-            "payment_method": payment.payment_method
+            "payment_method": payment.payment_method,
+            "enrollment_id": payment.enrollment_id
         },
         current_user.id,
         current_user.name
