@@ -921,7 +921,7 @@ async def update_setting(category: str, key: str, update_data: dict, current_use
 # User management endpoints
 @api_router.get("/users")
 async def get_users():
-    users = await db.users.find().to_list(1000)
+    users = await db.users.find({}, {"_id": 0}).to_list(1000)
     return [UserResponse(**user) for user in users]
 
 @api_router.delete("/users/{user_id}")
