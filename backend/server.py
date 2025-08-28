@@ -935,5 +935,15 @@ async def delete_user(user_id: str, current_user: User = Depends(get_current_use
     
     return {"message": "User deleted successfully"}
 
+# Root route handler for Railway
+@app.get("/")
+async def root():
+    return {"message": "Dance Studio CRM API", "status": "running", "version": "1.0.0"}
+
+# Health check at root level (without /api prefix)
+@app.get("/health")
+async def root_health():
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
 # Include the API router in the app
 app.include_router(api_router)
