@@ -779,6 +779,8 @@ class ReconstructedBackendTester:
         print("-" * 50)
         self.test_server_health_check()
         self.test_admin_authentication()
+        if self.admin_token:
+            self.create_default_settings()
         self.test_dashboard_stats()
         
         # 2. Real-Time Synchronization System (HIGH PRIORITY)
