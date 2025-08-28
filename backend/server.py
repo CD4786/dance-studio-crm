@@ -956,7 +956,18 @@ async def startup_event():
 # Root route handler for Railway
 @app.get("/")
 async def root():
-    return {"message": "Dance Studio CRM API", "status": "running", "version": "1.0.0"}
+    return {
+        "message": "Dance Studio CRM API", 
+        "status": "running", 
+        "version": "1.0.0",
+        "endpoints": {
+            "api": "/api",
+            "health": "/health", 
+            "docs": "/api/docs",
+            "students": "/api/students",
+            "login": "/api/auth/login"
+        }
+    }
 
 # Health check at root level (without /api prefix)
 @app.get("/health")
