@@ -779,7 +779,11 @@ class DanceStudioAPITester:
         else:
             validation_results.append(f"⚠️  student_name is fallback value: '{student_name}'")
         
-        success = all('✅' in result for result in validation_results if '❌' not in result) and calculated_fields_valid
+        # Count successful validations (excluding warnings)
+        successful_validations = sum(1 for result in validation_results if '✅' in result)
+        failed_validations = sum(1 for result in validation_results if '❌' in result)
+        
+        success = failed_validations == 0 and calculated_fields_valid
         
         print(f"   📋 Field validation results:")
         for result in validation_results[:10]:  # Show first 10 results
