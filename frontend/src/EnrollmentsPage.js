@@ -270,38 +270,64 @@ const EnrollmentsPage = ({ onRefresh, onOpenStudentLedger }) => {
           return (
             <div key={enrollment.id} className="enrollment-card">
               <div className="enrollment-info">
-                <h3 className="student-name">{enrollment.student_name || 'Unknown Student'}</h3>
-                <p><strong>Program:</strong> {enrollment.program_name}</p>
+                <div className="enrollment-header">
+                  <h3 className="student-name">{enrollment.student_name || 'Unknown Student'}</h3>
+                  <div className="enrollment-date">
+                    <small>Enrolled: {new Date(enrollment.purchase_date || enrollment.created_at).toLocaleDateString()}</small>
+                  </div>
+                </div>
+                
+                <div className="program-info">
+                  <p><strong>📚 Program:</strong> {enrollment.program_name}</p>
+                  <p><strong>💰 Price per lesson:</strong> {formatCurrency(enrollment.price_per_lesson || 50)}</p>
+                </div>
                 
                 <div className="enrollment-lessons">
-                  <p><strong>Total Enrolled:</strong> {enrollment.total_lessons} lessons</p>
+                  <div className="lessons-header">
+                    <p><strong>📊 Total Enrolled:</strong> {enrollment.total_lessons} lessons</p>
+                  </div>
                   <div className="lesson-credits-display">
-                    <p className="lessons-available"><strong>💎 Available:</strong> {enrollment.lessons_available || 0} lessons</p>
-                    <p className="lessons-taken"><strong>✅ Attended:</strong> {enrollment.lessons_taken || 0} lessons</p>
-                    <p><strong>📝 Remaining:</strong> {enrollment.total_lessons - (enrollment.lessons_taken || 0)} lessons</p>
+                    <div className="credit-item lessons-available">
+                      <span className="credit-label">💎 Available</span>
+                      <span className="credit-value">{enrollment.lessons_available || 0}</span>
+                    </div>
+                    <div className="credit-item lessons-taken">
+                      <span className="credit-label">✅ Attended</span>
+                      <span className="credit-value">{enrollment.lessons_taken || 0}</span>
+                    </div>
+                    <div className="credit-item lessons-remaining">
+                      <span className="credit-label">📝 Remaining</span>
+                      <span className="credit-value">{enrollment.total_lessons - (enrollment.lessons_taken || 0)}</span>
+                    </div>
                   </div>
                 </div>
                 
                 <div className="enrollment-financial">
-                  <p><strong>Price Per Lesson:</strong> {formatCurrency(enrollment.price_per_lesson || 50)}</p>
-                  <p><strong>Grand Total:</strong> {formatCurrency(totals.grandTotal)}</p>
-                  <p><strong>Amount Paid:</strong> {formatCurrency(totals.amountPaid)}</p>
-                  <p className={`balance-remaining ${totals.balanceRemaining > 0 ? 'negative' : 'positive'}`}>
-                    <strong>Balance:</strong> {formatCurrency(totals.balanceRemaining)}
-                  </p>
+                  <div className="financial-row">
+                    <span><strong>Grand Total:</strong></span>
+                    <span>{formatCurrency(totals.grandTotal)}</span>
+                  </div>
+                  <div className="financial-row">
+                    <span><strong>Amount Paid:</strong></span>
+                    <span className="amount-paid">{formatCurrency(totals.amountPaid)}</span>
+                  </div>
+                  <div className={`financial-row balance-row ${totals.balanceRemaining > 0 ? 'negative' : 'positive'}`}>
+                    <span><strong>Balance:</strong></span>
+                    <span className="balance-amount">{formatCurrency(totals.balanceRemaining)}</span>
+                  </div>
                 </div>
                 
-                <p className="enrollment-status">
+                <div className="enrollment-status">
                   <span className={`status-badge ${enrollment.remaining_lessons > 0 ? 'active' : 'completed'}`}>
-                    {enrollment.remaining_lessons > 0 ? 'Active' : 'Completed'}
+                    {enrollment.remaining_lessons > 0 ? '🟢 Active' : '⚪ Completed'}
                   </span>
                   {enrollment.remaining_lessons <= 3 && enrollment.remaining_lessons > 0 && (
-                    <span className="status-badge warning">Low Lessons</span>
+                    <span className="status-badge warning">⚠️ Low Lessons</span>
                   )}
                   {totals.balanceRemaining > 0 && (
-                    <span className="status-badge balance-due">Balance Due</span>
+                    <span className="status-badge balance-due">💳 Balance Due</span>
                   )}
-                </p>
+                </div>
               </div>
               
               <div className="enrollment-actions">
