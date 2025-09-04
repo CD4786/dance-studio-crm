@@ -268,6 +268,25 @@ class SettingsResponse(BaseModel):
     updated_at: datetime
     updated_by: Optional[str] = None
 
+# Enhanced enrollment response model with student name
+class EnrollmentWithStudentResponse(BaseModel):
+    id: str
+    student_id: str
+    student_name: str  # New field for student name
+    program_name: str
+    total_lessons: int
+    remaining_lessons: int
+    lessons_taken: int = Field(default=0)
+    lessons_available: int = Field(default=0)
+    price_per_lesson: float = Field(default=50.0)
+    grand_total: float = Field(default=0.0)
+    amount_paid: float = Field(default=0.0)
+    balance_remaining: float = Field(default=0.0)
+    total_paid: float
+    purchase_date: datetime
+    expiry_date: Optional[datetime] = None
+    is_active: bool = True
+
 class Enrollment(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     student_id: str
