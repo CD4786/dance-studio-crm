@@ -4888,6 +4888,14 @@ class DanceStudioAPITester:
         self.test_get_enrollments()
         self.test_get_student_enrollments()
         
+        # Enhanced Enrollment API with Student Names Tests
+        print("\n🎯 Enhanced Enrollment API with Student Names Tests:")
+        self.test_enhanced_enrollment_api_with_student_names()
+        self.test_enrollment_response_model_validation()
+        self.test_enrollment_student_name_fallback()
+        self.test_enrollment_backward_compatibility()
+        self.test_enrollment_performance_with_student_names()
+        
         # Legacy Enrollment tests (for backward compatibility)
         print("\n📋 Legacy Enrollment Tests:")
         self.test_create_enrollment()
