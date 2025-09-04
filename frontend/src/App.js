@@ -2343,7 +2343,7 @@ const WeeklyCalendar = ({ selectedDate, onRefresh, onNavigateToDay }) => {
               </div>
               <div className="day-lessons">
                 {dayLessons.map(lesson => (
-                  <div key={lesson.id} className={`week-lesson ${lesson.is_attended ? 'attended' : ''}`}>
+                  <div key={lesson.id} className={`week-lesson ${lesson.is_attended ? 'attended' : ''} ${lesson.status === 'cancelled' ? 'cancelled' : ''}`}>
                     <div className="lesson-info">
                       <div className="lesson-time">
                         {new Date(lesson.start_datetime).toLocaleTimeString('en-US', { 
@@ -2351,23 +2351,43 @@ const WeeklyCalendar = ({ selectedDate, onRefresh, onNavigateToDay }) => {
                           minute: '2-digit' 
                         })}
                       </div>
-                      <div className="lesson-student">{lesson.student_name}</div>
+                      <div className="lesson-student">
+                        {lesson.student_name}
+                        {lesson.status === 'cancelled' && <span className="cancelled-badge">CANCELLED</span>}
+                      </div>
                       <div className="lesson-teacher">
                         {lesson.teacher_names && lesson.teacher_names.length > 0 
                           ? lesson.teacher_names.join(', ')
                           : lesson.teacher_name || 'Unknown'
                         }
                       </div>
+                      {lesson.is_attended && (
+                        <div className="attendance-badge">✅ Attended</div>
+                      )}
                     </div>
-                    <button 
-                      onClick={() => handleDeleteLesson(lesson.id)} 
-                      className="weekly-delete-btn" 
-                      title="Delete this lesson"
-                    >
-                      DELETE
-                    </button>
+                    <div className="lesson-actions">
+                      {lesson.status !== 'cancelled' && !lesson.is_attended && (
+                        <button 
+                          onClick={() => handleAttendLesson(lesson)} 
+                          className="weekly-attend-btn" 
+                          title="Mark as attended"
+                        >
+                          ✅ Attend
+                        </button>
+                      )}
+                      <button 
+                        onClick={() => handleDeleteLesson(lesson.id)} 
+                        className="weekly-delete-btn" 
+                        title="Delete this lesson"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
+                {dayLessons.length === 0 && (
+                  <div className="no-lessons">No lessons scheduled</div>
+                )}
               </div>
             </div>
           );
