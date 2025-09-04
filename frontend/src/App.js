@@ -2195,6 +2195,41 @@ const WeeklyCalendar = ({ selectedDate, onRefresh, onNavigateToDay }) => {
     setCurrentDate(new Date());
   };
 
+  const handleAttendLesson = async (lesson) => {
+    try {
+      // Check if student has available lesson credits
+      const creditsResponse = await axios.get(`${API}/students/${lesson.student_id}/lesson-credits`);
+      const availableLessons = creditsResponse.data.total_lessons_available;
+
+      if (availableLessons <= 0) {
+        alert(`${lesson.student_name} has no available lesson credits. Please add payment to their enrollment before marking attendance.`);
+        return;
+      }
+
+      // Confirm attendance marking
+      const confirmMessage = `Mark ${lesson.student_name} as attended?\n\nThis will deduct 1 lesson credit.\nRemaining after: ${availableLessons - 1} lessons`;
+      if (!window.confirm(confirmMessage)) {
+        return;
+      }
+
+      // Mark attendance
+      await axios.post(`${API}/lessons/${lesson.id}/attend`);
+      fetchWeeklyLessons(); // Refresh weekly view
+      onRefresh(); // Refresh parent component and daily calendar stats
+      alert(`Attendance marked! ${lesson.student_name} now has ${availableLessons - 1} lesson credits remaining.`);
+    } catch (error) {
+      console.error('Failed to mark attendance:', error);
+      alert('Failed to mark attendance: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleNavigateToDayClick = (day) => {
+    // Navigate to the specific day in daily calendar view
+    if (onNavigateToDay) {
+      onNavigateToDay(day);
+    }
+  };
+
   const handleDeleteLesson = async (lessonId) => {
     if (window.confirm('Are you sure you want to delete this lesson?')) {
       try {
