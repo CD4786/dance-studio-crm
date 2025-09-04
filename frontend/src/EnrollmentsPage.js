@@ -270,7 +270,7 @@ const EnrollmentsPage = ({ onRefresh }) => {
           return (
             <div key={enrollment.id} className="enrollment-card">
               <div className="enrollment-info">
-                <h3 className="student-name">{getStudentName(enrollment.student_id)}</h3>
+                <h3 className="student-name">{enrollment.student_name || 'Unknown Student'}</h3>
                 <p><strong>Program:</strong> {enrollment.program_name}</p>
                 
                 <div className="enrollment-lessons">
