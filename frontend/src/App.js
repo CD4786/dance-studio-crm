@@ -2369,6 +2369,11 @@ const MainApp = () => {
   const [realTimeUpdatesEnabled, setRealTimeUpdatesEnabled] = useState(true);
   const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
   const [notifications, setNotifications] = useState([]);
+  
+  // Student Ledger Panel state (moved from DailyCalendar to MainApp level)
+  const [showLedgerModal, setShowLedgerModal] = useState(false);
+  const [selectedStudentForLedger, setSelectedStudentForLedger] = useState(null);
+  const [selectedLessonForLedger, setSelectedLessonForLedger] = useState(null);
 
   // WebSocket connection and real-time updates
   useEffect(() => {
