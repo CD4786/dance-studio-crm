@@ -163,10 +163,16 @@ const StudentLedgerPanel = ({ student, lesson, isOpen, onClose, onLedgerUpdate, 
 
   const fetchLessonHistory = async () => {
     try {
-      const response = await axios.get(`${API}/students/${student.id}/lessons-history`);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      console.log('Fetching lesson history for student:', student.id);
+      const response = await axios.get(`${API}/students/${student.id}/lessons-history`, { headers });
+      console.log('Lesson history response:', response.data);
       setLessonHistory(response.data);
     } catch (error) {
       console.error('Failed to fetch lesson history:', error);
+      setLessonHistory(null);
     }
   };
 
