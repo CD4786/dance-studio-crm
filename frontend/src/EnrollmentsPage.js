@@ -60,12 +60,6 @@ const EnrollmentsPage = ({ onRefresh }) => {
     }
   };
 
-  // Helper function to get student name
-  const getStudentName = (studentId) => {
-    const student = students.find(s => s.id === studentId);
-    return student ? student.name : 'Unknown Student';
-  };
-
   // Helper function to calculate enrollment totals
   const calculateEnrollmentTotals = (enrollment) => {
     const grandTotal = (enrollment.total_lessons || 0) * (enrollment.price_per_lesson || 50);
