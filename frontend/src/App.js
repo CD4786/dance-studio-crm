@@ -2679,6 +2679,12 @@ const MainApp = () => {
           <DailyCalendar 
             selectedDate={selectedDate}
             onRefresh={handleRefresh}
+            showLedgerModal={showLedgerModal}
+            setShowLedgerModal={setShowLedgerModal}
+            selectedStudentForLedger={selectedStudentForLedger}
+            setSelectedStudentForLedger={setSelectedStudentForLedger}
+            selectedLessonForLedger={selectedLessonForLedger}
+            setSelectedLessonForLedger={setSelectedLessonForLedger}
           />
         )}
         {currentView === 'weekly' && (
