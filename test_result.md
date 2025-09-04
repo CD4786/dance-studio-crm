@@ -222,9 +222,21 @@ The multiple instructor lesson booking system with date picker and booking types
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test the student ledger API endpoint to see why the frontend modal is showing 'No ledger data available' when clicked."
+user_problem_statement: "Enhance enrollment system to display student names directly within the enrollment overview and link enrollments to the student ledger for better management. Fix lesson history display in StudentLedgerPanel if needed."
 
 backend:
+  - task: "Enhanced Enrollment API with Student Names"
+    implemented: true  
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Modified GET /api/enrollments endpoint to include student names directly. Created new EnrollmentWithStudentResponse model to include student_name field. This eliminates the need for separate frontend calls to fetch student names and improves UI efficiency."
+
   - task: "Student Ledger API Endpoint Testing"
     implemented: true  
     working: true
