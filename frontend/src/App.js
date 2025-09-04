@@ -2153,7 +2153,7 @@ const TeachersManager = ({ onRefresh }) => {
 };
 
 // Weekly Calendar Component
-const WeeklyCalendar = ({ selectedDate, onRefresh }) => {
+const WeeklyCalendar = ({ selectedDate, onRefresh, onNavigateToDay }) => {
   const [lessons, setLessons] = useState([]);
   const [currentDate, setCurrentDate] = useState(selectedDate);
   
