@@ -2567,6 +2567,21 @@ const MainApp = () => {
     setCurrentView(targetView);
   };
 
+  // Student Ledger helper functions
+  const handleLedgerUpdate = (studentId) => {
+    // Trigger refresh to update any balance-related displays
+    handleRefresh();
+    console.log(`Ledger updated for student ${studentId}`);
+  };
+
+  const handleNavigateToDate = (dateString) => {
+    // Navigate to the specific date in the calendar
+    const targetDate = new Date(dateString + 'T00:00:00');
+    setSelectedDate(targetDate);
+    setCurrentView('daily'); // Switch to daily calendar view
+    console.log(`Navigated to date: ${dateString}`);
+  };
+
   // Add null check for user
   if (!user) {
     return <div className="loading">Loading...</div>;
