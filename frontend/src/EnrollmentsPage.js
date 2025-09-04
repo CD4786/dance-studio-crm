@@ -194,7 +194,7 @@ const EnrollmentsPage = ({ onRefresh }) => {
           return b.total_paid - a.total_paid;
         case 'created_date':
         default:
-          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+          return new Date(b.purchase_date || b.created_at || 0) - new Date(a.purchase_date || a.created_at || 0);
       }
     });
 
