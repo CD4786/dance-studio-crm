@@ -229,24 +229,33 @@ class WeeklyCalendarAPITester:
         success, response = self.make_request('GET', f'students/{self.created_student_id}/lesson-credits', expected_status=200)
         
         if success:
-            total_credits = response.get('total_available_credits', 0)
-            credits_by_enrollment = response.get('credits_by_enrollment', [])
-            attended_lessons = response.get('attended_lessons', 0)
+            total_credits = response.get('total_lessons_available', 0)
+            enrollments = response.get('enrollments', [])
+            student_id = response.get('student_id', '')
             
             print(f"   ✅ Credits check successful")
             print(f"   💎 Total available credits: {total_credits}")
-            print(f"   📊 Credits by enrollment: {len(credits_by_enrollment)} enrollments")
-            print(f"   ✅ Attended lessons: {attended_lessons}")
+            print(f"   📊 Enrollments: {len(enrollments)} enrollments")
+            print(f"   👤 Student ID: {student_id}")
             
             # Verify response structure
-            required_fields = ['total_available_credits', 'credits_by_enrollment', 'attended_lessons']
+            required_fields = ['student_id', 'total_lessons_available', 'enrollments']
             missing_fields = [field for field in required_fields if field not in response]
             
             if missing_fields:
                 self.log_test("Lesson Credits Check API", False, f"- Missing fields: {missing_fields}")
                 return False
                 
-        self.log_test("Lesson Credits Check API", success, f"- Credits: {total_credits}, Attended: {attended_lessons}")
+            # Verify enrollment structure if any enrollments exist
+            if enrollments:
+                enrollment = enrollments[0]
+                enrollment_fields = ['id', 'program_name', 'total_lessons', 'lessons_taken', 'lessons_available']
+                enrollment_missing = [field for field in enrollment_fields if field not in enrollment]
+                if enrollment_missing:
+                    self.log_test("Lesson Credits Check API", False, f"- Missing enrollment fields: {enrollment_missing}")
+                    return False
+                    
+        self.log_test("Lesson Credits Check API", success, f"- Credits: {total_credits}, Enrollments: {len(enrollments)}")
         return success
 
     def test_lesson_deletion_api(self):
