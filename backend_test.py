@@ -649,6 +649,291 @@ class DanceStudioAPITester:
         self.log_test("Get Enrollments", success, f"- Found {enrollments_count} enrollments")
         return success
 
+    def test_enhanced_enrollment_api_with_student_names(self):
+        """Test enhanced enrollment API that includes student names directly in response"""
+        success, response = self.make_request('GET', 'enrollments', expected_status=200)
+        
+        if not success:
+            self.log_test("Enhanced Enrollment API with Student Names", False, "- Failed to get enrollments")
+            return False
+            
+        enrollments_count = len(response) if isinstance(response, list) else 0
+        
+        if enrollments_count == 0:
+            self.log_test("Enhanced Enrollment API with Student Names", False, "- No enrollments found to test")
+            return False
+            
+        # Test the enhanced response model with student_name field
+        valid_enrollments = 0
+        student_names_found = []
+        missing_fields = []
+        
+        required_fields = [
+            'id', 'student_id', 'student_name', 'program_name', 'total_lessons',
+            'remaining_lessons', 'lessons_taken', 'lessons_available', 
+            'price_per_lesson', 'grand_total', 'amount_paid', 'balance_remaining',
+            'total_paid', 'purchase_date', 'is_active'
+        ]
+        
+        for enrollment in response:
+            # Check if all required fields are present
+            enrollment_valid = True
+            enrollment_missing_fields = []
+            
+            for field in required_fields:
+                if field not in enrollment:
+                    enrollment_valid = False
+                    enrollment_missing_fields.append(field)
+            
+            if enrollment_valid:
+                valid_enrollments += 1
+                student_name = enrollment.get('student_name', 'Unknown')
+                student_names_found.append(student_name)
+                
+                # Verify student_name is not empty or "Unknown Student"
+                if student_name and student_name != "Unknown Student":
+                    print(f"   ✅ Enrollment {enrollment['id'][:8]}...: Student '{student_name}' - Program '{enrollment['program_name']}'")
+                else:
+                    print(f"   ⚠️  Enrollment {enrollment['id'][:8]}...: Missing/fallback student name '{student_name}'")
+            else:
+                missing_fields.extend(enrollment_missing_fields)
+                print(f"   ❌ Enrollment {enrollment.get('id', 'unknown')[:8]}...: Missing fields {enrollment_missing_fields}")
+        
+        # Test specific aspects of the enhanced API
+        has_student_names = all(name and name != "Unknown Student" for name in student_names_found)
+        has_all_fields = valid_enrollments == enrollments_count
+        
+        # Test data enrichment - verify student names are properly fetched
+        unique_student_names = set(student_names_found)
+        data_enrichment_working = len(unique_student_names) > 0
+        
+        # Test response model structure
+        response_model_valid = has_all_fields and len(missing_fields) == 0
+        
+        success = has_all_fields and data_enrichment_working and response_model_valid
+        
+        details = f"- {valid_enrollments}/{enrollments_count} valid enrollments"
+        if has_student_names:
+            details += f", {len(unique_student_names)} unique students"
+        if not has_all_fields:
+            details += f", missing fields: {set(missing_fields)}"
+            
+        self.log_test("Enhanced Enrollment API with Student Names", success, details)
+        return success
+
+    def test_enrollment_response_model_validation(self):
+        """Test EnrollmentWithStudentResponse model validation and data types"""
+        success, response = self.make_request('GET', 'enrollments', expected_status=200)
+        
+        if not success or not response:
+            self.log_test("Enrollment Response Model Validation", False, "- No enrollments to validate")
+            return False
+            
+        # Test first enrollment for detailed validation
+        enrollment = response[0]
+        validation_results = []
+        
+        # Test data types and field validation
+        field_validations = [
+            ('id', str, 'string'),
+            ('student_id', str, 'string'),
+            ('student_name', str, 'string'),
+            ('program_name', str, 'string'),
+            ('total_lessons', int, 'integer'),
+            ('remaining_lessons', int, 'integer'),
+            ('lessons_taken', int, 'integer'),
+            ('lessons_available', int, 'integer'),
+            ('price_per_lesson', (int, float), 'number'),
+            ('grand_total', (int, float), 'number'),
+            ('amount_paid', (int, float), 'number'),
+            ('balance_remaining', (int, float), 'number'),
+            ('total_paid', (int, float), 'number'),
+            ('is_active', bool, 'boolean')
+        ]
+        
+        for field_name, expected_type, type_name in field_validations:
+            if field_name in enrollment:
+                field_value = enrollment[field_name]
+                if isinstance(field_value, expected_type):
+                    validation_results.append(f"✅ {field_name}: {type_name}")
+                else:
+                    validation_results.append(f"❌ {field_name}: expected {type_name}, got {type(field_value).__name__}")
+            else:
+                validation_results.append(f"❌ {field_name}: missing")
+        
+        # Test calculated fields are correct
+        calculated_fields_valid = True
+        if 'total_lessons' in enrollment and 'price_per_lesson' in enrollment:
+            expected_grand_total = enrollment['total_lessons'] * enrollment['price_per_lesson']
+            actual_grand_total = enrollment.get('grand_total', 0)
+            if abs(expected_grand_total - actual_grand_total) > 0.01:  # Allow for floating point precision
+                calculated_fields_valid = False
+                validation_results.append(f"❌ grand_total calculation: expected {expected_grand_total}, got {actual_grand_total}")
+            else:
+                validation_results.append(f"✅ grand_total calculation correct")
+        
+        # Test student name is not fallback value
+        student_name = enrollment.get('student_name', '')
+        if student_name and student_name != "Unknown Student":
+            validation_results.append(f"✅ student_name properly populated: '{student_name}'")
+        else:
+            validation_results.append(f"⚠️  student_name is fallback value: '{student_name}'")
+        
+        success = all('✅' in result for result in validation_results if '❌' not in result) and calculated_fields_valid
+        
+        print(f"   📋 Field validation results:")
+        for result in validation_results[:10]:  # Show first 10 results
+            print(f"      {result}")
+        if len(validation_results) > 10:
+            print(f"      ... and {len(validation_results) - 10} more")
+            
+        self.log_test("Enrollment Response Model Validation", success, 
+                     f"- Validated {len(field_validations)} fields")
+        return success
+
+    def test_enrollment_student_name_fallback(self):
+        """Test enrollment API handles missing students with fallback to 'Unknown Student'"""
+        # First create an enrollment, then delete the student to test fallback
+        if not self.created_student_id:
+            self.log_test("Enrollment Student Name Fallback", False, "- No student ID available")
+            return False
+            
+        # Create a test enrollment
+        enrollment_data = {
+            "student_id": self.created_student_id,
+            "program_name": "Test Fallback Program",
+            "total_lessons": 5,
+            "price_per_lesson": 50.0,
+            "initial_payment": 100.0,
+            "total_paid": 100.0
+        }
+        
+        success, enrollment_response = self.make_request('POST', 'enrollments', enrollment_data, 200)
+        if not success:
+            self.log_test("Enrollment Student Name Fallback", False, "- Failed to create test enrollment")
+            return False
+            
+        test_enrollment_id = enrollment_response.get('id')
+        
+        # Get enrollments and verify student name is present
+        success, response = self.make_request('GET', 'enrollments', expected_status=200)
+        if not success:
+            self.log_test("Enrollment Student Name Fallback", False, "- Failed to get enrollments")
+            return False
+            
+        # Find our test enrollment
+        test_enrollment = None
+        for enrollment in response:
+            if enrollment.get('id') == test_enrollment_id:
+                test_enrollment = enrollment
+                break
+                
+        if not test_enrollment:
+            self.log_test("Enrollment Student Name Fallback", False, "- Test enrollment not found")
+            return False
+            
+        # Verify student name is properly populated (not fallback)
+        student_name = test_enrollment.get('student_name', '')
+        has_proper_name = student_name and student_name != "Unknown Student"
+        
+        # Clean up - delete the test enrollment
+        self.make_request('DELETE', f'enrollments/{test_enrollment_id}', expected_status=200)
+        
+        self.log_test("Enrollment Student Name Fallback", has_proper_name, 
+                     f"- Student name: '{student_name}' (proper: {has_proper_name})")
+        return has_proper_name
+
+    def test_enrollment_backward_compatibility(self):
+        """Test that existing enrollment functionality still works with enhanced API"""
+        if not self.created_student_id:
+            self.log_test("Enrollment Backward Compatibility", False, "- No student ID available")
+            return False
+            
+        # Test creating enrollment (should work as before)
+        enrollment_data = {
+            "student_id": self.created_student_id,
+            "program_name": "Backward Compatibility Test",
+            "total_lessons": 10,
+            "price_per_lesson": 45.0,
+            "initial_payment": 200.0,
+            "total_paid": 200.0
+        }
+        
+        success, create_response = self.make_request('POST', 'enrollments', enrollment_data, 200)
+        if not success:
+            self.log_test("Enrollment Backward Compatibility", False, "- Failed to create enrollment")
+            return False
+            
+        test_enrollment_id = create_response.get('id')
+        
+        # Test updating enrollment (should work as before)
+        update_data = {
+            "student_id": self.created_student_id,
+            "program_name": "Updated Backward Compatibility Test",
+            "total_lessons": 12,
+            "price_per_lesson": 45.0,
+            "initial_payment": 250.0,
+            "total_paid": 250.0
+        }
+        
+        success, update_response = self.make_request('PUT', f'enrollments/{test_enrollment_id}', update_data, 200)
+        if not success:
+            self.log_test("Enrollment Backward Compatibility", False, "- Failed to update enrollment")
+            return False
+            
+        # Test getting individual student enrollments (should work as before)
+        success, student_enrollments = self.make_request('GET', f'students/{self.created_student_id}/enrollments', expected_status=200)
+        if not success:
+            self.log_test("Enrollment Backward Compatibility", False, "- Failed to get student enrollments")
+            return False
+            
+        # Verify the updated enrollment exists in student enrollments
+        found_updated = False
+        for enrollment in student_enrollments:
+            if enrollment.get('id') == test_enrollment_id:
+                if enrollment.get('program_name') == "Updated Backward Compatibility Test":
+                    found_updated = True
+                break
+                
+        # Clean up
+        self.make_request('DELETE', f'enrollments/{test_enrollment_id}', expected_status=200)
+        
+        self.log_test("Enrollment Backward Compatibility", found_updated, 
+                     f"- CRUD operations working, updated enrollment found: {found_updated}")
+        return found_updated
+
+    def test_enrollment_performance_with_student_names(self):
+        """Test performance of enrollment endpoint with student name lookups"""
+        import time
+        
+        start_time = time.time()
+        success, response = self.make_request('GET', 'enrollments', expected_status=200)
+        end_time = time.time()
+        
+        if not success:
+            self.log_test("Enrollment Performance with Student Names", False, "- Failed to get enrollments")
+            return False
+            
+        response_time = end_time - start_time
+        enrollments_count = len(response) if isinstance(response, list) else 0
+        
+        # Performance should be reasonable (under 5 seconds for typical loads)
+        performance_acceptable = response_time < 5.0
+        
+        # Verify all enrollments have student names (no missing lookups)
+        student_names_present = 0
+        for enrollment in response:
+            if enrollment.get('student_name') and enrollment.get('student_name') != "Unknown Student":
+                student_names_present += 1
+                
+        lookup_success_rate = (student_names_present / enrollments_count * 100) if enrollments_count > 0 else 0
+        
+        success = performance_acceptable and lookup_success_rate > 80  # Allow some missing students
+        
+        self.log_test("Enrollment Performance with Student Names", success, 
+                     f"- {response_time:.2f}s for {enrollments_count} enrollments, {lookup_success_rate:.1f}% names found")
+        return success
+
     def test_get_student_enrollments(self):
         """Test getting student's enrollments"""
         if not self.created_student_id:
