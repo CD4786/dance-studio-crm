@@ -4999,6 +4999,61 @@ class DanceStudioAPITester:
             print(f"⚠️  {self.tests_run - self.tests_passed} tests failed")
             return 1
 
+    def run_enrollment_tests_only(self):
+        """Run only the enhanced enrollment API tests"""
+        print("🚀 Starting Enhanced Enrollment API Tests")
+        print(f"🌐 Testing against: {self.base_url}")
+        print("=" * 80)
+        print("🎯 TESTING OBJECTIVES:")
+        print("1. Enhanced Enrollment API Testing - GET /api/enrollments with student_name field")
+        print("2. Response Model Validation - EnrollmentWithStudentResponse model")
+        print("3. Data Enrichment - Student names properly fetched and included")
+        print("4. Backward Compatibility - Existing enrollment functionality")
+        print("5. Performance - Endpoint performs well with student name lookups")
+        print("=" * 80)
+        
+        # Authentication tests (required for other tests)
+        print("\n📝 Authentication Tests:")
+        if not self.test_admin_login():
+            print("❌ Admin login failed - cannot continue")
+            return 1
+        
+        # Set token for authenticated requests
+        if hasattr(self, 'admin_token'):
+            self.token = self.admin_token
+        
+        # Create basic test data
+        print("\n🏗️ Setting up test data:")
+        if not self.test_create_multiple_teachers():
+            print("❌ Failed to create teachers - cannot continue")
+            return 1
+        if not self.test_create_student():
+            print("❌ Failed to create student - cannot continue")
+            return 1
+        
+        # Create some enrollments for testing
+        print("\n📋 Creating test enrollments:")
+        self.test_create_enrollment_with_program()
+        
+        # ENHANCED ENROLLMENT API TESTS
+        print("\n🎯 Enhanced Enrollment API with Student Names Tests:")
+        self.test_enhanced_enrollment_api_with_student_names()
+        self.test_enrollment_response_model_validation()
+        self.test_enrollment_student_name_fallback()
+        self.test_enrollment_backward_compatibility()
+        self.test_enrollment_performance_with_student_names()
+        
+        # Final results
+        print("\n" + "=" * 80)
+        print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} tests passed")
+        
+        if self.tests_passed == self.tests_run:
+            print("🎉 All enhanced enrollment API tests passed!")
+            return 0
+        else:
+            print(f"⚠️  {self.tests_run - self.tests_passed} tests failed")
+            return 1
+
     def run_multiple_instructor_tests_only(self):
         """Run only the multiple instructor and booking type tests"""
         print("🚀 Starting Multiple Instructor & Booking Type Tests")
