@@ -1274,7 +1274,7 @@ async def update_enrollment(enrollment_id: str, enrollment_data: EnrollmentCreat
     
     return enrollment
 
-@api_router.get("/enrollments", response_model=List[Enrollment])
+@api_router.get("/enrollments", response_model=List[EnrollmentWithStudentResponse])
 async def get_enrollments():
     enrollments = await db.enrollments.find().to_list(1000)
     
@@ -1301,8 +1301,22 @@ async def get_enrollments():
             enrollment_doc["program_name"] = "Unknown Program"
         if "total_lessons" not in enrollment_doc:
             enrollment_doc["total_lessons"] = enrollment_doc.get("remaining_lessons", 0)
-            
-        result.append(Enrollment(**enrollment_doc))
+        
+        # Get student name for this enrollment
+        student = await db.students.find_one({"id": enrollment_doc["student_id"]})
+        student_name = student["name"] if student else "Unknown Student"
+        
+        # Create enrollment with calculated totals
+        enrollment = Enrollment(**enrollment_doc)
+        enrollment.calculate_totals()
+        
+        # Create response with student name
+        enrollment_response = EnrollmentWithStudentResponse(
+            **enrollment.dict(),
+            student_name=student_name
+        )
+        
+        result.append(enrollment_response)
     
     return result
 
