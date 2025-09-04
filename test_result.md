@@ -321,7 +321,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Student Ledger API Endpoint Testing"
+    - "Enhanced Enrollment API with Student Names"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
