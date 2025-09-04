@@ -2690,7 +2690,13 @@ const MainApp = () => {
           <TeachersManager onRefresh={handleRefresh} />
         )}
         {currentView === 'enrollments' && (
-          <EnrollmentsPage onRefresh={handleRefresh} />
+          <EnrollmentsPage 
+            onRefresh={handleRefresh} 
+            onOpenStudentLedger={(student) => {
+              setSelectedStudentForLedger(student);
+              setShowLedgerModal(true);
+            }}
+          />
         )}
         {currentView === 'reports' && (
           <CancelledLessonsReport />
