@@ -306,6 +306,21 @@ const EnrollmentsPage = ({ onRefresh, onOpenStudentLedger }) => {
               
               <div className="enrollment-actions">
                 <button 
+                  onClick={() => {
+                    if (onOpenStudentLedger) {
+                      // Find the student object to pass to ledger
+                      const student = students.find(s => s.id === enrollment.student_id);
+                      if (student) {
+                        onOpenStudentLedger(student);
+                      }
+                    }
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  title="View student ledger"
+                >
+                  💰 Ledger
+                </button>
+                <button 
                   onClick={() => openEditModal(enrollment)}
                   className="btn btn-outline btn-sm"
                 >
