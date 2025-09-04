@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 class FocusedFixTester:
-    def __init__(self, base_url="https://dance-studio-crm-1.preview.emergentagent.com"):
+    def __init__(self, base_url="https://rhythm-scheduler-1.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None
