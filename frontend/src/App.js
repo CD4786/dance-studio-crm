@@ -2336,9 +2336,10 @@ const WeeklyCalendar = ({ selectedDate, onRefresh, onNavigateToDay }) => {
           const dayLessons = getLessonsForDay(day);
           return (
             <div key={day.toDateString()} className="day-column">
-              <div className="day-header">
+              <div className="day-header" onClick={() => handleNavigateToDayClick(day)} style={{ cursor: 'pointer' }}>
                 <div className="day-name">{day.toLocaleDateString('en-US', { weekday: 'short' })}</div>
                 <div className="day-number">{day.getDate()}</div>
+                <div className="go-to-day-hint">Click to view day</div>
               </div>
               <div className="day-lessons">
                 {dayLessons.map(lesson => (
