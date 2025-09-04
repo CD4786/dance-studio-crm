@@ -6256,7 +6256,10 @@ def main_all():
 if __name__ == "__main__":
     import sys
     
-    if len(sys.argv) > 1 and sys.argv[1] == "settings":
+    if len(sys.argv) > 1 and sys.argv[1] == "enrollment":
+        tester = DanceStudioAPITester()
+        sys.exit(tester.run_enrollment_tests_only())
+    elif len(sys.argv) > 1 and sys.argv[1] == "settings":
         tester = DanceStudioAPITester()
         sys.exit(tester.run_settings_tests_only())
     elif len(sys.argv) > 1 and sys.argv[1] == "lesson_deletion":
