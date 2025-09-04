@@ -2744,6 +2744,10 @@ const MainApp = () => {
           <WeeklyCalendar 
             selectedDate={selectedDate} 
             onRefresh={handleRefresh}
+            onNavigateToDay={(day) => {
+              setSelectedDate(day);
+              setCurrentView('daily');
+            }}
           />
         )}
         {currentView === 'students' && (
