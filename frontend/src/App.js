@@ -2748,6 +2748,9 @@ const MainApp = () => {
               setSelectedDate(day);
               setCurrentView('daily');
             }}
+            onCancel={handleCancelLesson}
+            onReactivate={handleReactivateLesson}
+            onOpenLedger={handleOpenLedger}
           />
         )}
         {currentView === 'students' && (
