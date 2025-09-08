@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 class AdminSettingsAPITester:
-    def __init__(self, base_url="https://studio-manager-3.preview.emergentagent.com"):
+    def __init__(self, base_url="https://studio-manager-5.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None
