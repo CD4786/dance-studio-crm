@@ -2756,9 +2756,9 @@ const MainApp = () => {
               setSelectedDate(day);
               setCurrentView('daily');
             }}
-            onCancel={handleCancelLesson}
-            onReactivate={handleReactivateLesson}
-            onOpenLedger={handleOpenLedger}
+            setSelectedStudentForLedger={setSelectedStudentForLedger}
+            setShowLedgerModal={setShowLedgerModal}
+            setSelectedLessonForLedger={setSelectedLessonForLedger}
           />
         )}
         {currentView === 'students' && (
