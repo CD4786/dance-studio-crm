@@ -2153,9 +2153,17 @@ const TeachersManager = ({ onRefresh }) => {
 };
 
 // Weekly Calendar Component
-const WeeklyCalendar = ({ selectedDate, onRefresh, onNavigateToDay }) => {
+const WeeklyCalendar = ({ 
+  selectedDate, 
+  onRefresh, 
+  onNavigateToDay,
+  setSelectedStudentForLedger,
+  setShowLedgerModal,
+  setSelectedLessonForLedger 
+}) => {
   const [lessons, setLessons] = useState([]);
   const [currentDate, setCurrentDate] = useState(selectedDate);
+  const [students, setStudents] = useState([]);
   
   useEffect(() => {
     setCurrentDate(selectedDate);
