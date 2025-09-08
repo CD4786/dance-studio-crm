@@ -2193,6 +2193,82 @@ const WeeklyCalendar = ({
     }
   };
 
+  // Add fetchStudents function
+  const fetchStudents = async () => {
+    try {
+      const response = await axios.get(`${API}/students`);
+      setStudents(response.data);
+    } catch (error) {
+      console.error('Failed to fetch students:', error);
+    }
+  };
+
+  // Add missing handler functions
+  const handleCancelLesson = async (lessonId) => {
+    const reason = prompt("Please provide a reason for cancellation (optional):");
+    const notifyStudent = window.confirm("Send cancellation notification to student/parent?");
+    
+    try {
+      await axios.put(`${API}/lessons/${lessonId}/cancel`, {
+        reason: reason || null,
+        notify_student: notifyStudent
+      });
+      fetchWeeklyLessons(); // Refresh weekly view
+      onRefresh(); // Refresh parent component
+      alert('Lesson cancelled successfully!');
+    } catch (error) {
+      console.error('Failed to cancel lesson:', error);
+      alert('Failed to cancel lesson: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleReactivateLesson = async (lessonId) => {
+    if (!window.confirm("Are you sure you want to reactivate this cancelled lesson?")) {
+      return;
+    }
+    
+    try {
+      await axios.put(`${API}/lessons/${lessonId}/reactivate`);
+      fetchWeeklyLessons(); // Refresh weekly view
+      onRefresh(); // Refresh parent component
+      alert('Lesson reactivated successfully!');
+    } catch (error) {
+      console.error('Failed to reactivate lesson:', error);
+      alert('Failed to reactivate lesson: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleOpenLedger = async (lesson) => {
+    try {
+      // Ensure students are loaded
+      if (students.length === 0) {
+        await fetchStudents();
+      }
+      
+      // Find the student data for this lesson
+      const student = students.find(s => s.id === lesson.student_id);
+      if (student) {
+        setSelectedStudentForLedger(student);
+        setSelectedLessonForLedger(lesson);
+        setShowLedgerModal(true);
+      } else {
+        // Try to fetch the specific student
+        const response = await axios.get(`${API}/students/${lesson.student_id}`);
+        setSelectedStudentForLedger(response.data);
+        setSelectedLessonForLedger(lesson);
+        setShowLedgerModal(true);
+      }
+    } catch (error) {
+      console.error('Failed to open student ledger:', error);
+      alert('Failed to open student ledger: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  // Load students on component mount
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
   const navigateWeek = (direction) => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + (direction * 7)); // Move by weeks
