@@ -375,6 +375,8 @@ agent_communication:
       message: "Enhanced enrollment system backend API. Modified GET /api/enrollments endpoint to include student names directly in response using new EnrollmentWithStudentResponse model. This eliminates redundant frontend API calls and provides better UX. Need to test the enhanced enrollment API endpoint functionality."
     - agent: "main"
       message: "Test the enhanced weekly calendar backend functionality and ensure all lesson-related APIs work correctly for the new weekly calendar features."
+    - agent: "main" 
+      message: "Weekly Calendar Button UI/UX Improvements completed. Updated WeeklyCalendar component to display three main action buttons horizontally (attendance ✅, cancel/reactivate ❌/🔄, student ledger 💰) that are always visible without requiring hover. Added missing handler functions and updated CSS styling for professional appearance. Need backend testing of lesson cancellation/reactivation APIs first, then frontend testing of the improved button functionality."
     - agent: "main"
       message: "Enhanced weekly calendar functionality has been implemented with comprehensive features including weekly navigation, attendance marking from weekly view, day navigation from weekly view, enhanced UI elements, and lesson management. Need comprehensive testing of all new weekly calendar features as specified in the review request."
     - agent: "testing"
