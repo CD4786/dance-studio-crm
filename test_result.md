@@ -271,6 +271,18 @@ backend:
           comment: "✅ COMPREHENSIVE LESSON CANCELLATION SYSTEM TESTING COMPLETED SUCCESSFULLY! Conducted thorough testing of the lesson cancellation system backend API as requested in the review. MAJOR ACHIEVEMENTS: 1) Lesson Status System - ✅ Lessons have proper status field with default 'active' status, new lessons correctly default to 'active' status, lesson retrieval includes status information properly. 2) Lesson Cancellation API - ✅ POST /api/lessons/{lesson_id}/cancel endpoint working perfectly, cancellation with reason and notification options functional, cancelled lessons change status to 'cancelled' but remain in database, authentication requirements properly enforced for cancellation. 3) Lesson Reactivation API - ✅ POST /api/lessons/{lesson_id}/reactivate endpoint working flawlessly, cancelled lessons can be reactivated back to 'active' status, authentication and error handling working correctly. 4) Cancelled Lessons Report - ✅ GET /api/reports/cancelled-lessons endpoint working perfectly, returns only lessons with status 'cancelled', date filtering and report structure working correctly. 5) Data Integrity - ✅ Cancelled lessons preserve all data with proper status tracking, lesson history preserved with cancellation details (reason, cancelled_by, cancelled_at), time slots become available when lessons are cancelled (status change allows rebooking). 6) Error Handling - ✅ Proper 404 errors for non-existent lessons, proper 400 errors for reactivating already active lessons, unauthorized access scenarios return 403 Forbidden, comprehensive error handling across all endpoints. TESTING RESULTS: 9/9 tests passed (100% success rate). All testing objectives achieved: lesson status functionality, cancellation/reactivation endpoints, cancelled lessons reporting, data integrity, and error handling. The lesson cancellation system is fully functional and production-ready with proper status tracking and time slot availability management."
 
 frontend:
+  - task: "Enhanced Weekly Calendar Functionality Testing"
+    implemented: true
+    working: "NA"
+    file: "App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Enhanced weekly calendar functionality implemented with comprehensive features: 1) Weekly Calendar Navigation - Previous Week, This Week, Next Week buttons for navigation between weeks, 2) Attendance Marking from Weekly View - Direct attendance marking with lesson credit confirmation and deduction, 3) Day Navigation from Weekly View - Clickable day headers to navigate to specific daily views, 4) Enhanced UI Elements - Visual improvements and interaction feedback, 5) Lesson Management - Lesson actions (attendance, deletion) from weekly view. All features ready for comprehensive testing as specified in review request."
+
   - task: "Enhanced Enrollment System with Student Names Display"
     implemented: true
     working: true
