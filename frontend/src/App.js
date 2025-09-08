@@ -2450,22 +2450,41 @@ const WeeklyCalendar = ({
                       )}
                     </div>
                     <div className="lesson-actions">
-                      {lesson.status !== 'cancelled' && !lesson.is_attended && (
+                      <div className="primary-actions">
+                        {lesson.status !== 'cancelled' && !lesson.is_attended && (
+                          <button 
+                            onClick={() => handleAttendLesson(lesson)} 
+                            className="weekly-attend-btn" 
+                            title="Mark as attended"
+                          >
+                            ✅
+                          </button>
+                        )}
+                        {lesson.status === 'cancelled' ? (
+                          <button 
+                            onClick={() => handleReactivateLesson(lesson.id)} 
+                            className="weekly-reactivate-btn" 
+                            title="Reactivate lesson"
+                          >
+                            🔄
+                          </button>
+                        ) : (
+                          <button 
+                            onClick={() => handleCancelLesson(lesson.id)} 
+                            className="weekly-cancel-btn" 
+                            title="Cancel lesson"
+                          >
+                            ❌
+                          </button>
+                        )}
                         <button 
-                          onClick={() => handleAttendLesson(lesson)} 
-                          className="weekly-attend-btn" 
-                          title="Mark as attended"
+                          onClick={() => handleOpenLedger(lesson)} 
+                          className="weekly-ledger-btn" 
+                          title="View student ledger"
                         >
-                          ✅ Attend
+                          💰
                         </button>
-                      )}
-                      <button 
-                        onClick={() => handleDeleteLesson(lesson.id)} 
-                        className="weekly-delete-btn" 
-                        title="Delete this lesson"
-                      >
-                        🗑️ Delete
-                      </button>
+                      </div>
                     </div>
                   </div>
                 ))}
