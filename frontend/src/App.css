@@ -1313,14 +1313,30 @@ p, span, div, label, input, textarea, select {
   right: 0.25rem;
   display: flex;
   gap: 0.125rem;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  flex-wrap: wrap;
+  opacity: 1;
+  transition: all 0.3s ease;
+  flex-direction: column;
+  align-items: flex-end;
   max-width: 120px;
 }
 
-.lesson-block:hover .lesson-actions {
+.lesson-actions .primary-actions {
+  display: flex;
+  gap: 0.125rem;
   opacity: 1;
+}
+
+.lesson-actions .secondary-actions {
+  display: flex;
+  gap: 0.125rem;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.3s ease;
+}
+
+.lesson-block:hover .lesson-actions .secondary-actions {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .lesson-action-btn {
