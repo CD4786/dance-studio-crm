@@ -271,6 +271,18 @@ backend:
           comment: "✅ COMPREHENSIVE LESSON CANCELLATION SYSTEM TESTING COMPLETED SUCCESSFULLY! Conducted thorough testing of the lesson cancellation system backend API as requested in the review. MAJOR ACHIEVEMENTS: 1) Lesson Status System - ✅ Lessons have proper status field with default 'active' status, new lessons correctly default to 'active' status, lesson retrieval includes status information properly. 2) Lesson Cancellation API - ✅ POST /api/lessons/{lesson_id}/cancel endpoint working perfectly, cancellation with reason and notification options functional, cancelled lessons change status to 'cancelled' but remain in database, authentication requirements properly enforced for cancellation. 3) Lesson Reactivation API - ✅ POST /api/lessons/{lesson_id}/reactivate endpoint working flawlessly, cancelled lessons can be reactivated back to 'active' status, authentication and error handling working correctly. 4) Cancelled Lessons Report - ✅ GET /api/reports/cancelled-lessons endpoint working perfectly, returns only lessons with status 'cancelled', date filtering and report structure working correctly. 5) Data Integrity - ✅ Cancelled lessons preserve all data with proper status tracking, lesson history preserved with cancellation details (reason, cancelled_by, cancelled_at), time slots become available when lessons are cancelled (status change allows rebooking). 6) Error Handling - ✅ Proper 404 errors for non-existent lessons, proper 400 errors for reactivating already active lessons, unauthorized access scenarios return 403 Forbidden, comprehensive error handling across all endpoints. TESTING RESULTS: 9/9 tests passed (100% success rate). All testing objectives achieved: lesson status functionality, cancellation/reactivation endpoints, cancelled lessons reporting, data integrity, and error handling. The lesson cancellation system is fully functional and production-ready with proper status tracking and time slot availability management."
 
 frontend:
+  - task: "Weekly Calendar Button UI/UX Improvements"
+    implemented: true
+    working: "NA"
+    file: "App.js, App.css"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Updated WeeklyCalendar component to include three main action buttons horizontally: attendance (✅), cancel/reactivate (❌/🔄), and student ledger (💰). Added missing handler functions (handleCancelLesson, handleReactivateLesson, handleOpenLedger) to WeeklyCalendar component. Updated CSS styling to make buttons always visible with horizontal layout instead of requiring hover. Removed secondary actions as requested since they are accessible from student ledger."
+
   - task: "Enhanced Weekly Calendar Functionality Testing"
     implemented: true
     working: true
