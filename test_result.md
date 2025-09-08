@@ -222,7 +222,7 @@ The multiple instructor lesson booking system with date picker and booking types
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Enhance enrollment system to display student names directly within the enrollment overview and link enrollments to the student ledger for better management. Fix lesson history display in StudentLedgerPanel if needed."
+user_problem_statement: "Improve the UI/UX for lesson action buttons on the weekly calendar, making them visible without hovering and better organized. The user wants three main buttons showing horizontally: Check lesson (attendance), Cancel lesson, and Student ledger, with secondary actions minimized."
 
 backend:
   - task: "Enhanced Enrollment API with Student Names"
