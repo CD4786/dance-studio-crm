@@ -120,6 +120,62 @@ const RecurringLessonModal = ({
     }
   };
 
+  // Auto-fill presets for common recurring patterns
+  const applyPreset = (presetType) => {
+    const currentDate = new Date();
+    const nextWeek = new Date(currentDate);
+    nextWeek.setDate(currentDate.getDate() + 7);
+    
+    const presets = {
+      'weekly_4': {
+        recurrence_pattern: 'weekly',
+        max_occurrences: '4',
+        end_date: '',
+        notes: 'Weekly lessons for 4 weeks'
+      },
+      'weekly_8': {
+        recurrence_pattern: 'weekly',
+        max_occurrences: '8',
+        end_date: '',
+        notes: 'Weekly lessons for 8 weeks (2 months)'
+      },
+      'weekly_12': {
+        recurrence_pattern: 'weekly',
+        max_occurrences: '12',
+        end_date: '',
+        notes: 'Weekly lessons for 12 weeks (3 months)'
+      },
+      'biweekly_6': {
+        recurrence_pattern: 'bi_weekly',
+        max_occurrences: '6',
+        end_date: '',
+        notes: 'Bi-weekly lessons for 6 sessions (3 months)'
+      },
+      'monthly_6': {
+        recurrence_pattern: 'monthly',
+        max_occurrences: '6',
+        end_date: '',
+        notes: 'Monthly lessons for 6 months'
+      },
+      'school_year': {
+        recurrence_pattern: 'weekly',
+        max_occurrences: '36',
+        end_date: '',
+        notes: 'Weekly lessons for school year (36 weeks)'
+      }
+    };
+
+    if (presets[presetType]) {
+      setFormData(prev => ({
+        ...prev,
+        ...presets[presetType]
+      }));
+      
+      // Clear errors when applying preset
+      setErrors({});
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
