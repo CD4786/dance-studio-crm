@@ -906,7 +906,7 @@ const DailyCalendar = ({
 
       setDraggedLesson(null);
       fetchDailyData();
-      onRefresh();
+      // Removed onRefresh() call to prevent double refresh
     } catch (error) {
       console.error('Failed to move lesson:', error);
       alert('Failed to move lesson');
