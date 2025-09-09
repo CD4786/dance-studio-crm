@@ -643,7 +643,7 @@ const DailyCalendar = ({
       console.log('Booking type:', newLessonData.booking_type);
       console.log('Teacher IDs:', newLessonData.teacher_ids);
       
-      await axios.post(`${API}/lessons`, {
+      const response = await axios.post(`${API}/lessons`, {
         student_id: newLessonData.student_id,
         teacher_ids: newLessonData.teacher_ids,
         booking_type: newLessonData.booking_type,
@@ -652,6 +652,16 @@ const DailyCalendar = ({
         start_datetime: localISOString,
         duration_minutes: 60
       });
+
+      // Get student and teacher names for confirmation
+      const student = students.find(s => s.id === newLessonData.student_id);
+      const selectedTeachers = teachers.filter(t => newLessonData.teacher_ids.includes(t.id));
+      const teacherNames = selectedTeachers.map(t => t.name).join(', ');
+      
+      // Format date and time for confirmation
+      const lessonDateTime = new Date(localISOString);
+      const formattedDate = lessonDateTime.toLocaleDateString();
+      const formattedTime = lessonDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       setShowAddModal(false);
       setNewLessonData({
@@ -664,6 +674,10 @@ const DailyCalendar = ({
       });
       fetchDailyData();
       onRefresh();
+      
+      // Show success confirmation
+      alert(`✅ Lesson Booked Successfully!\n\n📅 Date: ${formattedDate}\n🕒 Time: ${formattedTime}\n👤 Student: ${student?.name || 'Unknown'}\n👨‍🏫 Teacher(s): ${teacherNames}\n📋 Type: ${newLessonData.booking_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`);
+      
     } catch (error) {
       console.error('Failed to create lesson:', error);
       alert('Failed to create lesson: ' + (error.response?.data?.detail || error.message));
