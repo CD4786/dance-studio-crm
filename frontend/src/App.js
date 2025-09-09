@@ -2278,7 +2278,7 @@ const WeeklyCalendar = ({
     try {
       await axios.put(`${API}/lessons/${lessonId}/reactivate`);
       fetchWeeklyLessons(); // Refresh weekly view
-      onRefresh(); // Refresh parent component
+      // Removed onRefresh() call to prevent double refresh
       alert('Lesson reactivated successfully!');
     } catch (error) {
       console.error('Failed to reactivate lesson:', error);
