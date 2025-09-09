@@ -106,10 +106,33 @@ const RecurringLessonModal = ({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Auto-calculate end date when max_occurrences changes
+    if (name === 'max_occurrences' && value && formData.start_datetime && formData.recurrence_pattern) {
+      const startDate = new Date(formData.start_datetime);
+      const occurrences = parseInt(value);
+      let endDate = new Date(startDate);
+      
+      // Calculate end date based on pattern
+      if (formData.recurrence_pattern === 'weekly') {
+        endDate.setDate(startDate.getDate() + (occurrences - 1) * 7);
+      } else if (formData.recurrence_pattern === 'bi_weekly') {
+        endDate.setDate(startDate.getDate() + (occurrences - 1) * 14);
+      } else if (formData.recurrence_pattern === 'monthly') {
+        endDate.setMonth(startDate.getMonth() + (occurrences - 1));
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        end_date: endDate.toISOString().split('T')[0] // Format as YYYY-MM-DD
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     
     // Clear error when user starts typing
     if (errors[name]) {
