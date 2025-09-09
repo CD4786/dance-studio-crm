@@ -2219,7 +2219,7 @@ const WeeklyCalendar = ({
 
   useEffect(() => {
     fetchWeeklyLessons();
-  }, [currentDate, onRefresh]);
+  }, [currentDate]); // Removed onRefresh from dependencies to prevent infinite loops
 
   const fetchWeeklyLessons = async () => {
     try {
