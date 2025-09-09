@@ -2593,6 +2593,12 @@ const MainApp = () => {
   const handleRealTimeUpdate = (message) => {
     console.log('📡 Real-time update received:', message.type);
     
+    // Skip updates if real-time updates are disabled
+    if (!realTimeUpdatesEnabled) {
+      console.log('🔇 Real-time updates disabled - skipping update');
+      return;
+    }
+    
     // Skip updates from the current user to prevent self-sync conflicts
     if (message.user_id === user?.id) {
       console.log('🚫 Skipping self-update from user:', message.user_id);
