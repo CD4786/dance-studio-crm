@@ -2526,6 +2526,10 @@ const MainApp = () => {
   const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
   const [notifications, setNotifications] = useState([]);
   
+  // Debounce mechanism for real-time updates
+  const [lastRefreshTime, setLastRefreshTime] = useState(0);
+  const REFRESH_DEBOUNCE_MS = 2000; // Minimum 2 seconds between refreshes
+  
   // Student Ledger Panel state (moved from DailyCalendar to MainApp level)
   const [showLedgerModal, setShowLedgerModal] = useState(false);
   const [selectedStudentForLedger, setSelectedStudentForLedger] = useState(null);
