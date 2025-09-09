@@ -2624,6 +2624,10 @@ const MainApp = () => {
   const handleRealTimeUpdate = (message) => {
     console.log('📡 Real-time update received:', message.type);
     
+    // TEMPORARILY DISABLED to fix constant refresh issue
+    console.log('🔇 Real-time updates temporarily disabled to prevent refresh loops');
+    return;
+    
     // Skip updates if real-time updates are disabled
     if (!realTimeUpdatesEnabled) {
       console.log('🔇 Real-time updates disabled - skipping update');
