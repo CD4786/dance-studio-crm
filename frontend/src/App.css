@@ -2882,6 +2882,33 @@ p, span, div, label, input, textarea, select {
   box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
 }
 
+.status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.status-toggle:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.status-toggle.offline {
+  color: #ef4444;
+}
+
+.status-toggle.online {
+  color: #22c55e;
+}
+
 .status-text {
   font-weight: 500;
 }
