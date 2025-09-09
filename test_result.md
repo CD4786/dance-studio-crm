@@ -411,7 +411,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "WebSocket Real-time Sync UI State Separation"
+    - "Lesson Booking Confirmations and Recurring Lesson Auto-fill"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
