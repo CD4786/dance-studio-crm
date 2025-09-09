@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Focused test for Recurring Lessons API functionality
+Focused test for recurring lessons creation endpoint to diagnose 500 error
 """
 
 import requests
@@ -13,11 +13,10 @@ class RecurringLessonsAPITester:
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.token = None
-        self.user_id = None
+        self.student_id = None
+        self.teacher_id = None
         self.tests_run = 0
         self.tests_passed = 0
-        self.created_teacher_id = None
-        self.created_student_id = None
         self.created_enrollment_id = None
         self.created_recurring_series_id = None
 
