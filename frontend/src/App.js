@@ -2709,6 +2709,18 @@ const MainApp = () => {
     }
   };
 
+  // New gentle data refresh that doesn't disrupt UI navigation
+  const handleGentleDataRefresh = () => {
+    console.log('📊 Gentle data refresh - preserving UI state');
+    
+    // Use a different refresh mechanism that only updates data, not UI state
+    setRefreshKey(prev => prev + 1);
+    setLastUpdateTime(Date.now());
+    
+    // Don't use multiple rapid refreshes or fast refresh that can disrupt navigation
+    // Just update the data quietly in the background
+  };
+
   const handleNavigation = (view) => {
     // Map dashboard navigation to actual view names
     const viewMap = {
