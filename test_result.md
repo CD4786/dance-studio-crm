@@ -399,8 +399,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Daily Calendar Button UI/UX Improvements"
-    - "Weekly Calendar Button UI/UX Improvements"
+    - "WebSocket Real-time Sync UI State Separation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
