@@ -606,7 +606,7 @@ def generate_recurring_lessons(series: RecurringLessonSeries) -> List[PrivateLes
         # Create lesson instance
         lesson = PrivateLesson(
             student_id=series.student_id,
-            teacher_id=series.teacher_id,
+            teacher_ids=[series.teacher_id],  # Convert single teacher_id to list
             start_datetime=current_date,
             end_datetime=end_datetime,
             notes=series.notes,
