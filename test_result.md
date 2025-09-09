@@ -222,7 +222,7 @@ The multiple instructor lesson booking system with date picker and booking types
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Improve the UI/UX for lesson action buttons on the weekly calendar, making them visible without hovering and better organized. The user wants three main buttons showing horizontally: Check lesson (attendance), Cancel lesson, and Student ledger, with secondary actions minimized."
+user_problem_statement: "Fix WebSocket real-time sync issue where users' UI navigation (dates, views) gets synchronized between multiple users. Users should have independent UI control while only data changes (lesson updates, cancellations) should be synchronized."
 
 backend:
   - task: "Enhanced Enrollment API with Student Names"
