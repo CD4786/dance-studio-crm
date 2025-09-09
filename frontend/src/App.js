@@ -2372,7 +2372,7 @@ const WeeklyCalendar = ({
         console.log('Delete response:', response);
         
         fetchWeeklyLessons(); // Refresh weekly view
-        onRefresh(); // Refresh parent component and daily calendar stats
+        // Removed onRefresh() call to prevent double refresh
         alert('Lesson deleted successfully!');
       } catch (error) {
         console.error('Failed to delete lesson:', error);
