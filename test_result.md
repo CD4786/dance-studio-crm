@@ -384,6 +384,7 @@ metadata:
 
 test_plan:
   current_focus:
+    - "Daily Calendar Button UI/UX Improvements"
     - "Weekly Calendar Button UI/UX Improvements"
   stuck_tasks: []
   test_all: false
