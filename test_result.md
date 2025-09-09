@@ -222,7 +222,7 @@ The multiple instructor lesson booking system with date picker and booking types
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix WebSocket real-time sync issue where users' UI navigation (dates, views) gets synchronized between multiple users. Users should have independent UI control while only data changes (lesson updates, cancellations) should be synchronized."
+user_problem_statement: "Add booking confirmations for lesson creation (both single and recurring lessons) and implement auto-fill functionality for recurring lesson patterns to make it easier to set up common recurrence scenarios."
 
 backend:
   - task: "Enhanced Enrollment API with Student Names"
