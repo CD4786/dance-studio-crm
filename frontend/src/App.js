@@ -2877,6 +2877,7 @@ const MainApp = () => {
         )}
         {currentView === 'daily' && (
           <DailyCalendar 
+            key={`daily-${user?.id}-${refreshKey}`}
             selectedDate={selectedDate}
             onRefresh={handleRefresh}
             showLedgerModal={showLedgerModal}
@@ -2889,6 +2890,7 @@ const MainApp = () => {
         )}
         {currentView === 'weekly' && (
           <WeeklyCalendar 
+            key={`weekly-${user?.id}-${refreshKey}`}
             selectedDate={selectedDate} 
             onRefresh={handleRefresh}
             onNavigateToDay={(day) => {
