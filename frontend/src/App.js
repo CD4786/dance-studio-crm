@@ -816,7 +816,7 @@ const DailyCalendar = ({
       try {
         await axios.delete(`${API}/lessons/${lessonId}`);
         fetchDailyData();
-        onRefresh();
+        // Removed onRefresh() call to prevent double refresh
       } catch (error) {
         console.error('Failed to delete lesson:', error);
         alert('Failed to delete lesson');
