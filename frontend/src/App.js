@@ -2262,7 +2262,7 @@ const WeeklyCalendar = ({
         notify_student: notifyStudent
       });
       fetchWeeklyLessons(); // Refresh weekly view
-      onRefresh(); // Refresh parent component
+      // Removed onRefresh() call to prevent double refresh
       alert('Lesson cancelled successfully!');
     } catch (error) {
       console.error('Failed to cancel lesson:', error);
