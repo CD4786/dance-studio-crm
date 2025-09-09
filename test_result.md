@@ -222,7 +222,7 @@ The multiple instructor lesson booking system with date picker and booking types
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Add booking confirmations for lesson creation (both single and recurring lessons) and implement auto-fill functionality for recurring lesson patterns to make it easier to set up common recurrence scenarios."
+user_problem_statement: "Fix critical constant refresh issue that makes the app unusable. Users cannot book lessons or perform any actions because the app is constantly refreshing, disrupting all workflows."
 
 backend:
   - task: "Enhanced Enrollment API with Student Names"
