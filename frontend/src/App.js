@@ -709,7 +709,7 @@ const DailyCalendar = ({
       
       setShowRecurringModal(false);
       fetchDailyData();
-      onRefresh();
+      // Removed onRefresh() call to prevent double refresh
       
       // Show detailed success confirmation
       alert(`🎉 Recurring Lessons Created Successfully!\n\n📊 Total Lessons: ${response.data.lessons_created}\n📅 Starting: ${formattedStartDate} at ${formattedStartTime}\n🔄 Pattern: ${patternDisplay[recurringData.recurrence_pattern] || recurringData.recurrence_pattern}\n👤 Student: ${student?.name || 'Unknown'}\n👨‍🏫 Teacher: ${teacher?.name || 'Unknown'}\n⏱️ Duration: ${recurringData.duration_minutes} minutes each`);
