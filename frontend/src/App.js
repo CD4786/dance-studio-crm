@@ -2740,14 +2740,11 @@ const MainApp = () => {
 
   // Enhanced refresh with faster updates for calendar
   const handleFastRefresh = () => {
-    console.log('⚡ Fast refresh triggered for immediate calendar updates');
+    console.log('⚡ Fast refresh triggered (single refresh only)');
     setRefreshKey(prev => prev + 1);
     
-    // Also trigger any additional refresh mechanisms
-    if (typeof window !== 'undefined' && window.location.hash.includes('daily')) {
-      // Force calendar components to refresh immediately
-      setTimeout(() => setRefreshKey(prev => prev + 1), 100);
-    }
+    // Removed double refresh to prevent refresh loops
+    // Single refresh should be sufficient
   };
 
   // New gentle data refresh that doesn't disrupt UI navigation
