@@ -2715,11 +2715,22 @@ const MainApp = () => {
 
   // New gentle data refresh that doesn't disrupt UI navigation
   const handleGentleDataRefresh = () => {
+    const now = Date.now();
+    
+    // Debounce rapid refresh requests to prevent UI disruption
+    if (now - lastRefreshTime < REFRESH_DEBOUNCE_MS) {
+      console.log('🕒 Skipping refresh due to debounce (too soon after last refresh)');
+      return;
+    }
+    
     console.log('📊 Gentle data refresh - preserving UI state');
+    
+    // Update refresh tracking
+    setLastRefreshTime(now);
     
     // Use a different refresh mechanism that only updates data, not UI state
     setRefreshKey(prev => prev + 1);
-    setLastUpdateTime(Date.now());
+    setLastUpdateTime(now);
     
     // Don't use multiple rapid refreshes or fast refresh that can disrupt navigation
     // Just update the data quietly in the background
