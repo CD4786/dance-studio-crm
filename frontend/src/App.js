@@ -691,11 +691,29 @@ const DailyCalendar = ({
       const response = await axios.post(`${API}/recurring-lessons`, recurringData);
       console.log('Recurring lessons created:', response.data);
       
+      // Get student and teacher names for confirmation
+      const student = students.find(s => s.id === recurringData.student_id);
+      const teacher = teachers.find(t => t.id === recurringData.teacher_id);
+      
+      // Format recurrence pattern for display
+      const patternDisplay = {
+        'weekly': 'Weekly',
+        'bi_weekly': 'Bi-weekly (Every 2 weeks)',
+        'monthly': 'Monthly'
+      };
+      
+      // Format start date for confirmation
+      const startDate = new Date(recurringData.start_datetime);
+      const formattedStartDate = startDate.toLocaleDateString();
+      const formattedStartTime = startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
       setShowRecurringModal(false);
       fetchDailyData();
       onRefresh();
       
-      alert(`Successfully created ${response.data.lessons_created} recurring lessons!`);
+      // Show detailed success confirmation
+      alert(`🎉 Recurring Lessons Created Successfully!\n\n📊 Total Lessons: ${response.data.lessons_created}\n📅 Starting: ${formattedStartDate} at ${formattedStartTime}\n🔄 Pattern: ${patternDisplay[recurringData.recurrence_pattern] || recurringData.recurrence_pattern}\n👤 Student: ${student?.name || 'Unknown'}\n👨‍🏫 Teacher: ${teacher?.name || 'Unknown'}\n⏱️ Duration: ${recurringData.duration_minutes} minutes each`);
+      
     } catch (error) {
       console.error('Failed to create recurring lessons:', error);
       alert('Failed to create recurring lessons: ' + (error.response?.data?.detail || error.message));
