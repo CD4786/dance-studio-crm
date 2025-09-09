@@ -415,7 +415,7 @@ const DailyCalendar = ({
     fetchDailyData();
     fetchStudents();
     fetchTeachers();
-  }, [currentDate, onRefresh]);
+  }, [currentDate]); // Removed onRefresh from dependencies to prevent infinite loops
 
   // Optimized data fetching with caching and error handling
   const [dataCache, setDataCache] = useState(new Map());
