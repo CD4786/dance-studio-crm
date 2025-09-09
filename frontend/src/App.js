@@ -2856,8 +2856,16 @@ const MainApp = () => {
               ⚡ Fast Refresh
             </button>
             <div className="performance-status">
-              <span className="status-dot online"></span>
-              <span className="status-text">Real-time Updates</span>
+              <button
+                onClick={() => setRealTimeUpdatesEnabled(!realTimeUpdatesEnabled)}
+                className={`status-toggle ${realTimeUpdatesEnabled ? 'online' : 'offline'}`}
+                title={realTimeUpdatesEnabled ? 'Click to disable real-time updates for independent navigation' : 'Click to enable real-time updates'}
+              >
+                <span className={`status-dot ${realTimeUpdatesEnabled ? 'online' : 'offline'}`}></span>
+                <span className="status-text">
+                  {realTimeUpdatesEnabled ? 'Real-time Updates' : 'Independent Mode'}
+                </span>
+              </button>
             </div>
           </div>
           
