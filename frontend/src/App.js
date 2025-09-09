@@ -2347,7 +2347,7 @@ const WeeklyCalendar = ({
       // Mark attendance
       await axios.post(`${API}/lessons/${lesson.id}/attend`);
       fetchWeeklyLessons(); // Refresh weekly view
-      onRefresh(); // Refresh parent component and daily calendar stats
+      // Removed onRefresh() call to prevent double refresh
       alert(`Attendance marked! ${lesson.student_name} now has ${availableLessons - 1} lesson credits remaining.`);
     } catch (error) {
       console.error('Failed to mark attendance:', error);
