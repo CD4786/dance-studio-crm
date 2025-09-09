@@ -2612,14 +2612,13 @@ const MainApp = () => {
   }, [user]);
 
   const setupPollingFallback = () => {
-    console.log('🔄 Setting up FAST polling for better performance');
-    // REDUCED polling interval from 30s to 10s for faster updates
-    const interval = setInterval(() => {
-      console.log('⚡ Auto-refresh triggered (every 10s)');
-      setRefreshKey(prev => prev + 1);
-    }, 10000); // Refresh every 10 seconds (was 30)
-
-    return () => clearInterval(interval);
+    console.log('🔄 Setting up GENTLE polling fallback (disabled for better UX)');
+    // DISABLED aggressive polling to prevent constant refreshing
+    // Users can manually refresh if needed using the Fast Refresh button
+    console.log('📝 Note: Polling disabled - use Fast Refresh button for manual updates');
+    
+    // Return empty cleanup function
+    return () => {};
   };
 
   const handleRealTimeUpdate = (message) => {
