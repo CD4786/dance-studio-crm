@@ -804,7 +804,7 @@ const DailyCalendar = ({
         lesson_time: ''
       });
       fetchDailyData();
-      onRefresh();
+      // Removed onRefresh() call to prevent double refresh
     } catch (error) {
       console.error('Failed to update lesson:', error);
       alert('Failed to update lesson: ' + (error.response?.data?.detail || error.message));
