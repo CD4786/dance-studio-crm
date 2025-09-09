@@ -1018,25 +1018,41 @@ const DailyCalendar = ({
           )}
         </div>
         <div className="lesson-actions">
-          {lesson.status === 'cancelled' ? (
-            <>
-              <button onClick={() => onOpenLedger && onOpenLedger(lesson)} className="lesson-action-btn" title="View Student Ledger">💰</button>
-              <button onClick={() => onReactivate && onReactivate(lesson.id)} className="lesson-action-btn" title="Reactivate Lesson">🔄</button>
-              <button onClick={() => onDelete(lesson.id)} className="lesson-action-btn" title="Delete Permanently">🗑️</button>
-            </>
-          ) : (
-            <>
-              <button onClick={() => onEdit(lesson)} className="lesson-action-btn" title="Edit">✏️</button>
-              <button onClick={() => onOpenLedger && onOpenLedger(lesson)} className="lesson-action-btn" title="View Student Ledger">💰</button>
-              <button onClick={() => onCancel && onCancel(lesson.id)} className="lesson-action-btn cancel-btn" title="Cancel Lesson">❌</button>
-              <button onClick={() => onDelete(lesson.id)} className="lesson-action-btn" title="Delete">🗑️</button>
-              {!lesson.is_attended && (
-                <button onClick={() => onAttend(lesson.id)} className="lesson-action-btn" title="Mark Attended">✅</button>
-              )}
-              <button onClick={() => onSendReminder(lesson.id, 'email')} className="lesson-action-btn" title="Send Email Reminder">📧</button>
-              <button onClick={() => onSendReminder(lesson.id, 'sms')} className="lesson-action-btn" title="Send SMS Reminder">📱</button>
-            </>
-          )}
+          <div className="primary-actions">
+            {lesson.status !== 'cancelled' && !lesson.is_attended && (
+              <button 
+                onClick={() => onAttend(lesson.id)} 
+                className="daily-attend-btn" 
+                title="Mark as attended"
+              >
+                ✅
+              </button>
+            )}
+            {lesson.status === 'cancelled' ? (
+              <button 
+                onClick={() => onReactivate && onReactivate(lesson.id)} 
+                className="daily-reactivate-btn" 
+                title="Reactivate lesson"
+              >
+                🔄
+              </button>
+            ) : (
+              <button 
+                onClick={() => onCancel && onCancel(lesson.id)} 
+                className="daily-cancel-btn" 
+                title="Cancel lesson"
+              >
+                ❌
+              </button>
+            )}
+            <button 
+              onClick={() => onOpenLedger && onOpenLedger(lesson)} 
+              className="daily-ledger-btn" 
+              title="View student ledger"
+            >
+              💰
+            </button>
+          </div>
         </div>
       </div>
     );
