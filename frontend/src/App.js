@@ -673,7 +673,7 @@ const DailyCalendar = ({
         selected_date: null
       });
       fetchDailyData();
-      onRefresh();
+      // Removed onRefresh() call to prevent double refresh
       
       // Show success confirmation
       alert(`✅ Lesson Booked Successfully!\n\n📅 Date: ${formattedDate}\n🕒 Time: ${formattedTime}\n👤 Student: ${student?.name || 'Unknown'}\n👨‍🏫 Teacher(s): ${teacherNames}\n📋 Type: ${newLessonData.booking_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`);
