@@ -276,6 +276,56 @@ const RecurringLessonModal = ({
                 </select>
               </div>
 
+              {/* Quick Presets */}
+              <div>
+                <label className="block text-white mb-2">Quick Presets</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('weekly_4')}
+                    className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  >
+                    📅 4 Weeks
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('weekly_8')}
+                    className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  >
+                    📅 8 Weeks
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('weekly_12')}
+                    className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  >
+                    📅 12 Weeks
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('biweekly_6')}
+                    className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  >
+                    🗓️ 6 Bi-weekly
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('monthly_6')}
+                    className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  >
+                    📆 6 Monthly
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('school_year')}
+                    className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  >
+                    🎓 School Year
+                  </button>
+                </div>
+                <p className="text-gray-400 text-xs mt-2">Click a preset to auto-fill common patterns</p>
+              </div>
+
               {/* End Conditions */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
