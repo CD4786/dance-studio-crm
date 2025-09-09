@@ -2589,6 +2589,12 @@ const MainApp = () => {
   const handleRealTimeUpdate = (message) => {
     console.log('📡 Real-time update received:', message.type);
     
+    // Skip updates from the current user to prevent self-sync conflicts
+    if (message.user_id === user?.id) {
+      console.log('🚫 Skipping self-update from user:', message.user_id);
+      return;
+    }
+    
     // Add notification
     const notification = {
       id: Date.now(),
@@ -2600,22 +2606,17 @@ const MainApp = () => {
     
     setNotifications(prev => [notification, ...prev.slice(0, 9)]); // Keep last 10 notifications
     
-    // FAST calendar updates for lesson-related changes
+    // GENTLE data refresh for lesson-related changes (no UI state disruption)
     if (['lesson_created', 'lesson_updated', 'lesson_deleted', 'lesson_attended', 'lesson_rescheduled'].includes(message.type)) {
-      console.log('⚡ Triggering IMMEDIATE calendar refresh for:', message.type);
+      console.log('📊 Triggering GENTLE data refresh for:', message.type);
       
-      // Multiple refresh triggers for immediate update
-      handleFastRefresh();
-      
-      // Additional trigger after short delay to ensure consistency
-      setTimeout(() => {
-        setRefreshKey(prev => prev + 1);
-      }, 500);
+      // Use a more gentle refresh that doesn't disrupt UI navigation
+      handleGentleDataRefresh();
     }
     
-    // Standard refresh for other updates
+    // Standard refresh for other updates (also gentle)
     else if (['student_created', 'student_updated', 'student_deleted', 'teacher_created', 'teacher_deleted', 'recurring_series_created'].includes(message.type)) {
-      setRefreshKey(prev => prev + 1);
+      handleGentleDataRefresh();
     }
 
     // Show temporary toast notification
