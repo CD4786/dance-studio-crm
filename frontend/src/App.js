@@ -1107,13 +1107,22 @@ const DailyCalendar = ({
                 🔄
               </button>
             ) : (
-              <button 
-                onClick={() => onCancel && onCancel(lesson.id)} 
-                className="daily-cancel-btn" 
-                title="Cancel lesson"
-              >
-                ❌
-              </button>
+              <>
+                <button 
+                  onClick={() => onCancel && onCancel(lesson.id)} 
+                  className="daily-cancel-btn" 
+                  title="Cancel lesson"
+                >
+                  ❌
+                </button>
+                <button
+                  onClick={() => handleRescheduleLesson(lesson)}
+                  className="daily-reschedule-btn"
+                  title="Reschedule lesson"
+                >
+                  🔁
+                </button>
+              </>
             )}
             <button 
               onClick={() => onOpenLedger && onOpenLedger(lesson)} 
