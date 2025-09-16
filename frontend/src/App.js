@@ -2593,13 +2593,22 @@ const WeeklyCalendar = ({
                             🔄
                           </button>
                         ) : (
-                          <button 
-                            onClick={() => handleCancelLesson(lesson.id)} 
-                            className="weekly-cancel-btn" 
-                            title="Cancel lesson"
-                          >
-                            ❌
-                          </button>
+                          <>
+                            <button 
+                              onClick={() => handleCancelLesson(lesson.id)} 
+                              className="weekly-cancel-btn" 
+                              title="Cancel lesson"
+                            >
+                              ❌
+                            </button>
+                            <button
+                              onClick={() => handleRescheduleWeeklyLesson(lesson)}
+                              className="weekly-reschedule-btn"
+                              title="Reschedule lesson"
+                            >
+                              🔁
+                            </button>
+                          </>
                         )}
                         <button 
                           onClick={() => handleOpenLedger(lesson)} 
