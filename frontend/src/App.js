@@ -887,6 +887,40 @@ const DailyCalendar = ({
     
     if (!draggedLesson) return;
 
+    // Check if trying to drop on the same slot
+    const currentLessonHour = new Date(draggedLesson.start_datetime).getHours();
+    const currentTeacherId = draggedLesson.teacher_ids && draggedLesson.teacher_ids.length > 0 
+      ? draggedLesson.teacher_ids[0] 
+      : draggedLesson.teacher_id;
+    
+    if (currentLessonHour === hour && currentTeacherId === teacherId) {
+      setDraggedLesson(null);
+      return; // No change needed
+    }
+
+    // Check if target slot is occupied
+    const existingLesson = getLessonForSlot(hour, teacherId);
+    if (existingLesson && existingLesson.id !== draggedLesson.id) {
+      alert('❌ Cannot reschedule: Time slot is already occupied by another lesson.');
+      setDraggedLesson(null);
+      return;
+    }
+
+    // Show confirmation for rescheduling
+    const oldDateTime = new Date(draggedLesson.start_datetime);
+    const newDateTime = new Date(currentDate);
+    newDateTime.setHours(hour, 0, 0, 0);
+    
+    const oldTimeStr = oldDateTime.toLocaleString();
+    const newTimeStr = newDateTime.toLocaleString();
+    
+    const confirmMessage = `🔁 Reschedule Lesson?\n\n👤 Student: ${draggedLesson.student_name}\n📅 From: ${oldTimeStr}\n🕒 To: ${newTimeStr}\n\nConfirm rescheduling?`;
+    
+    if (!window.confirm(confirmMessage)) {
+      setDraggedLesson(null);
+      return;
+    }
+
     try {
       // Use currentDate directly to avoid timezone conversion issues
       const year = currentDate.getFullYear();
@@ -895,21 +929,25 @@ const DailyCalendar = ({
       const hourStr = String(hour).padStart(2, '0');
       const localISOString = `${year}-${month}-${day}T${hourStr}:00:00`;
       
-      console.log('Moving lesson to currentDate:', currentDate);
-      console.log('Moving lesson to datetime string:', localISOString);
+      console.log('Rescheduling lesson from:', draggedLesson.start_datetime);
+      console.log('Rescheduling lesson to:', localISOString);
       
       await axios.put(`${API}/lessons/${draggedLesson.id}`, {
-        teacher_id: teacherId,
+        teacher_ids: [teacherId], // Use teacher_ids array format
         start_datetime: localISOString,
-        duration_minutes: 60
+        duration_minutes: draggedLesson.duration_minutes || 60
       });
 
       setDraggedLesson(null);
       fetchDailyData();
-      // Removed onRefresh() call to prevent double refresh
+      
+      // Show success confirmation
+      alert(`✅ Lesson Rescheduled Successfully!\n\n👤 Student: ${draggedLesson.student_name}\n🕒 New Time: ${newTimeStr}`);
+      
     } catch (error) {
-      console.error('Failed to move lesson:', error);
-      alert('Failed to move lesson');
+      console.error('Failed to reschedule lesson:', error);
+      alert('❌ Failed to reschedule lesson: ' + (error.response?.data?.detail || error.message));
+      setDraggedLesson(null);
     }
   };
 
