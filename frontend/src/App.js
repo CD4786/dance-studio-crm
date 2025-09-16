@@ -904,11 +904,36 @@ const DailyCalendar = ({
   const handleDragStart = (lesson, e) => {
     setDraggedLesson(lesson);
     e.dataTransfer.effectAllowed = 'move';
+    
+    // Add dragging class for visual feedback
+    setTimeout(() => {
+      const draggedElement = document.querySelector(`[data-lesson-id="${lesson.id}"]`);
+      if (draggedElement) {
+        draggedElement.classList.add('dragging');
+      }
+    }, 0);
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    
+    // Add drag-over class for visual feedback
+    e.currentTarget.classList.add('drag-over');
+  };
+
+  const handleDragLeave = (e) => {
+    // Remove drag-over class when leaving
+    e.currentTarget.classList.remove('drag-over');
+  };
+
+  const handleDragEnd = (e) => {
+    // Clean up visual feedback
+    const allDraggingElements = document.querySelectorAll('.dragging');
+    allDraggingElements.forEach(el => el.classList.remove('dragging'));
+    
+    const allDragOverElements = document.querySelectorAll('.drag-over');
+    allDragOverElements.forEach(el => el.classList.remove('drag-over'));
   };
 
   const handleDrop = async (hour, teacherId, e) => {
