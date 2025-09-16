@@ -1256,6 +1256,20 @@ p, span, div, label, input, textarea, select {
   box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
 }
 
+.lesson-block.dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+  z-index: 1000;
+  border-color: #3b82f6;
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+.calendar-slot.drag-over {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border: 2px dashed #3b82f6 !important;
+  border-radius: 8px;
+}
+
 .lesson-block.attended {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
   border-color: rgba(34, 197, 94, 0.3);
