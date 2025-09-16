@@ -859,6 +859,35 @@ const DailyCalendar = ({
     }
   };
 
+  const handleRescheduleLesson = (lesson) => {
+    setEditingLesson(lesson);
+    
+    // Handle both old (teacher_id) and new (teacher_ids) format
+    let teacher_ids = [];
+    if (lesson.teacher_ids && Array.isArray(lesson.teacher_ids)) {
+      teacher_ids = lesson.teacher_ids;
+    } else if (lesson.teacher_id) {
+      teacher_ids = [lesson.teacher_id];
+    }
+    
+    // Extract date and time from lesson's start_datetime
+    const lessonDate = new Date(lesson.start_datetime);
+    const dateString = lessonDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+    const timeString = lessonDate.toTimeString().slice(0, 5); // HH:MM format
+    
+    setNewLessonData({
+      student_id: lesson.student_id,
+      teacher_ids: teacher_ids,
+      booking_type: lesson.booking_type || 'private_lesson',
+      notes: lesson.notes || '',
+      enrollment_id: lesson.enrollment_id || '',
+      selected_date: lessonDate,
+      lesson_date: dateString,
+      lesson_time: timeString
+    });
+    setShowEditModal(true);
+  };
+
   const handleSendReminder = async (lessonId, type) => {
     try {
       const response = await axios.post(`${API}/notifications/send-reminder`, {
