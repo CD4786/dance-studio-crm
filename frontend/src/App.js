@@ -2388,6 +2388,74 @@ const WeeklyCalendar = ({
     }
   };
 
+  const handleRescheduleWeeklyLesson = (lesson) => {
+    // For weekly calendar, we'll show a modal with date and time picker
+    const currentDate = new Date(lesson.start_datetime);
+    const dateString = currentDate.toISOString().split('T')[0];
+    const timeString = currentDate.toTimeString().slice(0, 5);
+    
+    const newDate = prompt(
+      `Reschedule Lesson for ${lesson.student_name}\n\nCurrent: ${currentDate.toLocaleString()}\n\nEnter new date (YYYY-MM-DD):`,
+      dateString
+    );
+    
+    if (!newDate) return;
+    
+    const newTime = prompt(
+      `Enter new time (HH:MM):`,
+      timeString
+    );
+    
+    if (!newTime) return;
+    
+    // Validate date and time format
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const timeRegex = /^\d{2}:\d{2}$/;
+    
+    if (!dateRegex.test(newDate)) {
+      alert('Invalid date format. Please use YYYY-MM-DD format.');
+      return;
+    }
+    
+    if (!timeRegex.test(newTime)) {
+      alert('Invalid time format. Please use HH:MM format.');
+      return;
+    }
+    
+    const newDateTime = new Date(`${newDate}T${newTime}:00`);
+    
+    if (isNaN(newDateTime.getTime())) {
+      alert('Invalid date or time. Please check your input.');
+      return;
+    }
+    
+    // Confirm the rescheduling
+    const confirmMessage = `Reschedule lesson?\n\nStudent: ${lesson.student_name}\nFrom: ${currentDate.toLocaleString()}\nTo: ${newDateTime.toLocaleString()}`;
+    
+    if (window.confirm(confirmMessage)) {
+      handleRescheduleWeeklyLessonAPI(lesson.id, newDateTime);
+    }
+  };
+
+  const handleRescheduleWeeklyLessonAPI = async (lessonId, newDateTime) => {
+    try {
+      const localISOString = newDateTime.toISOString().slice(0, 19); // Remove timezone part
+      
+      await axios.put(`${API}/lessons/${lessonId}`, {
+        start_datetime: localISOString,
+        duration_minutes: 60
+      });
+      
+      fetchWeeklyLessons(); // Refresh weekly view
+      // Removed onRefresh() call to prevent double refresh
+      
+      alert(`✅ Lesson rescheduled successfully to ${newDateTime.toLocaleString()}!`);
+    } catch (error) {
+      console.error('Failed to reschedule lesson:', error);
+      alert('❌ Failed to reschedule lesson: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   // Load students on component mount
   useEffect(() => {
     fetchStudents();
