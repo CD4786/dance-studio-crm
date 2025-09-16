@@ -1106,7 +1106,9 @@ const DailyCalendar = ({
       <div 
         className={`lesson-block ${lesson.is_attended ? 'attended' : ''} ${lesson.status === 'cancelled' ? 'cancelled' : ''}`}
         draggable={lesson.status !== 'cancelled'}
+        data-lesson-id={lesson.id}
         onDragStart={(e) => lesson.status !== 'cancelled' ? handleDragStart(lesson, e) : e.preventDefault()}
+        onDragEnd={handleDragEnd}
       >
         <div className="lesson-content">
           <div className="lesson-student">
