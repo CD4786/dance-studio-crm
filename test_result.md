@@ -222,7 +222,7 @@ The multiple instructor lesson booking system with date picker and booking types
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Fix critical constant refresh issue that makes the app unusable. Users cannot book lessons or perform any actions because the app is constantly refreshing, disrupting all workflows."
+user_problem_statement: "Add lesson rescheduling functionality using both drag & drop and reschedule button methods. Students need to be able to change lesson times easily with availability checking, confirmations, and visual feedback."
 
 backend:
   - task: "Enhanced Enrollment API with Student Names"
