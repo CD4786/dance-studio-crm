@@ -815,20 +815,41 @@ async def get_weekly_calendar(start_date: str):
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format")
     
-    # Get classes for the week (7 days from start_date)
+    # Get lessons for the week (7 days from start_date)
     from datetime import timedelta
     end_date = start + timedelta(days=7)
     
-    classes = await db.classes.find({
+    lessons = await db.lessons.find({
         "start_datetime": {"$gte": start, "$lt": end_date}
     }).sort("start_datetime", 1).to_list(1000)
     
-    # Enrich with teacher names
+    # Enrich with teacher and student names (same format as main lessons endpoint)
     result = []
-    for class_doc in classes:
-        teacher = await db.teachers.find_one({"id": class_doc["teacher_id"]})
-        teacher_name = teacher["name"] if teacher else "Unknown"
-        result.append(ClassResponse(**class_doc, teacher_name=teacher_name))
+    for lesson_doc in lessons:
+        # Get student name
+        student = await db.students.find_one({"id": lesson_doc["student_id"]})
+        student_name = student["name"] if student else "Unknown"
+        
+        # Get teacher names (handle both single teacher_id and multiple teacher_ids)
+        teacher_names = []
+        if "teacher_ids" in lesson_doc and lesson_doc["teacher_ids"]:
+            for teacher_id in lesson_doc["teacher_ids"]:
+                teacher = await db.teachers.find_one({"id": teacher_id})
+                if teacher:
+                    teacher_names.append(teacher["name"])
+        elif "teacher_id" in lesson_doc and lesson_doc["teacher_id"]:
+            # Handle old format with single teacher_id
+            teacher = await db.teachers.find_one({"id": lesson_doc["teacher_id"]})
+            if teacher:
+                teacher_names.append(teacher["name"])
+        
+        # Create proper lesson response format
+        lesson_response = PrivateLessonResponse(
+            **lesson_doc,
+            student_name=student_name,
+            teacher_names=teacher_names
+        )
+        result.append(lesson_response)
     
     return result
 
