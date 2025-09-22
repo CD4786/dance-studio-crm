@@ -830,16 +830,19 @@ async def get_weekly_calendar(start_date: str):
         student = await db.students.find_one({"id": lesson_doc["student_id"]})
         student_name = student["name"] if student else "Unknown"
         
+        # Handle migration from old teacher_id to new teacher_ids array
+        if "teacher_id" in lesson_doc and "teacher_ids" not in lesson_doc:
+            # Migrate old single teacher_id to teacher_ids array
+            lesson_doc["teacher_ids"] = [lesson_doc["teacher_id"]]
+            lesson_doc.pop("teacher_id", None)
+        elif "teacher_ids" not in lesson_doc:
+            # Fallback if neither field exists
+            lesson_doc["teacher_ids"] = []
+        
         # Get teacher names (handle both single teacher_id and multiple teacher_ids)
         teacher_names = []
-        if "teacher_ids" in lesson_doc and lesson_doc["teacher_ids"]:
-            for teacher_id in lesson_doc["teacher_ids"]:
-                teacher = await db.teachers.find_one({"id": teacher_id})
-                if teacher:
-                    teacher_names.append(teacher["name"])
-        elif "teacher_id" in lesson_doc and lesson_doc["teacher_id"]:
-            # Handle old format with single teacher_id
-            teacher = await db.teachers.find_one({"id": lesson_doc["teacher_id"]})
+        for teacher_id in lesson_doc.get("teacher_ids", []):
+            teacher = await db.teachers.find_one({"id": teacher_id})
             if teacher:
                 teacher_names.append(teacher["name"])
         
