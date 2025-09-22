@@ -38,6 +38,8 @@ class WeeklyCalendarEndpointVerifier:
         try:
             if method == 'GET':
                 response = requests.get(url, headers=headers, timeout=10)
+            elif method == 'POST':
+                response = requests.post(url, json=data, headers=headers, timeout=10)
             else:
                 return False, {"error": f"Unsupported method: {method}"}
 
