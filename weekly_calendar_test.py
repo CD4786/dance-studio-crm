@@ -410,6 +410,249 @@ class WeeklyCalendarAPITester:
                      f"- Test data cleanup: {'Complete' if cleanup_success else 'Partial'}")
         return cleanup_success
 
+    def test_weekly_calendar_endpoint_past_week(self):
+        """Test GET /api/calendar/weekly endpoint with past week dates"""
+        print("\n📅 Testing Weekly Calendar Endpoint - Past Week...")
+        
+        # Calculate past week start date (7 days ago)
+        past_week_start = datetime.now() - timedelta(days=7)
+        start_date_str = past_week_start.strftime("%Y-%m-%dT00:00:00")
+        
+        success, response = self.make_request('GET', f'calendar/weekly?start_date={start_date_str}', expected_status=200)
+        
+        if success:
+            lessons = response if isinstance(response, list) else []
+            print(f"   📊 Found {len(lessons)} lessons in past week ({past_week_start.strftime('%Y-%m-%d')} to {(past_week_start + timedelta(days=7)).strftime('%Y-%m-%d')})")
+            
+            # Verify data structure for each lesson
+            valid_lessons = 0
+            for lesson in lessons:
+                if self.validate_weekly_lesson_structure(lesson):
+                    valid_lessons += 1
+                    
+            print(f"   ✅ {valid_lessons}/{len(lessons)} lessons have valid PrivateLessonResponse structure")
+            
+            # Show sample lesson if available
+            if lessons:
+                sample_lesson = lessons[0]
+                print(f"   📋 Sample lesson: {sample_lesson.get('student_name', 'Unknown')} with {', '.join(sample_lesson.get('teacher_names', []))}")
+                print(f"   📅 Date: {sample_lesson.get('start_datetime', 'Unknown')}")
+                print(f"   📝 Type: {sample_lesson.get('booking_type', 'Unknown')}")
+                print(f"   🔄 Status: {sample_lesson.get('status', 'Unknown')}")
+            
+        self.log_test("Weekly Calendar Endpoint - Past Week", success, f"- {len(lessons) if success else 0} past lessons found")
+        return success, lessons if success else []
+
+    def test_weekly_calendar_endpoint_current_week(self):
+        """Test GET /api/calendar/weekly endpoint with current week dates"""
+        print("\n📅 Testing Weekly Calendar Endpoint - Current Week...")
+        
+        # Calculate current week start date (Monday of this week)
+        today = datetime.now()
+        days_since_monday = today.weekday()
+        current_week_start = today - timedelta(days=days_since_monday)
+        start_date_str = current_week_start.strftime("%Y-%m-%dT00:00:00")
+        
+        success, response = self.make_request('GET', f'calendar/weekly?start_date={start_date_str}', expected_status=200)
+        
+        if success:
+            lessons = response if isinstance(response, list) else []
+            print(f"   📊 Found {len(lessons)} lessons in current week ({current_week_start.strftime('%Y-%m-%d')} to {(current_week_start + timedelta(days=7)).strftime('%Y-%m-%d')})")
+            
+            # Verify data structure for each lesson
+            valid_lessons = 0
+            for lesson in lessons:
+                if self.validate_weekly_lesson_structure(lesson):
+                    valid_lessons += 1
+                    
+            print(f"   ✅ {valid_lessons}/{len(lessons)} lessons have valid PrivateLessonResponse structure")
+            
+        self.log_test("Weekly Calendar Endpoint - Current Week", success, f"- {len(lessons) if success else 0} current week lessons found")
+        return success, lessons if success else []
+
+    def test_weekly_calendar_endpoint_future_week(self):
+        """Test GET /api/calendar/weekly endpoint with future week dates"""
+        print("\n📅 Testing Weekly Calendar Endpoint - Future Week...")
+        
+        # Calculate future week start date (7 days from now)
+        future_week_start = datetime.now() + timedelta(days=7)
+        start_date_str = future_week_start.strftime("%Y-%m-%dT00:00:00")
+        
+        success, response = self.make_request('GET', f'calendar/weekly?start_date={start_date_str}', expected_status=200)
+        
+        if success:
+            lessons = response if isinstance(response, list) else []
+            print(f"   📊 Found {len(lessons)} lessons in future week ({future_week_start.strftime('%Y-%m-%d')} to {(future_week_start + timedelta(days=7)).strftime('%Y-%m-%d')})")
+            
+            # Verify data structure for each lesson
+            valid_lessons = 0
+            for lesson in lessons:
+                if self.validate_weekly_lesson_structure(lesson):
+                    valid_lessons += 1
+                    
+            print(f"   ✅ {valid_lessons}/{len(lessons)} lessons have valid PrivateLessonResponse structure")
+            
+        self.log_test("Weekly Calendar Endpoint - Future Week", success, f"- {len(lessons) if success else 0} future week lessons found")
+        return success, lessons if success else []
+
+    def validate_weekly_lesson_structure(self, lesson: Dict[str, Any]) -> bool:
+        """Validate that lesson has proper PrivateLessonResponse structure for weekly calendar"""
+        required_fields = [
+            'id', 'student_id', 'student_name', 'teacher_ids', 'teacher_names',
+            'start_datetime', 'end_datetime', 'booking_type', 'status'
+        ]
+        
+        for field in required_fields:
+            if field not in lesson:
+                print(f"   ⚠️  Missing field '{field}' in lesson {lesson.get('id', 'unknown')}")
+                return False
+        
+        # Validate teacher_names is a list
+        if not isinstance(lesson.get('teacher_names'), list):
+            print(f"   ⚠️  teacher_names should be a list in lesson {lesson.get('id', 'unknown')}")
+            return False
+            
+        # Validate teacher_ids is a list
+        if not isinstance(lesson.get('teacher_ids'), list):
+            print(f"   ⚠️  teacher_ids should be a list in lesson {lesson.get('id', 'unknown')}")
+            return False
+        
+        # Validate student_name is populated
+        if not lesson.get('student_name') or lesson.get('student_name') == 'Unknown':
+            print(f"   ⚠️  student_name should be populated in lesson {lesson.get('id', 'unknown')}")
+            return False
+            
+        # Validate teacher_names are populated
+        if not lesson.get('teacher_names') or any(name == 'Unknown' for name in lesson.get('teacher_names', [])):
+            print(f"   ⚠️  teacher_names should be populated in lesson {lesson.get('id', 'unknown')}")
+            return False
+        
+        return True
+
+    def test_weekly_calendar_date_filtering(self):
+        """Test that weekly calendar properly filters lessons by 7-day periods"""
+        print("\n🔍 Testing Weekly Calendar Date Range Filtering...")
+        
+        # Get lessons from different weeks
+        past_week_start = datetime.now() - timedelta(days=14)  # 2 weeks ago
+        current_week_start = datetime.now() - timedelta(days=datetime.now().weekday())  # This Monday
+        
+        # Test past week
+        past_start_str = past_week_start.strftime("%Y-%m-%dT00:00:00")
+        success1, past_lessons = self.make_request('GET', f'calendar/weekly?start_date={past_start_str}', expected_status=200)
+        
+        # Test current week
+        current_start_str = current_week_start.strftime("%Y-%m-%dT00:00:00")
+        success2, current_lessons = self.make_request('GET', f'calendar/weekly?start_date={current_start_str}', expected_status=200)
+        
+        if success1 and success2:
+            past_lessons = past_lessons if isinstance(past_lessons, list) else []
+            current_lessons = current_lessons if isinstance(current_lessons, list) else []
+            
+            print(f"   📊 Past week ({past_week_start.strftime('%Y-%m-%d')}): {len(past_lessons)} lessons")
+            print(f"   📊 Current week ({current_week_start.strftime('%Y-%m-%d')}): {len(current_lessons)} lessons")
+            
+            # Verify lessons are within the correct date ranges
+            past_week_end = past_week_start + timedelta(days=7)
+            current_week_end = current_week_start + timedelta(days=7)
+            
+            past_valid = self.validate_date_range(past_lessons, past_week_start, past_week_end)
+            current_valid = self.validate_date_range(current_lessons, current_week_start, current_week_end)
+            
+            success = past_valid and current_valid
+            print(f"   ✅ Date filtering accuracy: {'Correct' if success else 'Issues detected'}")
+            
+        else:
+            success = False
+            
+        self.log_test("Weekly Calendar Date Filtering", success, f"- Proper 7-day filtering: {'Yes' if success else 'No'}")
+        return success
+
+    def validate_date_range(self, lessons: List[Dict], start_date: datetime, end_date: datetime) -> bool:
+        """Validate that all lessons fall within the specified 7-day range"""
+        for lesson in lessons:
+            lesson_date_str = lesson.get('start_datetime', '')
+            try:
+                # Parse the lesson date
+                if lesson_date_str.endswith('Z'):
+                    lesson_date = datetime.fromisoformat(lesson_date_str.replace('Z', '+00:00'))
+                else:
+                    lesson_date = datetime.fromisoformat(lesson_date_str)
+                
+                # Remove timezone info for comparison
+                lesson_date = lesson_date.replace(tzinfo=None)
+                
+                if not (start_date <= lesson_date < end_date):
+                    print(f"   ⚠️  Lesson {lesson.get('id')} date {lesson_date} is outside 7-day range {start_date} - {end_date}")
+                    return False
+                    
+            except ValueError as e:
+                print(f"   ⚠️  Invalid date format in lesson {lesson.get('id')}: {lesson_date_str}")
+                return False
+        
+        return True
+
+    def test_weekly_calendar_vs_main_lessons_api(self):
+        """Compare weekly calendar results with main lessons API for data consistency"""
+        print("\n🔄 Testing Weekly Calendar vs Main Lessons API Consistency...")
+        
+        # Get all lessons from main API
+        success1, all_lessons = self.make_request('GET', 'lessons', expected_status=200)
+        
+        # Get lessons from current week via weekly calendar
+        current_week_start = datetime.now() - timedelta(days=datetime.now().weekday())
+        start_date_str = current_week_start.strftime("%Y-%m-%dT00:00:00")
+        success2, weekly_lessons = self.make_request('GET', f'calendar/weekly?start_date={start_date_str}', expected_status=200)
+        
+        if success1 and success2:
+            all_lessons = all_lessons if isinstance(all_lessons, list) else []
+            weekly_lessons = weekly_lessons if isinstance(weekly_lessons, list) else []
+            
+            # Filter main API lessons to current week for comparison
+            current_week_end = current_week_start + timedelta(days=7)
+            filtered_main_lessons = []
+            
+            for lesson in all_lessons:
+                lesson_date_str = lesson.get('start_datetime', '')
+                try:
+                    if lesson_date_str.endswith('Z'):
+                        lesson_date = datetime.fromisoformat(lesson_date_str.replace('Z', '+00:00'))
+                    else:
+                        lesson_date = datetime.fromisoformat(lesson_date_str)
+                    
+                    lesson_date = lesson_date.replace(tzinfo=None)
+                    
+                    if current_week_start <= lesson_date < current_week_end:
+                        filtered_main_lessons.append(lesson)
+                        
+                except ValueError:
+                    continue
+            
+            print(f"   📊 Main API (filtered to current week): {len(filtered_main_lessons)} lessons")
+            print(f"   📊 Weekly Calendar API: {len(weekly_lessons)} lessons")
+            
+            # Compare lesson IDs
+            main_ids = set(lesson.get('id') for lesson in filtered_main_lessons)
+            weekly_ids = set(lesson.get('id') for lesson in weekly_lessons)
+            
+            missing_in_weekly = main_ids - weekly_ids
+            extra_in_weekly = weekly_ids - main_ids
+            
+            if missing_in_weekly:
+                print(f"   ⚠️  {len(missing_in_weekly)} lessons missing in weekly calendar")
+            
+            if extra_in_weekly:
+                print(f"   ⚠️  {len(extra_in_weekly)} extra lessons in weekly calendar")
+            
+            success = len(missing_in_weekly) == 0 and len(extra_in_weekly) == 0
+            print(f"   ✅ Data consistency: {'Perfect match' if success else 'Discrepancies found'}")
+            
+        else:
+            success = False
+            
+        self.log_test("Weekly Calendar vs Main API Consistency", success, f"- APIs return same lessons: {'Yes' if success else 'No'}")
+        return success
+
     def run_all_tests(self):
         """Run all weekly calendar backend tests"""
         print("🚀 Starting Weekly Calendar Backend API Testing...")
