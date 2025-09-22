@@ -2,7 +2,7 @@ import requests
 import sys
 import json
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 class WeeklyCalendarAPITester:
     def __init__(self, base_url="https://studio-manager-5.preview.emergentagent.com"):
