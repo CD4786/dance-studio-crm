@@ -654,7 +654,7 @@ class WeeklyCalendarAPITester:
         return success
 
     def run_all_tests(self):
-        """Run all weekly calendar backend tests"""
+        """Run all weekly calendar backend tests including specific endpoint testing"""
         print("🚀 Starting Weekly Calendar Backend API Testing...")
         print("=" * 60)
         
@@ -677,6 +677,17 @@ class WeeklyCalendarAPITester:
         self.test_lesson_status_consistency()
         self.test_error_handling()
         
+        # NEW: Specific Weekly Calendar Endpoint Tests (as requested in review)
+        print("\n" + "🎯 WEEKLY CALENDAR ENDPOINT SPECIFIC TESTS" + "🎯")
+        print("=" * 60)
+        past_success, past_lessons = self.test_weekly_calendar_endpoint_past_week()
+        current_success, current_lessons = self.test_weekly_calendar_endpoint_current_week()
+        future_success, future_lessons = self.test_weekly_calendar_endpoint_future_week()
+        
+        # Advanced weekly calendar tests
+        date_filtering_success = self.test_weekly_calendar_date_filtering()
+        consistency_success = self.test_weekly_calendar_vs_main_lessons_api()
+        
         # Cleanup
         self.cleanup_test_data()
         
@@ -688,9 +699,33 @@ class WeeklyCalendarAPITester:
         print(f"❌ Tests Failed: {self.tests_run - self.tests_passed}")
         print(f"📈 Success Rate: {(self.tests_passed / self.tests_run * 100):.1f}%")
         
+        # Weekly Calendar Endpoint Specific Results
+        print(f"\n📅 WEEKLY CALENDAR ENDPOINT RESULTS:")
+        total_past_lessons = len(past_lessons) if past_success else 0
+        total_current_lessons = len(current_lessons) if current_success else 0
+        total_future_lessons = len(future_lessons) if future_success else 0
+        
+        print(f"Past Week Lessons: {total_past_lessons}")
+        print(f"Current Week Lessons: {total_current_lessons}")
+        print(f"Future Week Lessons: {total_future_lessons}")
+        
+        # Critical assessment for the review request
+        weekly_endpoint_tests = [past_success, current_success, future_success, date_filtering_success, consistency_success]
+        all_weekly_tests_passed = all(weekly_endpoint_tests)
+        
         if self.tests_passed == self.tests_run:
             print("\n🎉 ALL WEEKLY CALENDAR BACKEND TESTS PASSED!")
             print("✅ The enhanced weekly calendar backend functionality is working correctly.")
+            
+            if all_weekly_tests_passed:
+                print("\n🎯 WEEKLY CALENDAR ENDPOINT FIX VERIFICATION:")
+                print("✅ Past lessons are now showing correctly in weekly calendar")
+                print("✅ Weekly calendar endpoint returns lessons from lessons collection")
+                print("✅ Proper data structure with student and teacher names confirmed")
+                print("✅ Date range filtering for 7-day periods working correctly")
+                print("✅ Data consistency between weekly calendar and main lessons API verified")
+            else:
+                print("\n⚠️  Some weekly calendar endpoint tests failed - see details above")
         else:
             print(f"\n⚠️  {self.tests_run - self.tests_passed} test(s) failed. Please review the issues above.")
 
