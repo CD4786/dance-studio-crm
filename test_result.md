@@ -598,6 +598,21 @@ backend:
     needs_retesting: false
     status_history:
         - working: "NA"
+
+  - task: "Lessons API Weekly Calendar Past Lessons Issue Diagnosis"
+    implemented: true
+    working: false
+    file: "server.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "User reported that past lessons are not showing in the weekly calendar. Need to test the lessons API endpoint to diagnose why past lessons are not appearing in the weekly calendar view."
+        - working: false
+          agent: "testing"
+          comment: "🚨 CRITICAL ISSUE IDENTIFIED: Weekly Calendar API Bug Found! Conducted comprehensive lessons API testing and discovered the ROOT CAUSE of why past lessons don't show in weekly calendar. MAJOR FINDINGS: 1) ✅ Lessons API Working Perfectly - GET /api/lessons endpoint returns 1000 lessons including 171 past lessons, all lesson data structure is correct with required fields (id, student_name, teacher_names, start_datetime, end_datetime, booking_type, status), past lessons are available and properly formatted in the API response. 2) ❌ CRITICAL BUG IN WEEKLY CALENDAR ENDPOINT - GET /api/calendar/weekly endpoint is querying the WRONG DATABASE COLLECTION! The endpoint queries 'db.classes' collection (which has 0 items) instead of 'db.lessons' collection (which has 1000 items). This explains why weekly calendar shows no past lessons - it's looking in the wrong place! 3) 🔍 Technical Analysis - Weekly calendar endpoint at /api/calendar/weekly (lines 811-833 in server.py) queries classes collection: 'await db.classes.find({...})', should query lessons collection: 'await db.lessons.find({...})', returns ClassResponse objects instead of PrivateLessonResponse objects, completely wrong data model for weekly calendar functionality. 4) ✅ Data Verification - Past lessons exist: 171 past lessons, 9 current week lessons, 829 future lessons, all with proper date ranges and data structure, lessons API provides all data needed for weekly calendar. 5) 🔧 REQUIRED FIX - Change weekly calendar endpoint to query lessons collection instead of classes collection, update response model from ClassResponse to PrivateLessonResponse, ensure proper date filtering and teacher name enrichment for lessons. TESTING RESULTS: 6/6 lessons API tests passed (100% success rate), but weekly calendar endpoint has critical bug. The lessons API is production-ready, but weekly calendar endpoint needs immediate fix to query the correct database collection. This is a HIGH PRIORITY backend bug that prevents weekly calendar from showing any lessons (past, present, or future)."
           agent: "testing"
           comment: "REVIEW REQUEST: Test Teacher Color Management API - Test GET /api/teachers/{id}/color, test PUT /api/teachers/{id}/color with valid hex colors, test POST /api/teachers/colors/auto-assign, test color validation and error handling."
         - working: true
