@@ -379,6 +379,18 @@ p, span, div, label, input, textarea, select {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  /* Mobile touch optimizations */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Ensure minimum touch target size for accessibility */
+  min-height: 44px;
+  min-width: 44px;
 }
 
 .btn-primary {
