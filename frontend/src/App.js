@@ -130,6 +130,11 @@ const Button = ({ children, onClick, className = "", variant = "primary", type =
     onClick={onClick} 
     disabled={disabled}
     className={`btn ${variant === 'outline' ? 'btn-outline' : 'btn-primary'} ${className}`}
+    style={{ 
+      touchAction: 'manipulation',
+      WebkitTapHighlightColor: 'transparent',
+      outline: 'none'
+    }}
   >
     {children}
   </button>
