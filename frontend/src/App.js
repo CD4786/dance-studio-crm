@@ -184,14 +184,31 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = isLogin ? 
-      await login(formData.email, formData.password) :
-      await register(formData);
     
-    if (success && !isLogin) {
-      setIsLogin(true);
-      setFormData({ ...formData, password: '' });
-      alert('Registration successful! Please login.');
+    // Prevent double submission on mobile
+    if (e.target.classList.contains('submitting')) {
+      return;
+    }
+    
+    e.target.classList.add('submitting');
+    
+    try {
+      const success = isLogin ? 
+        await login(formData.email, formData.password) :
+        await register(formData);
+      
+      if (success && !isLogin) {
+        setIsLogin(true);
+        setFormData({ ...formData, password: '' });
+        alert('Registration successful! Please login.');
+      } else if (!success && isLogin) {
+        alert('Login failed. Please check your credentials and try again.');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      e.target.classList.remove('submitting');
     }
   };
 
