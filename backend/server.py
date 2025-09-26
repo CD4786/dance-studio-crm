@@ -710,6 +710,10 @@ async def login(login_data: UserLogin):
             raise HTTPException(status_code=401, detail="Invalid credentials")
         
         print(f"🔐 Verifying password...")
+        print(f"🔐 Plain password length: {len(login_data.password)}")
+        print(f"🔐 Plain password bytes: {len(login_data.password.encode('utf-8'))}")
+        print(f"🔐 Hashed password length: {len(user['hashed_password'])}")
+        
         password_valid = verify_password(login_data.password, user["hashed_password"])
         print(f"🔐 Password valid: {password_valid}")
         
