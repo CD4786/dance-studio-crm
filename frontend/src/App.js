@@ -3092,16 +3092,18 @@ const MainApp = () => {
           >
             👥 Users
           </button>
-          
-          {/* Logout Button */}
+        </div>
+        
+        {/* Additional Logout Button at Bottom */}
+        <div style={{ marginTop: 'auto', padding: '1rem' }}>
           <button 
-            className="nav-item logout-btn"
+            className="btn btn-danger btn-sm"
             onClick={logout}
             style={{ 
-              marginTop: 'auto',
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              borderColor: 'rgba(239, 68, 68, 0.3)',
-              color: '#ef4444'
+              width: '100%',
+              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+              borderColor: 'rgba(239, 68, 68, 0.5)',
+              color: '#ffffff'
             }}
           >
             🚪 Sign Out
