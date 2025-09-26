@@ -478,24 +478,31 @@ const DailyCalendar = ({
 
   const fetchDailyData = useCallback(async (forceRefresh = false) => {
     try {
+      setIsLoading(true);
+      setError(null);
+      
       // Use local date string to avoid timezone conversion issues
       const year = currentDate.getFullYear();
       const month = String(currentDate.getMonth() + 1).padStart(2, '0');
       const day = String(currentDate.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
       
-      console.log('Fetching daily data for date:', dateStr, 'from currentDate:', currentDate);
+      console.log('📅 Fetching daily data for date:', dateStr);
       
-      const cacheKey = `daily-${dateStr}`;
-      const data = await fetchWithCache(`${API}/calendar/daily/${dateStr}`, cacheKey, forceRefresh);
-      setCalendarData(data);
+      // Single API call to get all daily data
+      const response = await axios.get(`${API}/calendar/daily/${dateStr}`);
+      setCalendarData(response.data);
       
-      // Instructor stats are managed individually by InstructorStatsDisplay components
+      console.log('✅ Daily data loaded successfully');
+      
     } catch (error) {
-      console.error('Failed to fetch daily data:', error);
-      // Don't throw, just log the error
+      console.error('❌ Failed to fetch daily data:', error);
+      setError('Failed to load calendar data. Please try again.');
+      setCalendarData({ lessons: [], teachers: [] });
+    } finally {
+      setIsLoading(false);
     }
-  }, [currentDate, fetchWithCache]);
+  }, [currentDate]);
 
   // Calculate instructor statistics (daily, weekly, monthly lesson counts)
   const calculateInstructorStats = async (teacherId) => {
@@ -604,23 +611,29 @@ const DailyCalendar = ({
     );
   };
 
-  const fetchStudents = async () => {
+  const fetchStudents = useCallback(async () => {
     try {
+      if (students.length > 0) return; // Only fetch once if already loaded
+      
       const response = await axios.get(`${API}/students`);
       setStudents(response.data);
+      console.log('✅ Students loaded:', response.data.length);
     } catch (error) {
-      console.error('Failed to fetch students:', error);
+      console.error('❌ Failed to fetch students:', error);
     }
-  };
+  }, [students.length]);
 
-  const fetchTeachers = async () => {
+  const fetchTeachers = useCallback(async () => {
     try {
+      if (teachers.length > 0) return; // Only fetch once if already loaded
+      
       const response = await axios.get(`${API}/teachers`);
       setTeachers(response.data);
+      console.log('✅ Teachers loaded:', response.data.length);
     } catch (error) {
-      console.error('Failed to fetch teachers:', error);
+      console.error('❌ Failed to fetch teachers:', error);
     }
-  };
+  }, [teachers.length]);
 
   const handleTimeSlotClick = (hour, teacherId) => {
     setSelectedTimeSlot({ hour, teacherId });
