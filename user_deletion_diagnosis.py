@@ -46,7 +46,10 @@ class UserDeletionDiagnosis:
             if expected_status is not None:
                 success = response.status_code == expected_status
 
-            return success, {**response_data, "status_code": response.status_code}
+            if isinstance(response_data, dict):
+                return success, {**response_data, "status_code": response.status_code}
+            else:
+                return success, {"data": response_data, "status_code": response.status_code}
 
         except requests.exceptions.RequestException as e:
             return False, {"error": str(e)}
