@@ -419,6 +419,8 @@ const DailyCalendar = ({
     enrollment_id: '',
     selected_date: null // New field for custom date selection
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const hours = [];
   for (let i = 9; i <= 21; i++) {
