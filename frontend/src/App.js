@@ -3077,6 +3077,20 @@ const MainApp = () => {
           >
             👥 Users
           </button>
+          
+          {/* Logout Button */}
+          <button 
+            className="nav-item logout-btn"
+            onClick={logout}
+            style={{ 
+              marginTop: 'auto',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              borderColor: 'rgba(239, 68, 68, 0.3)',
+              color: '#ef4444'
+            }}
+          >
+            🚪 Sign Out
+          </button>
         </div>
         
         <div className="sidebar-footer">
