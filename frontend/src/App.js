@@ -1203,6 +1203,26 @@ const DailyCalendar = ({
 
   return (
     <div className="daily-calendar">
+      {/* Loading State */}
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+            <p>Loading calendar data...</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Error State */}
+      {error && (
+        <div className="error-banner">
+          <span>⚠️ {error}</span>
+          <button onClick={() => window.location.reload()} className="btn btn-sm btn-outline">
+            Retry
+          </button>
+        </div>
+      )}
+      
       <div className="calendar-header">
         <div className="calendar-title">
           <h2>Daily Schedule - {currentDate.toDateString()}</h2>
