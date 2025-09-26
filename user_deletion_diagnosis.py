@@ -78,9 +78,13 @@ class UserDeletionDiagnosis:
         success, response = self.make_request('GET', 'users', expected_status=200)
         
         if success:
-            users = response if isinstance(response, list) else []
-            print(f"📊 Found {len(users)} total users")
-            return users
+            users = response.get("data", response) if isinstance(response, dict) else response
+            if isinstance(users, list):
+                print(f"📊 Found {len(users)} total users")
+                return users
+            else:
+                print(f"❌ Unexpected response format: {response}")
+                return []
         else:
             print(f"❌ Failed to get users: {response}")
             return []
