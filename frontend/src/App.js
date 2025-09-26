@@ -3020,6 +3020,21 @@ const MainApp = () => {
           <h1>CRM.Dance</h1>
           <p>{user.name || 'User'}</p>
           <p className="user-role">{user.role || 'user'}</p>
+          
+          {/* Logout Button at Top */}
+          <button 
+            className="btn btn-outline btn-sm"
+            onClick={logout}
+            style={{ 
+              marginTop: '1rem',
+              width: '100%',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              borderColor: 'rgba(239, 68, 68, 0.3)',
+              color: '#ef4444'
+            }}
+          >
+            🚪 Sign Out
+          </button>
         </div>
         
         <div className="nav-menu">
