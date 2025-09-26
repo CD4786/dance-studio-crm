@@ -64,16 +64,11 @@ const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      console.log('🔑 Attempting login with:', { email, apiUrl: `${API}/auth/login` });
-      
       const response = await axios.post(`${API}/auth/login`, { email, password });
-      
-      console.log('✅ Login response:', response.data);
-      
       const { access_token, user: userData } = response.data;
       
       if (!access_token || !userData) {
-        console.error('❌ Missing token or user data in response');
+        console.error('Missing token or user data');
         return false;
       }
       
@@ -83,12 +78,9 @@ const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
-      console.log('✅ Login successful, user:', userData.email);
       return true;
     } catch (error) {
-      console.error('❌ Login failed:', error);
-      console.error('❌ Error response:', error.response?.data);
-      console.error('❌ Error status:', error.response?.status);
+      console.error('Login failed:', error);
       return false;
     }
   };
