@@ -41,53 +41,48 @@ const ErrorBoundary = ({ children, error, onRetry }) => {
 const AuthContext = React.createContext(null);
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  // Bypass login - set default admin user
+  const [user, setUser] = useState({
+    id: "admin-001",
+    email: "admin@test.com", 
+    name: "Admin User",
+    role: "owner",
+    is_active: true
+  });
+  const [token, setToken] = useState("bypass-token");
 
+  // Auto-login effect - always set user as logged in
   useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        try {
-          setUser(JSON.parse(userData));
-        } catch (error) {
-          console.error('Failed to parse user data:', error);
-          // Clear invalid data
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-          setToken(null);
-        }
-      }
-    }
-  }, [token]);
+    console.log('🚀 Auto-login bypass activated');
+    
+    // Set default admin user
+    const defaultUser = {
+      id: "admin-001",
+      email: "admin@test.com", 
+      name: "Admin User", 
+      role: "owner",
+      is_active: true
+    };
+    
+    const defaultToken = "bypass-token-" + Date.now();
+    
+    setUser(defaultUser);
+    setToken(defaultToken);
+    localStorage.setItem('user', JSON.stringify(defaultUser));
+    localStorage.setItem('token', defaultToken);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${defaultToken}`;
+    
+  }, []);
 
   const login = async (email, password) => {
-    try {
-      const response = await axios.post(`${API}/auth/login`, { email, password });
-      const { access_token, user: userData } = response.data;
-      
-      if (!access_token || !userData) {
-        console.error('Missing token or user data');
-        return false;
-      }
-      
-      setToken(access_token);
-      setUser(userData);
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-      
-      return true;
-    } catch (error) {
-      console.error('Login failed:', error);
-      return false;
-    }
+    // Always return success for bypass mode
+    console.log('🚀 Login bypassed - auto success');
+    return true;
   };
 
   const register = async (userData) => {
     try {
-      await axios.post(`${API}/auth/register`, userData);
+      const response = await axios.post(`${API}/auth/register`, userData);
       return true;
     } catch (error) {
       console.error('Registration failed:', error);
@@ -101,6 +96,11 @@ const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     delete axios.defaults.headers.common['Authorization'];
+    
+    // Immediately re-login for bypass mode
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   return (
