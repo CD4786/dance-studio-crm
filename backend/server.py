@@ -696,16 +696,37 @@ async def register(user_data: UserCreate):
 
 @api_router.post("/auth/login")
 async def login(login_data: UserLogin):
-    user = await db.users.find_one({"email": login_data.email})
-    if not user or not verify_password(login_data.password, user["hashed_password"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    access_token = create_access_token({"user_id": user["id"], "role": user["role"]})
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": UserResponse(**user)
-    }
+    try:
+        print(f"🔑 Login attempt for email: {login_data.email}")
+        
+        user = await db.users.find_one({"email": login_data.email})
+        print(f"👤 User found: {bool(user)}")
+        
+        if not user:
+            print("❌ User not found")
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        print(f"🔐 Verifying password...")
+        password_valid = verify_password(login_data.password, user["hashed_password"])
+        print(f"🔐 Password valid: {password_valid}")
+        
+        if not password_valid:
+            print("❌ Invalid password")
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        print(f"✅ Creating access token...")
+        access_token = create_access_token({"user_id": user["id"], "role": user["role"]})
+        print(f"✅ Login successful for: {user['email']}")
+        
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": UserResponse(**user)
+        }
+    except Exception as e:
+        print(f"💥 Login error: {str(e)}")
+        print(f"💥 Login error type: {type(e)}")
+        raise e
 
 # Teacher Routes
 @api_router.post("/teachers", response_model=Teacher)
