@@ -430,51 +430,24 @@ const DailyCalendar = ({
   }, [selectedDate]);
 
   useEffect(() => {
-    fetchDailyData();
-    fetchStudents();
-    fetchTeachers();
-  }, [currentDate]); // Removed onRefresh from dependencies to prevent infinite loops
-
-  // Optimized data fetching with caching and error handling
-  const [dataCache, setDataCache] = useState(new Map());
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Optimized fetch function with shorter cache time for faster updates
-  const fetchWithCache = useCallback(async (url, cacheKey, forceRefresh = false) => {
-    setError(null);
-    
-    // Return cached data if available and not forcing refresh
-    if (!forceRefresh && dataCache.has(cacheKey)) {
-      const cached = dataCache.get(cacheKey);
-      // REDUCED cache time to 30 seconds for faster calendar updates
-      if (Date.now() - cached.timestamp < 30000) {
-        return cached.data;
-      }
-    }
-
-    try {
+    const loadData = async () => {
       setIsLoading(true);
-      const response = await axios.get(url);
-      const data = response.data;
-      
-      // Cache the data with timestamp
-      setDataCache(prev => new Map(prev).set(cacheKey, {
-        data,
-        timestamp: Date.now()
-      }));
-      
-      console.log(`📊 Data fetched and cached: ${cacheKey}`);
-      return data;
-    } catch (error) {
-      console.error(`❌ Error fetching ${url}:`, error);
-      const errorMessage = error.response?.data?.detail || error.message || 'Failed to fetch data';
-      setError(errorMessage);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [dataCache]);
+      try {
+        await Promise.all([
+          fetchDailyData(),
+          fetchStudents(),
+          fetchTeachers()
+        ]);
+      } catch (error) {
+        console.error('❌ Error loading data:', error);
+        setError('Failed to load data. Please refresh the page.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
+  }, [currentDate, fetchDailyData, fetchStudents, fetchTeachers]);
 
   const fetchDailyData = useCallback(async (forceRefresh = false) => {
     try {
